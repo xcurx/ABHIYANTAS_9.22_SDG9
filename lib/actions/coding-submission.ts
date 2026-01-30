@@ -495,8 +495,10 @@ async function executeCode(
     // Check if Judge0 API is configured
     const judge0ApiKey = process.env.JUDGE0_API_KEY
     const judge0Host = process.env.JUDGE0_HOST || "judge0-ce.p.rapidapi.com"
+    const isLocalhost = judge0Host.includes("localhost") || judge0Host.includes("127.0.0.1")
+    const protocol = isLocalhost ? "http" : "https"
 
-    if (judge0ApiKey) {
+    if (judge0ApiKey || isLocalhost) {
         // Use Judge0 API
         try {
             const languageId = languageIds[language]
@@ -509,14 +511,21 @@ async function executeCode(
                 }
             }
 
+            // Build headers
+            const headers: Record<string, string> = {
+                "Content-Type": "application/json",
+            }
+            
+            // Only add RapidAPI headers if using RapidAPI (not localhost)
+            if (!isLocalhost && judge0ApiKey) {
+                headers["X-RapidAPI-Key"] = judge0ApiKey
+                headers["X-RapidAPI-Host"] = judge0Host
+            }
+
             // Create submission
-            const createResponse = await fetch(`https://${judge0Host}/submissions?base64_encoded=true&wait=true`, {
+            const createResponse = await fetch(`${protocol}://${judge0Host}/submissions?base64_encoded=true&wait=true`, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-RapidAPI-Key": judge0ApiKey,
-                    "X-RapidAPI-Host": judge0Host,
-                },
+                headers,
                 body: JSON.stringify({
                     language_id: languageId,
                     source_code: Buffer.from(code).toString("base64"),
