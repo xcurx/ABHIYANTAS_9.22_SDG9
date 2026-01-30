@@ -17,6 +17,8 @@ export type ActionResult<T = unknown> = {
     errors?: Record<string, string[]>
 }
 
+type ContestStatus = "DRAFT" | "PUBLISHED" | "REGISTRATION_OPEN" | "LIVE" | "ENDED" | "CANCELLED"
+
 // Helper to generate slug from title
 function generateSlug(title: string): string {
     return title
@@ -38,6 +40,22 @@ async function isOrgAdmin(userId: string, organizationId: string): Promise<boole
         },
     })
     return membership?.role === "OWNER" || membership?.role === "ADMIN"
+}
+
+// Update contest status (used for auto-sync with time)
+// Note: This function should not use revalidatePath when called during render
+export async function updateContestStatus(contestId: string, status: ContestStatus): Promise<ActionResult> {
+    try {
+        await prisma.codingContest.update({
+            where: { id: contestId },
+            data: { status },
+        })
+        // Don't revalidate here as this may be called during render
+        return { success: true, message: `Contest status updated to ${status}` }
+    } catch (error) {
+        console.error("Update contest status error:", error)
+        return { success: false, message: "Failed to update contest status" }
+    }
 }
 
 // ==================== CONTEST CRUD ====================
@@ -218,10 +236,6 @@ export async function publishCodingContest(contestId: string): Promise<ActionRes
         return { success: false, message: "Contest must have at least one question" }
     }
 
-    if (new Date(contest.startTime) < new Date()) {
-        return { success: false, message: "Start time must be in the future" }
-    }
-
     try {
         await prisma.codingContest.update({
             where: { id: contestId },
@@ -323,6 +337,9 @@ export async function getCodingContestBySlug(slug: string) {
                     points: true,
                     order: true,
                     tags: true,
+                    testCases: {
+                        select: { id: true },
+                    },
                 },
             },
             _count: {

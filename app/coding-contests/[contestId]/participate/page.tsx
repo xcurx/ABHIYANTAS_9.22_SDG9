@@ -23,9 +23,20 @@ export default async function ParticipatePage({
         notFound()
     }
 
-    // Check if contest is live
-    if (contest.status !== "LIVE") {
+    // Check if contest is live (by time, not just status)
+    const now = new Date()
+    const isLive = now >= new Date(contest.startTime) && now <= new Date(contest.endTime)
+    
+    if (!isLive && contest.status !== "LIVE") {
         redirect(`/coding-contests/${contest.slug}`)
+    }
+    
+    // Update contest status to LIVE if it should be
+    if (isLive && contest.status !== "LIVE") {
+        await prisma.codingContest.update({
+            where: { id: contest.id },
+            data: { status: "LIVE" },
+        })
     }
 
     // Check if user is registered
@@ -88,30 +99,40 @@ export default async function ParticipatePage({
                 startedAt: participant.startedAt,
                 tabSwitchCount: participant.tabSwitchCount,
             }}
-            questions={questions.map(q => ({
-                id: q.id,
-                title: q.title,
-                description: q.description,
-                type: q.type as "MCQ" | "CODING",
-                difficulty: q.difficulty as "EASY" | "MEDIUM" | "HARD",
-                points: q.points,
-                order: q.order,
-                mcqOptions: q.options as string[] | null,
-                allowedLanguages: (q.starterCode ? Object.keys(q.starterCode as Record<string, string>) : null),
-                starterCode: q.starterCode as Record<string, string> | null,
-                timeLimit: q.timeLimit,
-                memoryLimit: q.memoryLimit,
-                testCases: q.testCases?.filter(tc => !tc.isHidden).map(tc => ({
-                    id: tc.id,
-                    input: tc.input,
-                    expectedOutput: tc.output,
-                })) || [],
-            }))}
+            questions={questions.map(q => {
+                // Parse MCQ options - stored as [{id, text, isCorrect}]
+                // Pass id and text (not isCorrect to hide correct answer from client)
+                let mcqOptions: { id: string; text: string }[] | null = null
+                if (q.type === "MCQ" && q.options) {
+                    const opts = q.options as { id: string; text: string; isCorrect: boolean }[]
+                    mcqOptions = opts.map(opt => ({ id: opt.id, text: opt.text }))
+                }
+                
+                return {
+                    id: q.id,
+                    title: q.title,
+                    description: q.description,
+                    type: q.type as "MCQ" | "CODING",
+                    difficulty: q.difficulty as "EASY" | "MEDIUM" | "HARD",
+                    points: q.points,
+                    order: q.order,
+                    mcqOptions,
+                    allowedLanguages: (q.starterCode ? Object.keys(q.starterCode as Record<string, string>) : null),
+                    starterCode: q.starterCode as Record<string, string> | null,
+                    timeLimit: q.timeLimit,
+                    memoryLimit: q.memoryLimit,
+                    testCases: q.testCases?.filter(tc => !tc.isHidden).map(tc => ({
+                        id: tc.id,
+                        input: tc.input,
+                        expectedOutput: tc.output,
+                    })) || [],
+                }
+            })}
             existingSubmissions={existingSubmissions.map((s) => ({
                 questionId: s.questionId,
                 code: s.code,
                 language: s.language,
-                mcqAnswer: s.selectedOptions.length > 0 ? parseInt(s.selectedOptions[0]) : null,
+                mcqAnswer: s.selectedOptions.length > 0 ? s.selectedOptions[0] : null, // Use option ID directly
                 score: s.score,
                 isCorrect: s.isCorrect,
             }))}

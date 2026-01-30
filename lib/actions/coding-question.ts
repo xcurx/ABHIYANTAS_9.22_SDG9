@@ -587,10 +587,8 @@ export async function getContestQuestions(contestId: string, includeHidden = fal
         where: { contestId, isActive: true },
         orderBy: { order: "asc" },
         include: {
-            testCases: includeHidden ? {
-                orderBy: { order: "asc" },
-            } : {
-                where: { isHidden: false },
+            testCases: {
+                where: includeHidden ? {} : { isHidden: false },
                 orderBy: { order: "asc" },
             },
             _count: {

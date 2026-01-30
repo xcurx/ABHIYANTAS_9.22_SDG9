@@ -151,15 +151,23 @@ export default function NewQuestionForm({ contestId, contestSlug }: { contestId:
                         points,
                         order: 0, // Auto-assigned by server
                         starterCode,
-                        solutionCode: { default: solutionCode },
-                        timeLimit,
-                        memoryLimit,
+                        solutionCode: solutionCode ? { default: solutionCode } : undefined,
+                        timeLimit: timeLimit || undefined,
+                        memoryLimit: memoryLimit || undefined,
                         hints: [],
                         tags: [],
                     })
 
                     if (!questionResult.success || !questionResult.data) {
-                        setError(questionResult.message || "Failed to create question")
+                        // Show detailed error including field errors
+                        let errorMsg = questionResult.message || "Failed to create question"
+                        if (questionResult.errors) {
+                            const fieldErrors = Object.entries(questionResult.errors)
+                                .map(([field, msgs]) => `${field}: ${(msgs as string[]).join(", ")}`)
+                                .join("; ")
+                            errorMsg += ` - ${fieldErrors}`
+                        }
+                        setError(errorMsg)
                         return
                     }
 
@@ -181,6 +189,7 @@ export default function NewQuestionForm({ contestId, contestSlug }: { contestId:
                 router.push(`/coding-contests/${contestSlug}/manage/questions`)
                 router.refresh()
             } catch (err) {
+                console.error("Error creating question:", err)
                 setError("An unexpected error occurred")
             }
         })

@@ -96,12 +96,12 @@ export const createCodingQuestionSchema = z.object({
     contestId: z.string().min(1, "Contest ID is required"),
     type: z.literal("CODING"),
     title: z.string().min(3, "Title must be at least 3 characters").max(500, "Title must be less than 500 characters"),
-    description: z.string().min(20, "Description must be at least 20 characters").max(50000, "Description must be less than 50000 characters"),
+    description: z.string().min(10, "Description must be at least 10 characters").max(50000, "Description must be less than 50000 characters"),
     difficulty: z.enum(["EASY", "MEDIUM", "HARD", "EXPERT"]).default("MEDIUM"),
     points: z.coerce.number().min(1, "Points must be at least 1").max(1000, "Points must be less than 1000").default(100),
     order: z.coerce.number().min(0).default(0),
-    timeLimit: z.coerce.number().min(1).max(60).optional().nullable(), // seconds per test case
-    memoryLimit: z.coerce.number().min(16).max(512).optional().nullable(), // MB
+    timeLimit: z.coerce.number().min(100).max(60000).optional().nullable(), // milliseconds (100ms to 60s)
+    memoryLimit: z.coerce.number().min(16).max(1024).optional().nullable(), // MB
     
     // Coding specific
     starterCode: z.record(z.string(), z.string()).optional(), // {language: code}

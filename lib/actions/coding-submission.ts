@@ -477,9 +477,6 @@ async function executeCode(
     memoryUsed: number
     error?: string
 }> {
-    // Mock implementation - in production, use Judge0 API
-    // Judge0 API endpoint: https://judge0-ce.p.rapidapi.com/submissions
-    
     // Language ID mapping for Judge0:
     const languageIds: Record<string, number> = {
         python: 71,      // Python 3
@@ -492,83 +489,138 @@ async function executeCode(
         rust: 73,        // Rust
     }
 
-    // Check if Judge0 API is configured
+    // Check language support
+    const languageId = languageIds[language]
+    if (!languageId) {
+        return {
+            output: "",
+            executionTime: 0,
+            memoryUsed: 0,
+            error: `Unsupported language: ${language}. Supported: ${Object.keys(languageIds).join(", ")}`,
+        }
+    }
+
+    // Determine which Judge0 endpoint to use
+    // Priority: 1. Custom host from env, 2. Free public CE endpoint
     const judge0ApiKey = process.env.JUDGE0_API_KEY
-    const judge0Host = process.env.JUDGE0_HOST || "judge0-ce.p.rapidapi.com"
-    const isLocalhost = judge0Host.includes("localhost") || judge0Host.includes("127.0.0.1")
+    const customHost = process.env.JUDGE0_HOST
+    
+    // Use free public CE endpoint by default (no API key needed!)
+    const isPublicCE = !customHost || customHost === "ce.judge0.com"
+    const isRapidAPI = customHost?.includes("rapidapi.com")
+    const isLocalhost = customHost?.includes("localhost") || customHost?.includes("127.0.0.1")
+    
+    const host = customHost || "ce.judge0.com"
     const protocol = isLocalhost ? "http" : "https"
 
-    if (judge0ApiKey || isLocalhost) {
-        // Use Judge0 API
-        try {
-            const languageId = languageIds[language]
-            if (!languageId) {
+    try {
+        // Build headers
+        const headers: Record<string, string> = {
+            "Content-Type": "application/json",
+        }
+        
+        // Only add RapidAPI headers if using RapidAPI
+        if (isRapidAPI && judge0ApiKey) {
+            headers["X-RapidAPI-Key"] = judge0ApiKey
+            headers["X-RapidAPI-Host"] = host
+        }
+
+        // Create submission with wait=true for synchronous response
+        const apiUrl = `${protocol}://${host}/submissions?base64_encoded=true&wait=true`
+        
+        console.log(`Executing code via Judge0: ${apiUrl}`)
+        
+        const createResponse = await fetch(apiUrl, {
+            method: "POST",
+            headers,
+            body: JSON.stringify({
+                language_id: languageId,
+                source_code: Buffer.from(code).toString("base64"),
+                stdin: input ? Buffer.from(input).toString("base64") : "",
+                cpu_time_limit: timeLimit ? timeLimit / 1000 : 5, // Convert ms to seconds
+                memory_limit: (memoryLimit || 128) * 1024, // Convert MB to KB
+            }),
+        })
+
+            // Check for HTTP errors
+            if (!createResponse.ok) {
+                const errorText = await createResponse.text()
+                console.error(`Judge0 API error: ${createResponse.status} - ${errorText}`)
+                
+                // Handle specific error codes
+                if (createResponse.status === 403) {
+                    return {
+                        output: "",
+                        executionTime: 0,
+                        memoryUsed: 0,
+                        error: "Code execution API access denied. Please check your API key or quota.",
+                    }
+                }
+                
+                if (createResponse.status === 429) {
+                    return {
+                        output: "",
+                        executionTime: 0,
+                        memoryUsed: 0,
+                        error: "Rate limit exceeded. Please wait a moment and try again.",
+                    }
+                }
+                
                 return {
                     output: "",
                     executionTime: 0,
                     memoryUsed: 0,
-                    error: `Unsupported language: ${language}`,
+                    error: `Code execution service error: ${createResponse.status}`,
                 }
             }
 
-            // Build headers
-            const headers: Record<string, string> = {
-                "Content-Type": "application/json",
-            }
-            
-            // Only add RapidAPI headers if using RapidAPI (not localhost)
-            if (!isLocalhost && judge0ApiKey) {
-                headers["X-RapidAPI-Key"] = judge0ApiKey
-                headers["X-RapidAPI-Host"] = judge0Host
-            }
-
-            // Create submission
-            const createResponse = await fetch(`${protocol}://${judge0Host}/submissions?base64_encoded=true&wait=true`, {
-                method: "POST",
-                headers,
-                body: JSON.stringify({
-                    language_id: languageId,
-                    source_code: Buffer.from(code).toString("base64"),
-                    stdin: input ? Buffer.from(input).toString("base64") : "",
-                    cpu_time_limit: timeLimit || 5,
-                    memory_limit: (memoryLimit || 128) * 1024, // Convert MB to KB
-                }),
-            })
-
             const result = await createResponse.json()
-
+            
+            // Check for Judge0 status errors
+            // Status codes: https://ce.judge0.com/#statuses-and-languages-statuses
+            // 1: In Queue, 2: Processing, 3: Accepted, 4: Wrong Answer, 5: Time Limit, etc.
+            const statusId = result.status?.id
+            const statusDesc = result.status?.description || "Unknown"
+            
             // Decode outputs
             const stdout = result.stdout ? Buffer.from(result.stdout, "base64").toString() : ""
             const stderr = result.stderr ? Buffer.from(result.stderr, "base64").toString() : ""
             const compileOutput = result.compile_output ? Buffer.from(result.compile_output, "base64").toString() : ""
+            const message = result.message || ""
+
+            // Handle different statuses
+            let error: string | undefined
+            
+            if (statusId === 6) {
+                error = compileOutput || "Compilation Error"
+            } else if (statusId === 5) {
+                error = "Time Limit Exceeded"
+            } else if (statusId === 7 || statusId === 8 || statusId === 9 || statusId === 10 || statusId === 12) {
+                // 7: MTLE, 8: OTLE, 9: Runtime Error (SIGSEGV), 10: Runtime Error (SIGXFSZ), 12: Runtime Error (other)
+                error = stderr || message || statusDesc
+            } else if (statusId === 11) {
+                error = "Runtime Error: " + (stderr || message || "Unknown error")
+            } else if (statusId === 13) {
+                error = "Internal Error - please try again"
+            } else if (stderr) {
+                error = stderr
+            }
 
             return {
                 output: stdout,
-                executionTime: parseFloat(result.time) * 1000 || 0, // Convert to ms
+                executionTime: parseFloat(result.time || "0") * 1000, // Convert to ms
                 memoryUsed: (result.memory || 0) / 1024, // Convert to MB
-                error: stderr || compileOutput || undefined,
+                error,
             }
-        } catch (error) {
-            console.error("Judge0 API error:", error)
-            return {
-                output: "",
-                executionTime: 0,
-                memoryUsed: 0,
-                error: "Code execution service temporarily unavailable",
-            }
+    } catch (error) {
+        console.error("Judge0 API error:", error)
+        const errorMessage = error instanceof Error ? error.message : "Unknown error"
+        return {
+            output: "",
+            executionTime: 0,
+            memoryUsed: 0,
+            error: `Code execution failed: ${errorMessage}`,
         }
-    }
-
-    // Fallback: Mock response for development
-    console.warn("Judge0 API not configured, using mock response")
-    
-    // Simulate execution
-    await new Promise(resolve => setTimeout(resolve, 100))
-    
-    return {
-        output: "Mock output - Configure JUDGE0_API_KEY for real execution",
-        executionTime: 50,
-        memoryUsed: 10,
     }
 }
 

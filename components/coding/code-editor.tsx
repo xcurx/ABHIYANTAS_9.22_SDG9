@@ -52,7 +52,7 @@ export default function CodeEditor({
     value,
     onChange,
     language,
-    theme = "dark",
+    theme = "light",
     readOnly = false,
     height = "400px",
     minHeight,
@@ -71,12 +71,20 @@ export default function CodeEditor({
     const editorRef = useRef<HTMLDivElement>(null)
     const monacoRef = useRef<any>(null)
     const editorInstanceRef = useRef<any>(null)
+    const isInitializingRef = useRef(false)
     const [isEditorReady, setIsEditorReady] = useState(false)
     const [isFocused, setIsFocused] = useState(false)
 
     // Load Monaco Editor
     useEffect(() => {
+        // Prevent multiple initializations
+        if (isInitializingRef.current || editorInstanceRef.current) {
+            return
+        }
+        
         const loadMonaco = async () => {
+            isInitializingRef.current = true
+            
             // Load Monaco from CDN
             if (typeof window !== "undefined" && !window.monaco) {
                 const script = document.createElement("script")
@@ -99,7 +107,13 @@ export default function CodeEditor({
         }
 
         const initEditor = (monaco: any) => {
-            if (!editorRef.current) return
+            if (!editorRef.current || editorInstanceRef.current) {
+                isInitializingRef.current = false
+                return
+            }
+            
+            // Clear any existing content in the container
+            editorRef.current.innerHTML = ""
 
             // Define custom dark theme
             monaco.editor.defineTheme("custom-dark", {
@@ -126,10 +140,47 @@ export default function CodeEditor({
                 },
             })
 
+            // Define custom light theme (Premium style with indigo accents)
+            monaco.editor.defineTheme("custom-light", {
+                base: "vs",
+                inherit: true,
+                rules: [
+                    { token: "comment", foreground: "64748b", fontStyle: "italic" },
+                    { token: "keyword", foreground: "7c3aed" },
+                    { token: "string", foreground: "059669" },
+                    { token: "number", foreground: "0891b2" },
+                    { token: "type", foreground: "6366f1" },
+                    { token: "function", foreground: "8b5cf6" },
+                    { token: "variable", foreground: "1e293b" },
+                    { token: "operator", foreground: "64748b" },
+                    { token: "delimiter", foreground: "64748b" },
+                ],
+                colors: {
+                    "editor.background": "#fafbfc",
+                    "editor.foreground": "#1e293b",
+                    "editorLineNumber.foreground": "#94a3b8",
+                    "editorLineNumber.activeForeground": "#6366f1",
+                    "editor.selectionBackground": "#e0e7ff",
+                    "editor.lineHighlightBackground": "#f1f5f9",
+                    "editorCursor.foreground": "#6366f1",
+                    "editor.selectionHighlightBackground": "#e0e7ff80",
+                    "editorBracketMatch.background": "#e0e7ff",
+                    "editorBracketMatch.border": "#6366f1",
+                    "editorGutter.background": "#f8fafc",
+                    "scrollbarSlider.background": "#cbd5e180",
+                    "scrollbarSlider.hoverBackground": "#94a3b880",
+                    "scrollbarSlider.activeBackground": "#64748b80",
+                    "editorIndentGuide.background": "#e2e8f0",
+                    "editorIndentGuide.activeBackground": "#c7d2fe",
+                },
+            })
+
+            const selectedTheme = theme === "light" ? "custom-light" : "custom-dark"
+
             const editor = monaco.editor.create(editorRef.current, {
                 value: value,
                 language: languageMap[language] || language,
-                theme: theme === "dark" ? "custom-dark" : "vs",
+                theme: selectedTheme,
                 readOnly,
                 lineNumbers: showLineNumbers ? "on" : "off",
                 minimap: { enabled: showMinimap },
@@ -143,7 +194,7 @@ export default function CodeEditor({
                 cursorSmoothCaretAnimation: "on",
                 smoothScrolling: true,
                 padding: { top: 16, bottom: 16 },
-                fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace",
+                fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'SF Mono', Consolas, monospace",
                 fontLigatures: true,
                 bracketPairColorization: { enabled: true },
                 guides: {
@@ -158,6 +209,14 @@ export default function CodeEditor({
                 parameterHints: { enabled: true },
                 formatOnPaste: true,
                 formatOnType: true,
+                renderWhitespace: "selection",
+                scrollbar: {
+                    verticalScrollbarSize: 10,
+                    horizontalScrollbarSize: 10,
+                    useShadows: false,
+                },
+                overviewRulerBorder: false,
+                hideCursorInOverviewRuler: true,
             })
 
             editorInstanceRef.current = editor
@@ -181,6 +240,7 @@ export default function CodeEditor({
             })
 
             setIsEditorReady(true)
+            isInitializingRef.current = false
         }
 
         loadMonaco()
@@ -188,7 +248,9 @@ export default function CodeEditor({
         return () => {
             if (editorInstanceRef.current) {
                 editorInstanceRef.current.dispose()
+                editorInstanceRef.current = null
             }
+            isInitializingRef.current = false
         }
     }, [])
 
@@ -215,7 +277,7 @@ export default function CodeEditor({
     // Update theme when prop changes
     useEffect(() => {
         if (monacoRef.current) {
-            monacoRef.current.editor.setTheme(theme === "dark" ? "custom-dark" : "vs")
+            monacoRef.current.editor.setTheme(theme === "light" ? "custom-light" : "custom-dark")
         }
     }, [theme])
 
@@ -226,11 +288,12 @@ export default function CodeEditor({
         }
     }, [readOnly])
 
+    const bgColor = theme === "light" ? "#fafbfc" : "#0D1117"
+    const borderColor = theme === "light" ? (isFocused ? "border-indigo-400 ring-2 ring-indigo-500/20" : "border-slate-200") : (isFocused ? "border-purple-500" : "border-gray-700")
+
     return (
         <div
-            className={`relative rounded-xl overflow-hidden ${className} ${
-                isFocused ? "ring-2 ring-purple-500/50" : ""
-            }`}
+            className={`relative rounded-xl overflow-hidden border ${borderColor} ${className} transition-colors`}
             style={{
                 height,
                 minHeight,
@@ -239,10 +302,18 @@ export default function CodeEditor({
         >
             {/* Loading overlay */}
             {(!isEditorReady || isLoading) && (
-                <div className="absolute inset-0 bg-[#0D1117] flex items-center justify-center z-10">
+                <div 
+                    className={`absolute inset-0 flex items-center justify-center z-10 ${
+                        theme === "light" ? "bg-white" : "bg-[#0D1117]"
+                    }`}
+                >
                     <div className="flex flex-col items-center gap-3">
-                        <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
-                        <span className="text-sm text-gray-400">
+                        <div className={`w-8 h-8 border-2 rounded-full animate-spin ${
+                            theme === "light" 
+                                ? "border-indigo-500 border-t-transparent" 
+                                : "border-purple-500 border-t-transparent"
+                        }`} />
+                        <span className={`text-sm ${theme === "light" ? "text-gray-500" : "text-gray-400"}`}>
                             {isLoading ? "Running code..." : "Loading editor..."}
                         </span>
                     </div>
@@ -253,43 +324,67 @@ export default function CodeEditor({
             <div
                 ref={editorRef}
                 className="w-full h-full"
-                style={{ backgroundColor: "#0D1117" }}
+                style={{ backgroundColor: bgColor }}
             />
 
             {/* Placeholder */}
             {placeholder && !value && isEditorReady && (
-                <div className="absolute top-4 left-16 text-gray-500 pointer-events-none text-sm font-mono">
+                <div className={`absolute top-4 left-16 pointer-events-none text-sm font-mono ${
+                    theme === "light" ? "text-gray-400" : "text-gray-500"
+                }`}>
                     {placeholder}
                 </div>
             )}
 
             {/* Keyboard shortcuts hint */}
             {(onRun || onSubmit) && (
-                <div className="absolute bottom-2 right-2 flex items-center gap-2 text-xs text-gray-500">
+                <div className={`absolute bottom-2 right-2 flex items-center gap-2 text-xs ${
+                    theme === "light" ? "text-gray-400" : "text-gray-500"
+                }`}>
                     {onRun && (
                         <span className="flex items-center gap-1">
-                            <kbd className="px-1.5 py-0.5 rounded bg-white/10 border border-white/20 font-mono">
+                            <kbd className={`px-1.5 py-0.5 rounded font-mono ${
+                                theme === "light" 
+                                    ? "bg-gray-100 border border-gray-200 text-gray-600" 
+                                    : "bg-white/10 border border-white/20"
+                            }`}>
                                 Ctrl
                             </kbd>
                             <span>+</span>
-                            <kbd className="px-1.5 py-0.5 rounded bg-white/10 border border-white/20 font-mono">
-                                Enter
+                            <kbd className={`px-1.5 py-0.5 rounded font-mono ${
+                                theme === "light" 
+                                    ? "bg-gray-100 border border-gray-200 text-gray-600" 
+                                    : "bg-white/10 border border-white/20"
+                            }`}>
+                                ↵
                             </kbd>
                             <span className="ml-1">Run</span>
                         </span>
                     )}
                     {onSubmit && (
                         <span className="flex items-center gap-1 ml-3">
-                            <kbd className="px-1.5 py-0.5 rounded bg-white/10 border border-white/20 font-mono">
+                            <kbd className={`px-1.5 py-0.5 rounded font-mono ${
+                                theme === "light" 
+                                    ? "bg-gray-100 border border-gray-200 text-gray-600" 
+                                    : "bg-white/10 border border-white/20"
+                            }`}>
                                 Ctrl
                             </kbd>
                             <span>+</span>
-                            <kbd className="px-1.5 py-0.5 rounded bg-white/10 border border-white/20 font-mono">
-                                Shift
+                            <kbd className={`px-1.5 py-0.5 rounded font-mono ${
+                                theme === "light" 
+                                    ? "bg-gray-100 border border-gray-200 text-gray-600" 
+                                    : "bg-white/10 border border-white/20"
+                            }`}>
+                                ⇧
                             </kbd>
                             <span>+</span>
-                            <kbd className="px-1.5 py-0.5 rounded bg-white/10 border border-white/20 font-mono">
-                                Enter
+                            <kbd className={`px-1.5 py-0.5 rounded font-mono ${
+                                theme === "light" 
+                                    ? "bg-gray-100 border border-gray-200 text-gray-600" 
+                                    : "bg-white/10 border border-white/20"
+                            }`}>
+                                ↵
                             </kbd>
                             <span className="ml-1">Submit</span>
                         </span>
