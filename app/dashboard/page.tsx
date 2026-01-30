@@ -5,6 +5,8 @@ import { getUserOrganizations } from "@/lib/actions/organization"
 import { Navbar } from "@/components/layout/navbar"
 import { getRecommendedHackathons } from "@/lib/actions/recommendation"
 import { getUserSkills } from "@/lib/actions/skill"
+import { getMyRoleInvitations } from "@/lib/actions/hackathon-role"
+import { Star, MessageSquare, Clock, ArrowRight } from "lucide-react"
 
 // Static data for featured events
 const featuredEvents = [
@@ -97,13 +99,15 @@ export default async function DashboardPage() {
     const canCreateHackathon = organizations?.some(org => ["OWNER", "ADMIN"].includes(org.role)) ?? false
 
     // Fetch recommendations and user skills
-    const [recommendationsResult, skillsResult] = await Promise.all([
+    const [recommendationsResult, skillsResult, roleInvitationsResult] = await Promise.all([
         getRecommendedHackathons(6),
         getUserSkills(session.user.id),
+        getMyRoleInvitations(),
     ])
     
     const recommendations = recommendationsResult.recommendations
     const userSkills = skillsResult.success ? skillsResult.skills : []
+    const pendingRoleInvitations = roleInvitationsResult.success ? roleInvitationsResult.data?.invitations || [] : []
 
     const signOutAction = async () => {
         "use server"
@@ -147,6 +151,54 @@ export default async function DashboardPage() {
                             )}
                         </div>
                     </div>
+
+                    {/* Pending Role Invitations */}
+                    {pendingRoleInvitations.length > 0 && (
+                        <div className="mb-12 max-w-4xl mx-auto">
+                            <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-2xl border border-amber-200 p-6">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="h-10 w-10 rounded-xl bg-amber-100 flex items-center justify-center">
+                                        <Clock className="h-5 w-5 text-amber-600" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-lg font-bold text-gray-900">Pending Invitations</h2>
+                                        <p className="text-sm text-gray-600">You have been invited to be a judge or mentor</p>
+                                    </div>
+                                </div>
+                                <div className="space-y-3">
+                                    {pendingRoleInvitations.map((invitation) => (
+                                        <Link
+                                            key={invitation.id}
+                                            href={`/hackathons/${invitation.hackathon.slug}/roles`}
+                                            className="flex items-center gap-4 p-4 bg-white rounded-xl border border-amber-100 hover:border-amber-300 hover:shadow-md transition-all group"
+                                        >
+                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                                                invitation.role === "JUDGE" ? "bg-yellow-100" : "bg-green-100"
+                                            }`}>
+                                                {invitation.role === "JUDGE" ? (
+                                                    <Star className="h-5 w-5 text-yellow-600" />
+                                                ) : (
+                                                    <MessageSquare className="h-5 w-5 text-green-600" />
+                                                )}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="font-medium text-gray-900 group-hover:text-amber-600 transition-colors">
+                                                    {invitation.role.charAt(0) + invitation.role.slice(1).toLowerCase()} Invitation
+                                                </div>
+                                                <div className="text-sm text-gray-500 truncate">
+                                                    {invitation.hackathon.title}
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-amber-600 font-medium text-sm">
+                                                Respond
+                                                <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                                            </div>
+                                        </Link>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Stats */}
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-12 max-w-6xl mx-auto">

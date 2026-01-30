@@ -19,6 +19,9 @@ import {
     XCircle,
     ArrowRight,
     Sparkles,
+    Star,
+    MessageSquare,
+    Bell,
 } from "lucide-react"
 import { formatDate, formatDateTime, cn } from "@/lib/utils"
 import RegisterButton from "./register-button"
@@ -123,6 +126,22 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
         isOrganizer = membership?.role === "OWNER" || membership?.role === "ADMIN"
     }
 
+    // Check if user is a judge or mentor
+    let userRole: { role: string; status: string } | null = null
+    if (session?.user?.id) {
+        userRole = await prisma.hackathonRole.findFirst({
+            where: {
+                hackathonId: hackathon.id,
+                userId: session.user.id,
+            },
+            select: { role: true, status: true },
+        })
+    }
+
+    // Check for pending role invitation
+    const hasPendingRoleInvitation = userRole?.status === "PENDING"
+    const hasAcceptedRole = userRole?.status === "ACCEPTED"
+
     // Compute real-time status based on dates (not just DB status)
     const computedStatus = getComputedHackathonStatus(hackathon)
     const status = statusConfig[computedStatus]
@@ -217,6 +236,42 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
                     </div>
                 </div>
             </div>
+
+            {/* Pending Role Invitation Banner */}
+            {hasPendingRoleInvitation && userRole && (
+                <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border-b border-amber-200">
+                    <div className="max-w-5xl mx-auto px-4 py-4">
+                        <div className="flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-3">
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                                    userRole.role === "JUDGE" ? "bg-yellow-100" : "bg-green-100"
+                                }`}>
+                                    {userRole.role === "JUDGE" ? (
+                                        <Star className="h-5 w-5 text-yellow-600" />
+                                    ) : (
+                                        <MessageSquare className="h-5 w-5 text-green-600" />
+                                    )}
+                                </div>
+                                <div>
+                                    <p className="font-semibold text-gray-900">
+                                        You&apos;ve been invited to be a {userRole.role.toLowerCase()} for this hackathon!
+                                    </p>
+                                    <p className="text-sm text-gray-600">
+                                        Accept or decline the invitation to continue
+                                    </p>
+                                </div>
+                            </div>
+                            <Link
+                                href={`/hackathons/${hackathon.slug}/roles`}
+                                className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition font-medium text-sm whitespace-nowrap"
+                            >
+                                <Bell className="h-4 w-4" />
+                                Respond to Invitation
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Main Content */}
             <div className="max-w-5xl mx-auto px-4 py-8">
@@ -476,6 +531,62 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
                                     ) : null}
                                 </div>
                             )}
+                        </div>
+
+                        {/* Role-specific Dashboard Links */}
+                        {hasAcceptedRole && userRole && (
+                            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 animate-fade-in" style={{ animationDelay: "225ms" }}>
+                                <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                    {userRole.role === "JUDGE" ? (
+                                        <>
+                                            <Star className="h-5 w-5 text-yellow-500" />
+                                            Judge Dashboard
+                                        </>
+                                    ) : userRole.role === "MENTOR" ? (
+                                        <>
+                                            <Users className="h-5 w-5 text-green-500" />
+                                            Mentor Dashboard
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Users className="h-5 w-5 text-blue-500" />
+                                            Your Role: {userRole.role}
+                                        </>
+                                    )}
+                                </h3>
+                                {userRole.role === "JUDGE" && (
+                                    <Link
+                                        href={`/hackathons/${hackathon.slug}/judge`}
+                                        className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-yellow-50 text-yellow-700 rounded-xl hover:bg-yellow-100 transition-colors font-medium text-sm"
+                                    >
+                                        <Star className="h-4 w-4" />
+                                        Review Submissions
+                                        <ArrowRight className="h-4 w-4" />
+                                    </Link>
+                                )}
+                                {userRole.role === "MENTOR" && (
+                                    <Link
+                                        href={`/hackathons/${hackathon.slug}/mentor`}
+                                        className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-green-50 text-green-700 rounded-xl hover:bg-green-100 transition-colors font-medium text-sm"
+                                    >
+                                        <Users className="h-4 w-4" />
+                                        Mentor Dashboard
+                                        <ArrowRight className="h-4 w-4" />
+                                    </Link>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Leaderboard Link */}
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 animate-fade-in" style={{ animationDelay: "230ms" }}>
+                            <Link
+                                href={`/hackathons/${hackathon.slug}/leaderboard`}
+                                className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-amber-50 text-amber-700 rounded-xl hover:bg-amber-100 transition-colors font-medium text-sm"
+                            >
+                                <Trophy className="h-4 w-4" />
+                                View Leaderboard
+                                <ArrowRight className="h-4 w-4" />
+                            </Link>
                         </div>
 
                         {/* Key Dates */}

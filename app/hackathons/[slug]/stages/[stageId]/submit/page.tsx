@@ -104,13 +104,14 @@ export default async function SubmitPage({ params }: SubmitPageProps) {
         const member = await prisma.teamMember.findFirst({
             where: {
                 userId: sessionData.user.id,
-                team: { hackathonId: hackathon.id },
+                team: { hackathonId: hackathon!.id },
             },
         })
 
         await prisma.stageSubmission.create({
             data: {
                 stageId: stageId,
+                hackathonId: hackathon!.id,
                 userId: sessionData.user.id,
                 teamId: member?.teamId,
                 content: JSON.stringify({

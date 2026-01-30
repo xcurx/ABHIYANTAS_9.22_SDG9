@@ -41,26 +41,27 @@ async function isHackathonOrganizer(userId: string, hackathonId: string): Promis
  * Invite a user to be a mentor or judge for a hackathon
  */
 export async function inviteHackathonRole(
-    hackathonId: string,
-    inviteeEmail: string,
-    role: HackathonRoleType,
-    options?: {
+    data: {
+        hackathonId: string
+        email: string
+        role: HackathonRoleType
         expertise?: string[]
         bio?: string
         canJudgeAllTracks?: boolean
         assignedTrackIds?: string[]
     }
-): Promise<ActionResult> {
+): Promise<{ success?: boolean; error?: string }> {
+    const { hackathonId, email: inviteeEmail, role, ...options } = data
     const session = await auth()
 
     if (!session?.user?.id) {
-        return { success: false, message: "You must be logged in" }
+        return { error: "You must be logged in" }
     }
 
     // Check if current user is an organizer
     const isOrganizer = await isHackathonOrganizer(session.user.id, hackathonId)
     if (!isOrganizer) {
-        return { success: false, message: "Only organizers can invite mentors and judges" }
+        return { error: "Only organizers can invite mentors and judges" }
     }
 
     // Find the invitee by email
@@ -69,7 +70,7 @@ export async function inviteHackathonRole(
     })
 
     if (!invitee) {
-        return { success: false, message: "User not found. They must be registered on the platform." }
+        return { error: "User not found. They must be registered on the platform." }
     }
 
     // Check if already has this role
@@ -85,10 +86,10 @@ export async function inviteHackathonRole(
 
     if (existingRole) {
         if (existingRole.status === "PENDING") {
-            return { success: false, message: "An invitation is already pending for this user" }
+            return { error: "An invitation is already pending for this user" }
         }
         if (existingRole.status === "ACCEPTED") {
-            return { success: false, message: "User already has this role" }
+            return { error: "User already has this role" }
         }
     }
 
@@ -98,7 +99,7 @@ export async function inviteHackathonRole(
     })
 
     if (!hackathon) {
-        return { success: false, message: "Hackathon not found" }
+        return { error: "Hackathon not found" }
     }
 
     try {
@@ -144,11 +145,73 @@ export async function inviteHackathonRole(
 
         revalidatePath(`/hackathons/${hackathon.slug}`)
         revalidatePath(`/hackathons/${hackathon.slug}/manage`)
+        revalidatePath(`/hackathons/${hackathon.slug}/manage/roles`)
 
-        return { success: true, message: `${role.toLowerCase()} invitation sent successfully` }
+        return { success: true }
     } catch (error) {
         console.error("Invite hackathon role error:", error)
-        return { success: false, message: "Failed to send invitation" }
+        return { error: "Failed to send invitation" }
+    }
+}
+
+/**
+ * Resend a role invitation (organizers only)
+ */
+export async function resendRoleInvitation(roleId: string): Promise<ActionResult> {
+    const session = await auth()
+
+    if (!session?.user?.id) {
+        return { success: false, message: "You must be logged in" }
+    }
+
+    const role = await prisma.hackathonRole.findUnique({
+        where: { id: roleId },
+        include: {
+            hackathon: { select: { slug: true, title: true } },
+            user: { select: { id: true, name: true } },
+        },
+    })
+
+    if (!role) {
+        return { success: false, message: "Role not found" }
+    }
+
+    if (role.status !== "PENDING") {
+        return { success: false, message: "Can only resend pending invitations" }
+    }
+
+    const isOrganizer = await isHackathonOrganizer(session.user.id, role.hackathonId)
+    if (!isOrganizer) {
+        return { success: false, message: "Only organizers can resend invitations" }
+    }
+
+    try {
+        // Update invitation date
+        await prisma.hackathonRole.update({
+            where: { id: roleId },
+            data: { 
+                invitedAt: new Date(),
+                invitedBy: session.user.id,
+            },
+        })
+
+        // Send a new notification
+        await prisma.notification.create({
+            data: {
+                userId: role.userId,
+                type: "ROLE",
+                title: `${role.role.charAt(0) + role.role.slice(1).toLowerCase()} Invitation (Reminder)`,
+                message: `Reminder: You've been invited to be a ${role.role.toLowerCase()} for "${role.hackathon.title}"`,
+                link: `/hackathons/${role.hackathon.slug}/roles`,
+            },
+        })
+
+        revalidatePath(`/hackathons/${role.hackathon.slug}/manage/roles`)
+
+        return { success: true, message: "Invitation resent successfully" }
+    } catch (error) {
+        console.error("Resend role invitation error:", error)
+        return { success: false, message: "Failed to resend invitation" }
     }
 }
 

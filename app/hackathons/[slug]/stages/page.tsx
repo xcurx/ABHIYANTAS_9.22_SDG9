@@ -60,7 +60,25 @@ const stageTypeConfig = {
         label: "Evaluation", 
         icon: CheckCircle, 
         color: "bg-orange-100 text-orange-700",
-        description: "Judges will evaluate submissions"
+        description: "Submit your work for evaluation"
+    },
+    IDEATION: { 
+        label: "Ideation", 
+        icon: FileText, 
+        color: "bg-indigo-100 text-indigo-700",
+        description: "Submit your project idea"
+    },
+    DEVELOPMENT: { 
+        label: "Development", 
+        icon: Upload, 
+        color: "bg-cyan-100 text-cyan-700",
+        description: "Build and submit your project"
+    },
+    CHECKPOINT: { 
+        label: "Checkpoint", 
+        icon: CheckCircle, 
+        color: "bg-amber-100 text-amber-700",
+        description: "Submit progress update"
     },
     CUSTOM: { 
         label: "Custom", 
@@ -201,8 +219,10 @@ export default async function StagesPage({ params }: StagesPageProps) {
                                 const typeConfig = stageTypeConfig[stage.type as keyof typeof stageTypeConfig] || stageTypeConfig.CUSTOM
                                 const TypeIcon = typeConfig.icon
                                 const submission = submissionsByStage[stage.id]
+                                // Allow submission for stages that require it
+                                const submittableTypes = ["IDEATION", "DEVELOPMENT", "CHECKPOINT", "PRESENTATION", "EVALUATION", "MENTORING_SESSION", "CUSTOM"]
                                 const canSubmit = stageStatus.status === "active" && 
-                                    (stage.type === "SUBMISSION" || stage.type === "CUSTOM")
+                                    submittableTypes.includes(stage.type)
 
                                 return (
                                     <div key={stage.id} className="relative pl-20 pb-8">
@@ -302,10 +322,13 @@ export default async function StagesPage({ params }: StagesPageProps) {
                                                             View
                                                         </Link>
                                                     ) : stageStatus.status === "active" && stage.type === "MENTORING_SESSION" ? (
-                                                        <div className="px-4 py-2.5 bg-green-100 text-green-700 rounded-xl text-sm font-medium">
-                                                            <MessageSquare className="h-4 w-4 inline mr-2" />
-                                                            In Progress
-                                                        </div>
+                                                        <Link
+                                                            href={`/hackathons/${slug}/mentoring`}
+                                                            className="inline-flex items-center gap-2 px-4 py-2.5 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors text-sm font-medium"
+                                                        >
+                                                            <MessageSquare className="h-4 w-4" />
+                                                            Request Mentoring
+                                                        </Link>
                                                     ) : stageStatus.status === "completed" ? (
                                                         <div className="p-3 bg-green-100 rounded-xl">
                                                             <CheckCircle className="h-5 w-5 text-green-600" />
