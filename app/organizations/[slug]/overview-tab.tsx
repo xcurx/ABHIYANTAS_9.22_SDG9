@@ -1,4 +1,5 @@
 import { Building2, Globe, MapPin, Briefcase, Users, Calendar, Crown, Shield, User } from "lucide-react"
+import OrganizationAnalytics from "./organization-analytics"
 
 type OrganizationType = "COMPANY" | "UNIVERSITY" | "NONPROFIT" | "GOVERNMENT" | "OTHER"
 
@@ -24,11 +25,30 @@ interface Organization {
     }
 }
 
-interface OverviewTabProps {
-    organization: Organization
+interface AnalyticsData {
+    totalHackathons: number
+    totalParticipants: number
+    totalTeams: number
+    hackathonsByStatus: Record<string, number>
+    registrationsByStatus: Record<string, number>
+    participantsPerHackathon: {
+        name: string
+        fullName: string
+        participants: number
+        teams: number
+    }[]
+    hackathonsByMonth: {
+        month: string
+        count: number
+    }[]
 }
 
-export default function OverviewTab({ organization }: OverviewTabProps) {
+interface OverviewTabProps {
+    organization: Organization
+    analytics: AnalyticsData | null
+}
+
+export default function OverviewTab({ organization, analytics }: OverviewTabProps) {
     const roleConfig = {
         OWNER: { label: "Owner", icon: Crown, color: "bg-purple-100 text-purple-700 border-purple-200" },
         ADMIN: { label: "Admin", icon: Shield, color: "bg-blue-100 text-blue-700 border-blue-200" },
@@ -52,29 +72,8 @@ export default function OverviewTab({ organization }: OverviewTabProps) {
                     </p>
                 </div>
 
-                {/* Activity Stats */}
-                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 hover:shadow-md transition-all">
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className="h-10 w-10 rounded-xl bg-green-100 flex items-center justify-center">
-                            <Users className="h-5 w-5 text-green-600" />
-                        </div>
-                        <h3 className="text-lg font-semibold text-gray-900">Activity</h3>
-                    </div>
-                    <div className="grid grid-cols-3 gap-4">
-                        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 text-center border border-blue-100">
-                            <div className="text-3xl font-bold text-blue-600">{organization._count.hackathons || 0}</div>
-                            <div className="text-sm text-gray-600 mt-1">Hackathons Hosted</div>
-                        </div>
-                        <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-4 text-center border border-purple-100">
-                            <div className="text-3xl font-bold text-purple-600">{organization._count.members}</div>
-                            <div className="text-sm text-gray-600 mt-1">Members</div>
-                        </div>
-                        <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 text-center border border-green-100">
-                            <div className="text-3xl font-bold text-green-600">0</div>
-                            <div className="text-sm text-gray-600 mt-1">Participants</div>
-                        </div>
-                    </div>
-                </div>
+                {/* Analytics Charts */}
+                {analytics && <OrganizationAnalytics analytics={analytics} />}
             </div>
 
             {/* Sidebar */}

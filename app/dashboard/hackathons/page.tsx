@@ -3,6 +3,7 @@ import { redirect } from "next/navigation"
 import Link from "next/link"
 import prisma from "@/lib/prisma"
 import { Navbar } from "@/components/layout/navbar"
+import ExportHackathonsButton from "./export-hackathons-button"
 import { 
     Calendar, 
     MapPin, 
@@ -168,13 +169,16 @@ export default async function MyHackathonsPage() {
                             <h1 className="text-2xl font-bold text-gray-900">My Hackathons</h1>
                             <p className="text-gray-600 mt-1">Track your hackathon applications and participations</p>
                         </div>
-                        <Link
-                            href="/hackathons"
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-500 transition-colors"
-                        >
-                            Explore Hackathons
-                            <ArrowRight className="h-4 w-4" />
-                        </Link>
+                        <div className="flex items-center gap-3">
+                            <ExportHackathonsButton registrations={registrations} />
+                            <Link
+                                href="/hackathons"
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-500 transition-colors"
+                            >
+                                Explore Hackathons
+                                <ArrowRight className="h-4 w-4" />
+                            </Link>
+                        </div>
                     </div>
                 </div>
 

@@ -552,3 +552,95 @@ export async function updateMemberRole(
         return { success: false, message: "Failed to update role" }
     }
 }
+
+// Get organization analytics
+export async function getOrganizationAnalytics(organizationId: string) {
+    const session = await auth()
+
+    if (!session?.user?.id) {
+        return null
+    }
+
+    // Check if user is a member
+    const membership = await prisma.organizationMember.findUnique({
+        where: {
+            userId_organizationId: {
+                userId: session.user.id,
+                organizationId,
+            },
+        },
+    })
+
+    if (!membership) {
+        return null
+    }
+
+    // Get all hackathons for this organization
+    const hackathons = await prisma.hackathon.findMany({
+        where: { organizationId },
+        select: {
+            id: true,
+            title: true,
+            status: true,
+            hackathonStart: true,
+            hackathonEnd: true,
+            _count: {
+                select: {
+                    registrations: true,
+                    teams: true,
+                },
+            },
+            registrations: {
+                select: {
+                    status: true,
+                },
+            },
+        },
+    })
+
+    // Calculate hackathon status distribution
+    const hackathonsByStatus = hackathons.reduce((acc, h) => {
+        acc[h.status] = (acc[h.status] || 0) + 1
+        return acc
+    }, {} as Record<string, number>)
+
+    // Calculate total participants across all hackathons
+    const totalParticipants = hackathons.reduce((acc, h) => acc + h._count.registrations, 0)
+    const totalTeams = hackathons.reduce((acc, h) => acc + h._count.teams, 0)
+
+    // Calculate registration status distribution
+    const registrationsByStatus = hackathons.reduce((acc, h) => {
+        h.registrations.forEach((r) => {
+            acc[r.status] = (acc[r.status] || 0) + 1
+        })
+        return acc
+    }, {} as Record<string, number>)
+
+    // Get participants per hackathon (for bar chart)
+    const participantsPerHackathon = hackathons.map((h) => ({
+        name: h.title.length > 20 ? h.title.substring(0, 20) + "..." : h.title,
+        fullName: h.title,
+        participants: h._count.registrations,
+        teams: h._count.teams,
+    }))
+
+    // Get hackathons over time (monthly)
+    const hackathonsByMonth = hackathons.reduce((acc, h) => {
+        const month = new Date(h.hackathonStart).toLocaleDateString("en-US", { month: "short", year: "2-digit" })
+        acc[month] = (acc[month] || 0) + 1
+        return acc
+    }, {} as Record<string, number>)
+
+    return {
+        totalHackathons: hackathons.length,
+        totalParticipants,
+        totalTeams,
+        hackathonsByStatus,
+        registrationsByStatus,
+        participantsPerHackathon,
+        hackathonsByMonth: Object.entries(hackathonsByMonth).map(([month, count]) => ({
+            month,
+            count,
+        })),
+    }
+}

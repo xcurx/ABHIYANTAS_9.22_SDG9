@@ -1,7 +1,7 @@
 import { auth } from "@/auth"
 import { redirect, notFound } from "next/navigation"
 import Link from "next/link"
-import { getOrganizationBySlug } from "@/lib/actions/organization"
+import { getOrganizationBySlug, getOrganizationAnalytics } from "@/lib/actions/organization"
 import OrganizationTabs from "./organization-tabs"
 import { ArrowLeft, Settings, Verified, MapPin, Briefcase, Users, Globe, Calendar, Sparkles } from "lucide-react"
 
@@ -18,6 +18,8 @@ export default async function OrganizationPage({ params }: { params: Promise<{ s
     if (!organization) {
         notFound()
     }
+
+    const analytics = await getOrganizationAnalytics(organization.id)
 
     return (
         <div className="min-h-screen bg-white">
@@ -148,6 +150,7 @@ export default async function OrganizationPage({ params }: { params: Promise<{ s
                     organization={organization} 
                     isAdmin={organization.isAdmin} 
                     isOwner={organization.isOwner}
+                    analytics={analytics}
                 />
             </main>
         </div>

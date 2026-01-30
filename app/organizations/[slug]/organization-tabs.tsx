@@ -8,6 +8,24 @@ import { LayoutDashboard, Users, Trophy } from "lucide-react"
 
 type OrganizationType = "COMPANY" | "UNIVERSITY" | "NONPROFIT" | "GOVERNMENT" | "OTHER"
 
+interface AnalyticsData {
+    totalHackathons: number
+    totalParticipants: number
+    totalTeams: number
+    hackathonsByStatus: Record<string, number>
+    registrationsByStatus: Record<string, number>
+    participantsPerHackathon: {
+        name: string
+        fullName: string
+        participants: number
+        teams: number
+    }[]
+    hackathonsByMonth: {
+        month: string
+        count: number
+    }[]
+}
+
 interface Organization {
     id: string
     name: string
@@ -34,9 +52,10 @@ interface OrganizationTabsProps {
     organization: Organization
     isAdmin: boolean
     isOwner: boolean
+    analytics: AnalyticsData | null
 }
 
-export default function OrganizationTabs({ organization, isAdmin, isOwner }: OrganizationTabsProps) {
+export default function OrganizationTabs({ organization, isAdmin, isOwner, analytics }: OrganizationTabsProps) {
     const [activeTab, setActiveTab] = useState<"overview" | "members" | "hackathons">("overview")
 
     const tabs = [
@@ -75,7 +94,7 @@ export default function OrganizationTabs({ organization, isAdmin, isOwner }: Org
             {/* Tab content */}
             <div className="animate-fade-in">
                 {activeTab === "overview" && (
-                    <OverviewTab organization={organization} />
+                    <OverviewTab organization={organization} analytics={analytics} />
                 )}
                 {activeTab === "members" && (
                     <MembersTab 

@@ -16,6 +16,7 @@ import {
 } from "lucide-react"
 import InviteRoleForm from "./invite-role-form"
 import RoleActions from "./role-actions"
+import ExportRolesButton from "./export-roles-button"
 
 interface RolesPageProps {
     params: Promise<{ slug: string }>
@@ -110,9 +111,12 @@ export default async function ManageRolesPage({ params }: RolesPageProps) {
 
             {/* Judges Section */}
             <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
-                <div className="p-4 bg-yellow-50 border-b flex items-center gap-3">
-                    <Star className="h-5 w-5 text-yellow-600" />
-                    <h2 className="font-semibold text-gray-900">Judges ({judges.length})</h2>
+                <div className="p-4 bg-yellow-50 border-b flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <Star className="h-5 w-5 text-yellow-600" />
+                        <h2 className="font-semibold text-gray-900">Judges ({judges.length})</h2>
+                    </div>
+                    <ExportRolesButton roles={judges} roleType="judges" hackathonTitle={hackathon.title} />
                 </div>
                 {judges.length === 0 ? (
                     <div className="p-8 text-center text-gray-500">
@@ -157,9 +161,12 @@ export default async function ManageRolesPage({ params }: RolesPageProps) {
 
             {/* Mentors Section */}
             <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
-                <div className="p-4 bg-green-50 border-b flex items-center gap-3">
-                    <MessageSquare className="h-5 w-5 text-green-600" />
-                    <h2 className="font-semibold text-gray-900">Mentors ({mentors.length})</h2>
+                <div className="p-4 bg-green-50 border-b flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <MessageSquare className="h-5 w-5 text-green-600" />
+                        <h2 className="font-semibold text-gray-900">Mentors ({mentors.length})</h2>
+                    </div>
+                    <ExportRolesButton roles={mentors} roleType="mentors" hackathonTitle={hackathon.title} />
                 </div>
                 {mentors.length === 0 ? (
                     <div className="p-8 text-center text-gray-500">
