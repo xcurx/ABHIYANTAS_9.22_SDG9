@@ -25,11 +25,11 @@ export default async function RegisterPage({ params }: RegisterPageProps) {
             id: true,
             title: true,
             slug: true,
-            tagline: true,
+            shortDescription: true,
             mode: true,
             status: true,
-            startDate: true,
-            endDate: true,
+            hackathonStart: true,
+            hackathonEnd: true,
             registrationStart: true,
             registrationEnd: true,
             maxParticipants: true,
@@ -125,7 +125,7 @@ export default async function RegisterPage({ params }: RegisterPageProps) {
                             <div className="flex flex-wrap gap-4 mt-3 text-sm text-gray-600">
                                 <div className="flex items-center gap-1">
                                     <Calendar className="h-4 w-4" />
-                                    {formatDate(hackathon.startDate)} - {formatDate(hackathon.endDate)}
+                                    {formatDate(hackathon.hackathonStart)} - {formatDate(hackathon.hackathonEnd)}
                                 </div>
                                 <div className="flex items-center gap-1">
                                     <ModeIcon className="h-4 w-4" />

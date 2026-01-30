@@ -24,6 +24,9 @@ export default function RegisterButton({
     const router = useRouter()
     const [isPending, startTransition] = useTransition()
     const [error, setError] = useState<string | null>(null)
+    
+    // Debug log
+    console.log("RegisterButton props:", { hackathonId, hackathonSlug, canRegister, isRegistered, isLoggedIn })
 
     async function handleCancel() {
         setError(null)
@@ -87,9 +90,24 @@ export default function RegisterButton({
     }
 
     // Redirect to registration form page
+    const registerUrl = `/hackathons/${hackathonSlug}/register`
+    console.log("Register URL:", registerUrl)
+    
+    if (!hackathonSlug) {
+        console.error("ERROR: hackathonSlug is missing!")
+        return (
+            <button
+                disabled
+                className="w-full py-3.5 px-4 bg-red-100 text-red-700 font-semibold rounded-xl cursor-not-allowed border border-red-200"
+            >
+                Error: Missing slug
+            </button>
+        )
+    }
+    
     return (
         <Link
-            href={`/hackathons/${hackathonSlug}/register`}
+            href={registerUrl}
             className="w-full py-3.5 px-4 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-500 transition-all duration-200 shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2 group"
         >
             <UserPlus className="h-4 w-4" />

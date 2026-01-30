@@ -26,13 +26,6 @@ model User {
     createdAt     DateTime  @default(now())
     updatedAt     DateTime  @updatedAt
 
-    bio           String?
-    location      String?
-    github        String?
-    linkedin      String?
-    twitter       String?
-    portfolio     String?
-
     // Relations
     accounts                Account[]
     sessions                Session[]
