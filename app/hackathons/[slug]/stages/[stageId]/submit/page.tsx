@@ -1,8 +1,7 @@
 import { notFound, redirect } from "next/navigation"
 import Link from "next/link"
-import { auth, signOut } from "@/auth"
+import { auth } from "@/auth"
 import prisma from "@/lib/prisma"
-import { Navbar } from "@/components/layout/navbar"
 import { ArrowLeft, Upload, FileText, Link as LinkIcon } from "lucide-react"
 import { revalidatePath } from "next/cache"
 
@@ -16,11 +15,6 @@ export default async function SubmitPage({ params }: SubmitPageProps) {
 
     if (!session?.user) {
         redirect(`/sign-in?callbackUrl=/hackathons/${slug}/stages/${stageId}/submit`)
-    }
-
-    const signOutAction = async () => {
-        "use server"
-        await signOut({ redirectTo: "/" })
     }
 
     const hackathon = await prisma.hackathon.findUnique({
@@ -131,9 +125,7 @@ export default async function SubmitPage({ params }: SubmitPageProps) {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <Navbar user={session.user} signOutAction={signOutAction} />
-            
-            <div className="max-w-2xl mx-auto px-4 py-8 pt-24">
+            <div className="max-w-2xl mx-auto px-4 py-8">
                 {/* Header */}
                 <div className="mb-8">
                     <Link

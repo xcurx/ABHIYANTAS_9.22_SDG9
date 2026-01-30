@@ -1,8 +1,7 @@
-import { auth, signOut } from "@/auth"
+import { auth } from "@/auth"
 import { redirect } from "next/navigation"
 import Link from "next/link"
 import prisma from "@/lib/prisma"
-import { Navbar } from "@/components/layout/navbar"
 import ExportHackathonsButton from "./export-hackathons-button"
 import { 
     Calendar, 
@@ -147,15 +146,8 @@ export default async function MyHackathonsPage() {
     const approvedRegistrations = registrations.filter(r => r.status === "APPROVED")
     const rejectedRegistrations = registrations.filter(r => r.status === "REJECTED")
 
-    const signOutAction = async () => {
-        "use server"
-        await signOut({ redirectTo: "/" })
-    }
-
     return (
         <div className="min-h-screen bg-gray-50">
-            <Navbar user={session.user} signOutAction={signOutAction} />
-            
             <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Header */}
                 <div className="mb-8">

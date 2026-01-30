@@ -1,8 +1,7 @@
 import { notFound, redirect } from "next/navigation"
 import Link from "next/link"
-import { auth, signOut } from "@/auth"
+import { auth } from "@/auth"
 import prisma from "@/lib/prisma"
-import { Navbar } from "@/components/layout/navbar"
 import { revalidatePath } from "next/cache"
 import {
     ArrowLeft,
@@ -28,11 +27,6 @@ export default async function MentorDashboardPage({ params }: MentorPageProps) {
 
     if (!session?.user) {
         redirect(`/sign-in?callbackUrl=/hackathons/${slug}/mentor`)
-    }
-
-    const signOutAction = async () => {
-        "use server"
-        await signOut({ redirectTo: "/" })
     }
 
     const hackathon = await prisma.hackathon.findUnique({
@@ -145,9 +139,7 @@ export default async function MentorDashboardPage({ params }: MentorPageProps) {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <Navbar user={session.user} signOutAction={signOutAction} />
-            
-            <div className="max-w-6xl mx-auto px-4 py-8 pt-24">
+            <div className="max-w-6xl mx-auto px-4 py-8">
                 {/* Header */}
                 <div className="mb-8">
                     <Link

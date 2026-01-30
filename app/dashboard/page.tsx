@@ -1,8 +1,7 @@
-import { auth, signOut } from "@/auth"
+import { auth } from "@/auth"
 import { redirect } from "next/navigation"
 import Link from "next/link"
 import { getUserOrganizations } from "@/lib/actions/organization"
-import { Navbar } from "@/components/layout/navbar"
 import { getRecommendedHackathons } from "@/lib/actions/recommendation"
 import { getUserSkills } from "@/lib/actions/skill"
 import { getMyRoleInvitations } from "@/lib/actions/hackathon-role"
@@ -109,19 +108,12 @@ export default async function DashboardPage() {
     const userSkills = skillsResult.success ? skillsResult.skills : []
     const pendingRoleInvitations = roleInvitationsResult.success ? roleInvitationsResult.data?.invitations || [] : []
 
-    const signOutAction = async () => {
-        "use server"
-        await signOut({ redirectTo: "/sign-in" })
-    }
-
     const hour = new Date().getHours()
     const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening"
 
     return (
         <div className="min-h-screen bg-white">
-            <Navbar user={session.user} signOutAction={signOutAction} />
-
-            <main className="pt-28 pb-16">
+            <main className="pt-12 pb-16">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     {/* Welcome Section */}
                     <div className="text-center mb-12">

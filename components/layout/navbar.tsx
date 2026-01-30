@@ -44,18 +44,28 @@ export function Navbar({ user, signOutAction }: NavbarProps) {
                     </Link>
 
                     {/* Navigation Links */}
-                    <div className="hidden md:flex items-center gap-8">
+                    <div className="hidden md:flex items-center gap-6">
                         {navLinks.map((link) => (
                             <Link
                                 key={link.href}
                                 href={link.href}
-                                className={`text-sm font-medium transition-colors ${
-                                    isActive(link.href)
-                                        ? "text-blue-600"
-                                        : "text-gray-600 hover:text-gray-900"
-                                }`}
+                                className="group relative px-1 py-2 text-sm font-medium"
                             >
-                                {link.label}
+                                <span className={`transition-colors duration-150 ease-out ${
+                                    isActive(link.href)
+                                        ? "text-blue-500 font-semibold"
+                                        : "text-gray-600 group-hover:text-blue-500"
+                                }`}>
+                                    {link.label}
+                                </span>
+                                {/* Underline */}
+                                <span 
+                                    className={`absolute bottom-0 left-0 h-0.5 bg-blue-400 rounded-full transition-all duration-150 ease-out ${
+                                        isActive(link.href) 
+                                            ? "w-full" 
+                                            : "w-0 group-hover:w-full"
+                                    }`}
+                                />
                             </Link>
                         ))}
                     </div>

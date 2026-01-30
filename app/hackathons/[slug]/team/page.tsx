@@ -1,7 +1,6 @@
-import { auth, signOut } from "@/auth"
+import { auth } from "@/auth"
 import { redirect, notFound } from "next/navigation"
 import prisma from "@/lib/prisma"
-import { Navbar } from "@/components/layout/navbar"
 import Link from "next/link"
 import { 
     ChevronRight, 
@@ -107,16 +106,9 @@ export default async function TeamPage({ params }: PageProps) {
         },
     })
     
-    const signOutAction = async () => {
-        "use server"
-        await signOut({ redirectTo: "/" })
-    }
-    
     return (
         <div className="min-h-screen bg-gray-50">
-            <Navbar user={session.user} signOutAction={signOutAction} />
-            
-            <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24">
+            <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Breadcrumb */}
                 <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
                     <Link href="/hackathons" className="hover:text-indigo-600">Hackathons</Link>

@@ -1,8 +1,7 @@
 import { notFound, redirect } from "next/navigation"
 import Link from "next/link"
-import { auth, signOut } from "@/auth"
+import { auth } from "@/auth"
 import prisma from "@/lib/prisma"
-import { Navbar } from "@/components/layout/navbar"
 import { 
     ArrowLeft, 
     FileText, 
@@ -24,11 +23,6 @@ export default async function SubmissionPage({ params }: SubmissionPageProps) {
 
     if (!session?.user) {
         redirect(`/sign-in?callbackUrl=/hackathons/${slug}/stages/${stageId}/submission`)
-    }
-
-    const signOutAction = async () => {
-        "use server"
-        await signOut({ redirectTo: "/" })
     }
 
     const hackathon = await prisma.hackathon.findUnique({
@@ -97,7 +91,6 @@ export default async function SubmissionPage({ params }: SubmissionPageProps) {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <Navbar user={session.user} signOutAction={signOutAction} />
             
             <div className="max-w-3xl mx-auto px-4 py-8 pt-24">
                 {/* Header */}
