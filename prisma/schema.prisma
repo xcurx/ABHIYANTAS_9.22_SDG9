@@ -24,6 +24,9 @@ model User {
     accounts              Account[]
     sessions              Session[]
     organizationMemberships OrganizationMember[]
+    
+    // Coding Contest Relations
+    contestParticipations ContestParticipant[]
 }
 
 model Account {
@@ -89,6 +92,9 @@ model Organization {
 
     // Relations
     members OrganizationMember[]
+    
+    // Coding Contest Relations
+    codingContests CodingContest[]
 }
 
 model OrganizationMember {
@@ -116,4 +122,265 @@ enum OrgMemberRole {
     OWNER
     ADMIN
     MEMBER
+}
+
+// ==================== CODING CONTEST MODULE ====================
+// This module is for competitive coding hackathons with MCQ and coding questions
+
+model CodingContest {
+    id              String              @id @default(cuid())
+    organizationId  String
+    title           String
+    slug            String              @unique
+    description     String?
+    shortDescription String?
+    bannerImage     String?
+    rules           String?
+    
+    // Timing
+    startTime       DateTime
+    endTime         DateTime
+    duration        Int                 // Duration in minutes (for participant timer)
+    
+    // Configuration
+    status          CodingContestStatus @default(DRAFT)
+    visibility      ContestVisibility   @default(PUBLIC)
+    maxParticipants Int?
+    allowLateJoin   Boolean             @default(false)
+    shuffleQuestions Boolean            @default(true)
+    showLeaderboard Boolean             @default(true)
+    showScoresDuring Boolean            @default(false)
+    
+    // Proctoring Settings
+    proctorEnabled      Boolean         @default(true)
+    fullScreenRequired  Boolean         @default(true)
+    tabSwitchLimit      Int             @default(3)
+    copyPasteDisabled   Boolean         @default(true)
+    webcamRequired      Boolean         @default(false)
+    
+    // Scoring
+    negativeMarking   Boolean           @default(false)
+    negativePercent   Float             @default(25)
+    partialScoring    Boolean           @default(true)
+    
+    createdAt       DateTime            @default(now())
+    updatedAt       DateTime            @updatedAt
+    
+    // Relations
+    organization    Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+    questions       CodingQuestion[]
+    participants    ContestParticipant[]
+}
+
+model CodingQuestion {
+    id              String          @id @default(cuid())
+    contestId       String
+    type            QuestionType
+    title           String
+    description     String          // Rich text / Markdown
+    difficulty      Difficulty      @default(MEDIUM)
+    points          Int             @default(100)
+    order           Int             @default(0)
+    timeLimit       Int?            // Optional per-question time limit (seconds)
+    memoryLimit     Int?            // Memory limit in MB
+    
+    // For MCQ
+    options         Json?           // Array of {id, text, isCorrect}
+    allowMultiple   Boolean         @default(false) // Multiple correct answers
+    
+    // For Coding Questions
+    starterCode     Json?           // {language: code} mapping
+    solutionCode    Json?           // Reference solution {language: code}
+    constraints     String?
+    inputFormat     String?
+    outputFormat    String?
+    sampleInput     String?
+    sampleOutput    String?
+    explanation     String?
+    hints           String[]        @default([])
+    
+    // Metadata
+    tags            String[]        @default([])
+    isActive        Boolean         @default(true)
+    createdAt       DateTime        @default(now())
+    updatedAt       DateTime        @updatedAt
+    
+    // Relations
+    contest         CodingContest   @relation(fields: [contestId], references: [id], onDelete: Cascade)
+    testCases       CodingTestCase[]
+    submissions     QuestionSubmission[]
+}
+
+model CodingTestCase {
+    id          String      @id @default(cuid())
+    questionId  String
+    input       String      @db.Text
+    output      String      @db.Text
+    isHidden    Boolean     @default(false)  // Hidden test cases not shown to participants
+    isSample    Boolean     @default(false)  // Sample test cases shown in problem
+    points      Int         @default(0)      // Points for this test case (partial scoring)
+    order       Int         @default(0)
+    explanation String?
+    
+    question    CodingQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+}
+
+model ContestParticipant {
+    id              String              @id @default(cuid())
+    contestId       String
+    userId          String
+    status          ParticipantStatus   @default(REGISTERED)
+    startedAt       DateTime?           // When they started the contest
+    submittedAt     DateTime?           // When they finished
+    lastActiveAt    DateTime?           // Last activity timestamp
+    
+    // Proctoring Data
+    tabSwitchCount  Int                 @default(0)
+    isDisqualified  Boolean             @default(false)
+    disqualifyReason String?
+    
+    // Scoring
+    totalScore      Float               @default(0)
+    questionsAttempted Int              @default(0)
+    questionsCorrect   Int              @default(0)
+    rank            Int?
+    percentile      Float?
+    
+    // Browser/Environment Info
+    browserInfo     String?
+    ipAddress       String?
+    
+    createdAt       DateTime            @default(now())
+    updatedAt       DateTime            @updatedAt
+    
+    // Relations
+    contest         CodingContest       @relation(fields: [contestId], references: [id], onDelete: Cascade)
+    user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+    submissions     QuestionSubmission[]
+    violations      ProctorViolation[]
+    
+    @@unique([contestId, userId])
+}
+
+model QuestionSubmission {
+    id              String          @id @default(cuid())
+    participantId   String
+    questionId      String
+    attemptNumber   Int             @default(1)
+    
+    // MCQ Answer
+    selectedOptions String[]        @default([])
+    
+    // Coding Answer
+    code            String?         @db.Text
+    language        String?
+    
+    // Results
+    isCorrect       Boolean?
+    score           Float           @default(0)
+    testCasesPassed Int             @default(0)
+    testCasesTotal  Int             @default(0)
+    executionTime   Float?          // Average execution time in ms
+    memoryUsed      Float?          // Max memory used in MB
+    compileError    String?
+    runtimeError    String?
+    
+    submittedAt     DateTime        @default(now())
+    
+    // Relations
+    participant     ContestParticipant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+    question        CodingQuestion     @relation(fields: [questionId], references: [id], onDelete: Cascade)
+    testResults     TestCaseResult[]
+}
+
+model TestCaseResult {
+    id              String      @id @default(cuid())
+    submissionId    String
+    testCaseIndex   Int         // Index of test case
+    passed          Boolean
+    actualOutput    String?     @db.Text
+    expectedOutput  String?     @db.Text
+    executionTime   Float?      // ms
+    memoryUsed      Float?      // MB
+    status          TestCaseStatus @default(PENDING)
+    error           String?
+    
+    submission      QuestionSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+}
+
+model ProctorViolation {
+    id              String          @id @default(cuid())
+    participantId   String
+    type            ViolationType
+    details         String?
+    screenshotUrl   String?         // Optional screenshot evidence
+    timestamp       DateTime        @default(now())
+    
+    participant     ContestParticipant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+}
+
+// ==================== CODING CONTEST ENUMS ====================
+
+enum CodingContestStatus {
+    DRAFT
+    PUBLISHED
+    REGISTRATION_OPEN
+    LIVE
+    ENDED
+    CANCELLED
+}
+
+enum ContestVisibility {
+    PUBLIC
+    PRIVATE
+    INVITE_ONLY
+    ORGANIZATION_ONLY
+}
+
+enum QuestionType {
+    MCQ
+    CODING
+    MULTIPLE_SELECT
+    SHORT_ANSWER
+}
+
+enum Difficulty {
+    EASY
+    MEDIUM
+    HARD
+    EXPERT
+}
+
+enum ParticipantStatus {
+    REGISTERED
+    CHECKED_IN
+    IN_PROGRESS
+    SUBMITTED
+    DISQUALIFIED
+    ABSENT
+}
+
+enum ViolationType {
+    TAB_SWITCH
+    WINDOW_BLUR
+    COPY_ATTEMPT
+    PASTE_ATTEMPT
+    RIGHT_CLICK
+    FULLSCREEN_EXIT
+    DEVTOOLS_OPEN
+    SCREEN_CAPTURE_ATTEMPT
+    MULTIPLE_DISPLAYS
+    SUSPICIOUS_BEHAVIOR
+    IDLE_TIMEOUT
+}
+
+enum TestCaseStatus {
+    PENDING
+    RUNNING
+    PASSED
+    FAILED
+    TIME_LIMIT_EXCEEDED
+    MEMORY_LIMIT_EXCEEDED
+    RUNTIME_ERROR
+    COMPILATION_ERROR
 }
