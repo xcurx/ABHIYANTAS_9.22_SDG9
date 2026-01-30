@@ -1,6 +1,5 @@
 import Link from "next/link"
 import { auth } from "@/auth"
-import { ChatbotWidget } from "@/components/chatbot-widget"
 
 export default async function LandingPage() {
     const session = await auth()
@@ -538,9 +537,6 @@ export default async function LandingPage() {
                     </div>
                 </div>
             </footer>
-
-            {/* Chatbot Widget */}
-            <ChatbotWidget />
         </div>
     )
 }
