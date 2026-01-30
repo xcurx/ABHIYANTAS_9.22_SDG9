@@ -326,5 +326,6 @@ export default async function HackathonsPage({ searchParams }: PageProps) {
                 )}
             </main>
         </div>
+        </div>    
     )
 }
