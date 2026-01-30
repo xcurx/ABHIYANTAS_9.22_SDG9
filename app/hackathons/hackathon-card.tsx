@@ -1,5 +1,6 @@
 import Link from "next/link"
 import Image from "next/image"
+import { Calendar, Users, MapPin, Trophy, Clock, Building2, ArrowRight } from "lucide-react"
 import { formatDate, getRelativeTime, cn } from "@/lib/utils"
 import { HackathonStatus, HackathonMode, HackathonType } from "@/generated/prisma/enums"
 
@@ -30,49 +31,15 @@ interface HackathonCardProps {
     }
 }
 
-const statusConfig: Record<HackathonStatus, { label: string; gradient: string; textColor: string; glow?: string }> = {
-    DRAFT: { 
-        label: "Draft", 
-        gradient: "from-slate-100 to-slate-200", 
-        textColor: "text-slate-600" 
-    },
-    PUBLISHED: { 
-        label: "Published", 
-        gradient: "from-blue-50 to-indigo-100", 
-        textColor: "text-indigo-600" 
-    },
-    REGISTRATION_OPEN: { 
-        label: "Registration Open", 
-        gradient: "from-emerald-50 to-teal-100", 
-        textColor: "text-emerald-600",
-        glow: "shadow-emerald-200/50"
-    },
-    REGISTRATION_CLOSED: { 
-        label: "Registration Closed", 
-        gradient: "from-amber-50 to-yellow-100", 
-        textColor: "text-amber-600" 
-    },
-    IN_PROGRESS: { 
-        label: "Live", 
-        gradient: "from-violet-50 to-purple-100", 
-        textColor: "text-purple-600",
-        glow: "shadow-purple-200/50"
-    },
-    JUDGING: { 
-        label: "Judging", 
-        gradient: "from-orange-50 to-amber-100", 
-        textColor: "text-orange-600" 
-    },
-    COMPLETED: { 
-        label: "Completed", 
-        gradient: "from-slate-50 to-gray-100", 
-        textColor: "text-slate-500" 
-    },
-    CANCELLED: { 
-        label: "Cancelled", 
-        gradient: "from-red-50 to-rose-100", 
-        textColor: "text-red-500" 
-    },
+const statusConfig: Record<HackathonStatus, { label: string; className: string }> = {
+    DRAFT: { label: "Draft", className: "bg-gray-100 text-gray-700" },
+    PUBLISHED: { label: "Coming Soon", className: "bg-blue-100 text-blue-700" },
+    REGISTRATION_OPEN: { label: "Open", className: "bg-green-100 text-green-700" },
+    REGISTRATION_CLOSED: { label: "Registration Closed", className: "bg-yellow-100 text-yellow-700" },
+    IN_PROGRESS: { label: "Live", className: "bg-blue-600 text-white" },
+    JUDGING: { label: "Judging", className: "bg-orange-100 text-orange-700" },
+    COMPLETED: { label: "Completed", className: "bg-gray-100 text-gray-600" },
+    CANCELLED: { label: "Cancelled", className: "bg-red-100 text-red-700" },
 }
 
 const modeConfig: Record<HackathonMode, { label: string; icon: string; gradient: string }> = {
@@ -101,9 +68,9 @@ export default function HackathonCard({ hackathon }: HackathonCardProps) {
 
     return (
         <Link href={`/hackathons/${hackathon.slug}`}>
-            <article className="group glass-card rounded-2xl overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+            <article className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:border-blue-200 hover:shadow-lg transition-all duration-300">
                 {/* Banner Image */}
-                <div className="relative h-44 bg-gradient-to-br from-indigo-500 via-violet-500 to-purple-600 overflow-hidden">
+                <div className="relative h-44 bg-blue-600">
                     {hackathon.bannerImage ? (
                         <Image
                             src={hackathon.bannerImage}
@@ -112,16 +79,13 @@ export default function HackathonCard({ hackathon }: HackathonCardProps) {
                             className="object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                     ) : (
-                        <>
-                            {/* Decorative Elements */}
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/20 to-transparent rounded-full blur-2xl" />
-                            <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-white/10 to-transparent rounded-full blur-xl" />
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <svg className="w-16 h-16 text-white/20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                                </svg>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="absolute inset-0 opacity-20">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-white rounded-full translate-x-1/2 -translate-y-1/2"></div>
+                                <div className="absolute bottom-0 left-0 w-24 h-24 bg-white rounded-full -translate-x-1/3 translate-y-1/3"></div>
                             </div>
-                        </>
+                            <Trophy className="h-16 w-16 text-white/40" />
+                        </div>
                     )}
 
                     {/* Gradient Overlay */}
@@ -130,58 +94,65 @@ export default function HackathonCard({ hackathon }: HackathonCardProps) {
                     {/* Status Badge */}
                     <div className="absolute top-3 right-3">
                         <span className={cn(
-                            "px-3 py-1.5 rounded-full text-xs font-semibold backdrop-blur-sm bg-gradient-to-r",
-                            status.gradient,
-                            status.textColor,
-                            status.glow && `shadow-lg ${status.glow}`
+                            "px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm",
+                            status.className,
+                            isLive && "animate-pulse"
                         )}>
-                            {isLive && <span className="mr-1 inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse" />}
+                            {isLive && <span className="inline-block w-2 h-2 bg-white rounded-full mr-1.5 animate-pulse"></span>}
                             {status.label}
                         </span>
                     </div>
 
                     {/* Mode Badge */}
                     <div className="absolute top-3 left-3">
-                        <span className="px-3 py-1.5 rounded-full text-xs font-semibold bg-white/90 backdrop-blur-sm text-slate-700 shadow-lg">
+                        <span className="px-3 py-1.5 rounded-full text-xs font-semibold bg-white/95 text-gray-800 shadow-sm backdrop-blur-sm">
                             {mode.icon} {mode.label}
                         </span>
                     </div>
 
-                    {/* Organization Badge - Bottom Left */}
-                    {hackathon.organization && (
+                    {/* Prize Pool Highlight */}
+                    {hackathon.prizePool && hackathon.prizePool > 0 && (
                         <div className="absolute bottom-3 left-3">
-                            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-sm shadow-lg">
-                                {hackathon.organization.logo ? (
-                                    <Image
-                                        src={hackathon.organization.logo}
-                                        alt={hackathon.organization.name}
-                                        width={20}
-                                        height={20}
-                                        className="rounded-full"
-                                    />
-                                ) : (
-                                    <div className="w-5 h-5 rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center">
-                                        <span className="text-[10px] font-bold text-white">
-                                            {hackathon.organization.name.charAt(0)}
-                                        </span>
-                                    </div>
-                                )}
-                                <span className="text-xs font-medium text-slate-700 max-w-24 truncate">
-                                    {hackathon.organization.name}
-                                </span>
-                            </div>
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-amber-400 text-amber-900 shadow-sm">
+                                <Trophy className="h-3.5 w-3.5" />
+                                ${hackathon.prizePool.toLocaleString()}
+                            </span>
                         </div>
                     )}
                 </div>
 
                 {/* Content */}
                 <div className="p-5">
+                    {/* Organization */}
+                    {hackathon.organization && (
+                        <div className="flex items-center gap-2 mb-3">
+                            {hackathon.organization.logo ? (
+                                <Image
+                                    src={hackathon.organization.logo}
+                                    alt={hackathon.organization.name}
+                                    width={20}
+                                    height={20}
+                                    className="rounded-full"
+                                />
+                            ) : (
+                                <div className="h-5 w-5 rounded-full bg-blue-100 flex items-center justify-center">
+                                    <Building2 className="h-3 w-3 text-blue-600" />
+                                </div>
+                            )}
+                            <span className="text-sm text-gray-600 truncate">
+                                {hackathon.organization.name}
+                            </span>
+                        </div>
+                    )}
+
                     {/* Title */}
-                    <h3 className="font-bold text-lg text-slate-800 group-hover:text-indigo-600 transition-colors line-clamp-1">
+                    <h3 className="font-bold text-lg text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-1">
                         {hackathon.title}
                     </h3>
+                    
+                    {/* Description */}
                     {hackathon.shortDescription && (
-                        <p className="text-sm text-slate-500 mt-1.5 line-clamp-2">
+                        <p className="text-sm text-gray-600 mt-2 line-clamp-2">
                             {hackathon.shortDescription}
                         </p>
                     )}
@@ -189,93 +160,70 @@ export default function HackathonCard({ hackathon }: HackathonCardProps) {
                     {/* Meta Info */}
                     <div className="mt-4 space-y-2.5">
                         {/* Dates */}
-                        <div className="flex items-center gap-2.5 text-sm text-slate-600">
-                            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-50 to-violet-50 flex items-center justify-center shrink-0">
-                                <svg className="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
+                        <div className="flex items-center gap-2.5 text-sm text-gray-600">
+                            <div className="h-8 w-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                                <Calendar className="h-4 w-4 text-gray-500" />
                             </div>
-                            <span className="text-slate-600">
+                            <span>
                                 {formatDate(hackathon.hackathonStart)} - {formatDate(hackathon.hackathonEnd)}
                             </span>
                         </div>
 
                         {/* Registration countdown */}
                         {isPublished && hackathon.registrationStart && (
-                            <div className="flex items-center gap-2.5 text-sm">
-                                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center shrink-0">
-                                    <svg className="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
+                            <div className="flex items-center gap-2.5 text-sm text-blue-600">
+                                <div className="h-8 w-8 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                    <Clock className="h-4 w-4 text-blue-600" />
                                 </div>
-                                <span className="text-blue-600 font-medium">
-                                    Registration opens {getRelativeTime(hackathon.registrationStart)}
-                                </span>
+                                <span className="font-medium">Opens {getRelativeTime(hackathon.registrationStart)}</span>
                             </div>
                         )}
 
                         {isRegistrationOpen && hackathon.registrationEnd && (
-                            <div className="flex items-center gap-2.5 text-sm">
-                                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center shrink-0">
-                                    <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
+                            <div className="flex items-center gap-2.5 text-sm text-green-600">
+                                <div className="h-8 w-8 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
+                                    <Clock className="h-4 w-4 text-green-600" />
                                 </div>
-                                <span className="text-emerald-600 font-medium">
-                                    Closes {getRelativeTime(hackathon.registrationEnd)}
-                                </span>
+                                <span className="font-medium">Closes {getRelativeTime(hackathon.registrationEnd)}</span>
                             </div>
                         )}
 
                         {/* Participants */}
-                        <div className="flex items-center gap-2.5 text-sm">
-                            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-50 to-purple-50 flex items-center justify-center shrink-0">
-                                <svg className="w-4 h-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                                </svg>
+                        <div className="flex items-center gap-2.5 text-sm text-gray-600">
+                            <div className="h-8 w-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                                <Users className="h-4 w-4 text-gray-500" />
                             </div>
-                            <span className="text-slate-600">
-                                <span className="font-semibold text-slate-800">{hackathon._count.registrations}</span> registered
+                            <span>
+                                <span className="font-semibold text-gray-900">{hackathon._count.registrations}</span> registered
                                 {spotsLeft !== null && spotsLeft > 0 && (
-                                    <span className="text-emerald-600 font-medium"> • {spotsLeft} spots left</span>
+                                    <span className="text-green-600 font-medium"> • {spotsLeft} spots left</span>
                                 )}
                                 {spotsLeft === 0 && (
-                                    <span className="text-red-500 font-medium"> • Full</span>
+                                    <span className="text-red-600 font-medium"> • Full</span>
                                 )}
                             </span>
                         </div>
                     </div>
 
                     {/* Footer */}
-                    <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between">
-                        {/* Prize Pool */}
-                        {hackathon.prizePool ? (
-                            <div className="flex items-center gap-2">
-                                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/20">
-                                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M10 2a1 1 0 011 1v1.323l3.954 1.582 1.599-.8a1 1 0 01.894 1.79l-1.233.616 1.738 5.42a1 1 0 01-.285 1.05A3.989 3.989 0 0115 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.715-5.349L11 6.477V16h2a1 1 0 110 2H7a1 1 0 110-2h2V6.477L6.237 7.582l1.715 5.349a1 1 0 01-.285 1.05A3.989 3.989 0 015 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.738-5.42-1.233-.616a1 1 0 01.894-1.79l1.599.8L9 4.323V3a1 1 0 011-1z" />
-                                    </svg>
-                                </div>
-                                <span className="font-bold text-amber-600">${hackathon.prizePool.toLocaleString()}</span>
-                            </div>
-                        ) : (
-                            <div />
-                        )}
-
+                    <div className="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between">
+                        {/* Tracks Count */}
                         <div className="flex items-center gap-2">
-                            {/* Tracks Count */}
                             {hackathon._count.tracks > 0 && (
-                                <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full">
+                                <span className="text-xs font-medium text-gray-600 bg-gray-100 px-2.5 py-1 rounded-full">
                                     {hackathon._count.tracks} {hackathon._count.tracks === 1 ? "track" : "tracks"}
                                 </span>
                             )}
-
-                            {/* Type indicator */}
                             {hackathon.type !== "OPEN" && (
-                                <span className="text-xs font-medium text-violet-600 bg-violet-50 px-2.5 py-1 rounded-full">
+                                <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full">
                                     {type.label}
                                 </span>
                             )}
+                        </div>
+
+                        {/* View Arrow */}
+                        <div className="h-8 w-8 rounded-full bg-blue-50 flex items-center justify-center group-hover:bg-blue-600 transition-colors">
+                            <ArrowRight className="h-4 w-4 text-blue-600 group-hover:text-white transition-colors" />
                         </div>
                     </div>
                 </div>

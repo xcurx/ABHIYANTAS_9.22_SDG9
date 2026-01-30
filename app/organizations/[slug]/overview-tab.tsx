@@ -1,3 +1,5 @@
+import { Building2, Globe, MapPin, Briefcase, Users, Calendar, Crown, Shield, User } from "lucide-react"
+
 type OrganizationType = "COMPANY" | "UNIVERSITY" | "NONPROFIT" | "GOVERNMENT" | "OTHER"
 
 interface Organization {
@@ -18,6 +20,7 @@ interface Organization {
     userRole: "OWNER" | "ADMIN" | "MEMBER" | null
     _count: {
         members: number
+        hackathons?: number
     }
 }
 
@@ -26,33 +29,49 @@ interface OverviewTabProps {
 }
 
 export default function OverviewTab({ organization }: OverviewTabProps) {
+    const roleConfig = {
+        OWNER: { label: "Owner", icon: Crown, color: "bg-purple-100 text-purple-700 border-purple-200" },
+        ADMIN: { label: "Admin", icon: Shield, color: "bg-blue-100 text-blue-700 border-blue-200" },
+        MEMBER: { label: "Member", icon: User, color: "bg-gray-100 text-gray-700 border-gray-200" },
+    }
+
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Main info */}
             <div className="lg:col-span-2 space-y-6">
                 {/* About */}
-                <div className="bg-white rounded-lg shadow p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">About</h3>
-                    <p className="text-gray-600">
-                        {organization.description || "No description provided."}
+                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 hover:shadow-md transition-all">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="h-10 w-10 rounded-xl bg-blue-100 flex items-center justify-center">
+                            <Building2 className="h-5 w-5 text-blue-600" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-gray-900">About</h3>
+                    </div>
+                    <p className="text-gray-600 leading-relaxed">
+                        {organization.description || "No description provided yet. Add a description to help others learn more about your organization."}
                     </p>
                 </div>
 
-                {/* Stats placeholder */}
-                <div className="bg-white rounded-lg shadow p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Activity</h3>
-                    <div className="grid grid-cols-3 gap-4 text-center">
-                        <div>
-                            <div className="text-2xl font-bold text-indigo-600">0</div>
-                            <div className="text-sm text-gray-500">Hackathons Hosted</div>
+                {/* Activity Stats */}
+                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 hover:shadow-md transition-all">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="h-10 w-10 rounded-xl bg-green-100 flex items-center justify-center">
+                            <Users className="h-5 w-5 text-green-600" />
                         </div>
-                        <div>
-                            <div className="text-2xl font-bold text-indigo-600">{organization._count.members}</div>
-                            <div className="text-sm text-gray-500">Members</div>
+                        <h3 className="text-lg font-semibold text-gray-900">Activity</h3>
+                    </div>
+                    <div className="grid grid-cols-3 gap-4">
+                        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 text-center border border-blue-100">
+                            <div className="text-3xl font-bold text-blue-600">{organization._count.hackathons || 0}</div>
+                            <div className="text-sm text-gray-600 mt-1">Hackathons Hosted</div>
                         </div>
-                        <div>
-                            <div className="text-2xl font-bold text-indigo-600">0</div>
-                            <div className="text-sm text-gray-500">Participants</div>
+                        <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-4 text-center border border-purple-100">
+                            <div className="text-3xl font-bold text-purple-600">{organization._count.members}</div>
+                            <div className="text-sm text-gray-600 mt-1">Members</div>
+                        </div>
+                        <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 text-center border border-green-100">
+                            <div className="text-3xl font-bold text-green-600">0</div>
+                            <div className="text-sm text-gray-600 mt-1">Participants</div>
                         </div>
                     </div>
                 </div>
@@ -61,71 +80,107 @@ export default function OverviewTab({ organization }: OverviewTabProps) {
             {/* Sidebar */}
             <div className="space-y-6">
                 {/* Organization details */}
-                <div className="bg-white rounded-lg shadow p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Details</h3>
-                    <dl className="space-y-3">
-                        <div>
-                            <dt className="text-sm text-gray-500">Type</dt>
-                            <dd className="text-sm font-medium text-gray-900 capitalize">
-                                {organization.type.toLowerCase().replace('_', ' ')}
-                            </dd>
+                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 hover:shadow-md transition-all">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-5">Details</h3>
+                    <dl className="space-y-4">
+                        <div className="flex items-start gap-3">
+                            <div className="h-8 w-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                                <Briefcase className="h-4 w-4 text-gray-500" />
+                            </div>
+                            <div>
+                                <dt className="text-xs text-gray-500 uppercase tracking-wide">Type</dt>
+                                <dd className="text-sm font-medium text-gray-900 capitalize mt-0.5">
+                                    {organization.type.toLowerCase().replace('_', ' ')}
+                                </dd>
+                            </div>
                         </div>
                         {organization.industry && (
-                            <div>
-                                <dt className="text-sm text-gray-500">Industry</dt>
-                                <dd className="text-sm font-medium text-gray-900">{organization.industry}</dd>
+                            <div className="flex items-start gap-3">
+                                <div className="h-8 w-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                                    <Building2 className="h-4 w-4 text-gray-500" />
+                                </div>
+                                <div>
+                                    <dt className="text-xs text-gray-500 uppercase tracking-wide">Industry</dt>
+                                    <dd className="text-sm font-medium text-gray-900 mt-0.5">{organization.industry}</dd>
+                                </div>
                             </div>
                         )}
                         {organization.size && (
-                            <div>
-                                <dt className="text-sm text-gray-500">Size</dt>
-                                <dd className="text-sm font-medium text-gray-900">{organization.size}</dd>
+                            <div className="flex items-start gap-3">
+                                <div className="h-8 w-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                                    <Users className="h-4 w-4 text-gray-500" />
+                                </div>
+                                <div>
+                                    <dt className="text-xs text-gray-500 uppercase tracking-wide">Size</dt>
+                                    <dd className="text-sm font-medium text-gray-900 mt-0.5">{organization.size} employees</dd>
+                                </div>
                             </div>
                         )}
                         {organization.location && (
-                            <div>
-                                <dt className="text-sm text-gray-500">Location</dt>
-                                <dd className="text-sm font-medium text-gray-900">{organization.location}</dd>
+                            <div className="flex items-start gap-3">
+                                <div className="h-8 w-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                                    <MapPin className="h-4 w-4 text-gray-500" />
+                                </div>
+                                <div>
+                                    <dt className="text-xs text-gray-500 uppercase tracking-wide">Location</dt>
+                                    <dd className="text-sm font-medium text-gray-900 mt-0.5">{organization.location}</dd>
+                                </div>
                             </div>
                         )}
                         {organization.website && (
-                            <div>
-                                <dt className="text-sm text-gray-500">Website</dt>
-                                <dd className="text-sm font-medium text-indigo-600">
-                                    <a href={organization.website} target="_blank" rel="noopener noreferrer" className="hover:underline">
-                                        {organization.website.replace(/^https?:\/\//, '')}
-                                    </a>
-                                </dd>
+                            <div className="flex items-start gap-3">
+                                <div className="h-8 w-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                                    <Globe className="h-4 w-4 text-gray-500" />
+                                </div>
+                                <div>
+                                    <dt className="text-xs text-gray-500 uppercase tracking-wide">Website</dt>
+                                    <dd className="text-sm font-medium text-blue-600 mt-0.5">
+                                        <a href={organization.website} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                                            {organization.website.replace(/^https?:\/\//, '')}
+                                        </a>
+                                    </dd>
+                                </div>
                             </div>
                         )}
-                        <div>
-                            <dt className="text-sm text-gray-500">Created</dt>
-                            <dd className="text-sm font-medium text-gray-900">
-                                {new Date(organization.createdAt).toLocaleDateString('en-US', {
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric'
-                                })}
-                            </dd>
+                        <div className="flex items-start gap-3">
+                            <div className="h-8 w-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                                <Calendar className="h-4 w-4 text-gray-500" />
+                            </div>
+                            <div>
+                                <dt className="text-xs text-gray-500 uppercase tracking-wide">Created</dt>
+                                <dd className="text-sm font-medium text-gray-900 mt-0.5">
+                                    {new Date(organization.createdAt).toLocaleDateString('en-US', {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric'
+                                    })}
+                                </dd>
+                            </div>
                         </div>
                     </dl>
                 </div>
 
                 {/* Your role */}
                 {organization.userRole && (
-                    <div className="bg-white rounded-lg shadow p-6">
+                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 hover:shadow-md transition-all">
                         <h3 className="text-lg font-semibold text-gray-900 mb-4">Your Role</h3>
                         <div className="flex items-center gap-3">
-                            <span className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${
-                                organization.userRole === 'OWNER' 
-                                    ? 'bg-purple-100 text-purple-800' 
-                                    : organization.userRole === 'ADMIN'
-                                    ? 'bg-blue-100 text-blue-800'
-                                    : 'bg-gray-100 text-gray-800'
-                            }`}>
-                                {organization.userRole}
-                            </span>
+                            {(() => {
+                                const config = roleConfig[organization.userRole]
+                                const IconComponent = config.icon
+                                return (
+                                    <span className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium border ${config.color}`}>
+                                        <IconComponent className="h-4 w-4" />
+                                        {config.label}
+                                    </span>
+                                )
+                            })()}
                         </div>
+                        <p className="text-xs text-gray-500 mt-3">
+                            {organization.userRole === 'OWNER' && "You have full control over this organization."}
+                            {organization.userRole === 'ADMIN' && "You can manage members and create hackathons."}
+                            {organization.userRole === 'MEMBER' && "You are a member of this organization."}
+                        </p>
                     </div>
                 )}
             </div>

@@ -16,9 +16,12 @@ import {
     Settings,
     CheckCircle,
     XCircle,
+    ArrowRight,
+    Sparkles,
 } from "lucide-react"
 import { formatDate, formatDateTime, cn } from "@/lib/utils"
 import RegisterButton from "./register-button"
+import HackathonAnnouncements from "@/components/hackathon/hackathon-announcements"
 
 interface HackathonPageProps {
     params: Promise<{ slug: string }>
@@ -27,9 +30,9 @@ interface HackathonPageProps {
 const statusConfig = {
     DRAFT: { label: "Draft", className: "bg-gray-100 text-gray-800" },
     PUBLISHED: { label: "Published", className: "bg-blue-100 text-blue-800" },
-    REGISTRATION_OPEN: { label: "Registration Open", className: "bg-green-100 text-green-800" },
+    REGISTRATION_OPEN: { label: "Registration Open", className: "bg-green-100 text-green-800 animate-pulse" },
     REGISTRATION_CLOSED: { label: "Registration Closed", className: "bg-yellow-100 text-yellow-800" },
-    IN_PROGRESS: { label: "In Progress", className: "bg-purple-100 text-purple-800" },
+    IN_PROGRESS: { label: "Live Now", className: "bg-red-100 text-red-800 animate-pulse" },
     JUDGING: { label: "Judging", className: "bg-orange-100 text-orange-800" },
     COMPLETED: { label: "Completed", className: "bg-gray-100 text-gray-800" },
     CANCELLED: { label: "Cancelled", className: "bg-red-100 text-red-800" },
@@ -53,7 +56,7 @@ export async function generateMetadata({ params }: HackathonPageProps) {
     }
 
     return {
-        title: `${hackathon.title} | CIH`,
+        title: `${hackathon.title} | ELEVATE`,
         description: hackathon.shortDescription || `Join ${hackathon.title} hackathon`,
     }
 }
@@ -135,7 +138,14 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
     return (
         <div className="min-h-screen bg-gray-50">
             {/* Hero Banner */}
-            <div className="relative h-64 md:h-80 bg-gradient-to-r from-indigo-600 to-purple-600">
+            <div className="relative h-72 md:h-96 bg-blue-600 overflow-hidden">
+                {/* Decorative Elements */}
+                <div className="absolute inset-0">
+                    <div className="absolute top-10 left-10 w-64 h-64 bg-blue-500 rounded-full blur-3xl opacity-50"></div>
+                    <div className="absolute bottom-10 right-10 w-80 h-80 bg-blue-700 rounded-full blur-3xl opacity-50"></div>
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-blue-400 rounded-full blur-3xl opacity-30"></div>
+                </div>
+
                 {hackathon.bannerImage && (
                     <Image
                         src={hackathon.bannerImage}
@@ -145,13 +155,13 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
                         priority
                     />
                 )}
-                <div className="absolute inset-0 bg-black/40" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent" />
 
                 {/* Back button */}
-                <div className="absolute top-4 left-4">
+                <div className="absolute top-4 left-4 animate-fade-in">
                     <Link
                         href="/hackathons"
-                        className="inline-flex items-center gap-2 px-3 py-2 bg-white/10 backdrop-blur-sm text-white rounded-md hover:bg-white/20 transition-colors text-sm"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm text-white rounded-xl hover:bg-white/20 transition-all duration-200 text-sm font-medium"
                     >
                         <ArrowLeft className="h-4 w-4" />
                         All Hackathons
@@ -159,14 +169,14 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
                 </div>
 
                 {/* Actions */}
-                <div className="absolute top-4 right-4 flex gap-2">
-                    <button className="p-2 bg-white/10 backdrop-blur-sm text-white rounded-md hover:bg-white/20 transition-colors">
+                <div className="absolute top-4 right-4 flex gap-2 animate-fade-in">
+                    <button className="p-2.5 bg-white/10 backdrop-blur-sm text-white rounded-xl hover:bg-white/20 transition-all duration-200">
                         <Share2 className="h-5 w-5" />
                     </button>
                     {isOrganizer && (
                         <Link
                             href={`/hackathons/${hackathon.slug}/manage`}
-                            className="inline-flex items-center gap-2 px-3 py-2 bg-white/10 backdrop-blur-sm text-white rounded-md hover:bg-white/20 transition-colors text-sm"
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm text-white rounded-xl hover:bg-white/20 transition-all duration-200 text-sm font-medium"
                         >
                             <Settings className="h-4 w-4" />
                             Manage
@@ -175,20 +185,26 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
                 </div>
 
                 {/* Title overlay */}
-                <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
+                <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 animate-fade-in-up">
                     <div className="max-w-5xl mx-auto">
-                        <div className="flex flex-wrap gap-2 mb-3">
-                            <span className={cn("px-2.5 py-1 rounded-full text-xs font-medium", status.className)}>
+                        <div className="flex flex-wrap gap-2 mb-4">
+                            <span className={cn("px-3 py-1.5 rounded-full text-xs font-semibold", status.className)}>
                                 {status.label}
                             </span>
-                            <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-white/90 text-gray-800 flex items-center gap-1">
-                                <ModeIcon className="h-3 w-3" />
+                            <span className="px-3 py-1.5 rounded-full text-xs font-semibold bg-white/90 text-gray-800 flex items-center gap-1.5">
+                                <ModeIcon className="h-3.5 w-3.5" />
                                 {mode.label}
                             </span>
+                            {hackathon.prizePool && hackathon.prizePool > 0 && (
+                                <span className="px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-400 text-amber-900 flex items-center gap-1.5">
+                                    <Trophy className="h-3.5 w-3.5" />
+                                    ${hackathon.prizePool.toLocaleString()} in prizes
+                                </span>
+                            )}
                         </div>
-                        <h1 className="text-3xl md:text-4xl font-bold text-white">{hackathon.title}</h1>
+                        <h1 className="text-3xl md:text-5xl font-bold text-white tracking-tight">{hackathon.title}</h1>
                         {hackathon.shortDescription && (
-                            <p className="text-lg text-white/90 mt-2">{hackathon.shortDescription}</p>
+                            <p className="text-lg text-white/90 mt-3 max-w-2xl">{hackathon.shortDescription}</p>
                         )}
                     </div>
                 </div>
@@ -198,30 +214,42 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
             <div className="max-w-5xl mx-auto px-4 py-8">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Left Column - Main Info */}
-                    <div className="lg:col-span-2 space-y-8">
+                    <div className="lg:col-span-2 space-y-6">
                         {/* Quick Stats */}
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <div className="text-center">
-                                    <div className="text-2xl font-bold text-indigo-600">
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 animate-fade-in-up" style={{ animationDelay: "100ms" }}>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                                <div className="text-center p-4 bg-blue-50 rounded-xl">
+                                    <div className="h-10 w-10 rounded-xl bg-blue-600 flex items-center justify-center mx-auto mb-2">
+                                        <Users className="h-5 w-5 text-white" />
+                                    </div>
+                                    <div className="text-2xl font-bold text-gray-900">
                                         {hackathon._count.registrations}
                                     </div>
                                     <div className="text-sm text-gray-600">Registered</div>
                                 </div>
-                                <div className="text-center">
-                                    <div className="text-2xl font-bold text-indigo-600">
+                                <div className="text-center p-4 bg-purple-50 rounded-xl">
+                                    <div className="h-10 w-10 rounded-xl bg-purple-600 flex items-center justify-center mx-auto mb-2">
+                                        <Sparkles className="h-5 w-5 text-white" />
+                                    </div>
+                                    <div className="text-2xl font-bold text-gray-900">
                                         {hackathon.tracks.length}
                                     </div>
                                     <div className="text-sm text-gray-600">Tracks</div>
                                 </div>
-                                <div className="text-center">
-                                    <div className="text-2xl font-bold text-amber-600">
+                                <div className="text-center p-4 bg-amber-50 rounded-xl">
+                                    <div className="h-10 w-10 rounded-xl bg-amber-500 flex items-center justify-center mx-auto mb-2">
+                                        <Trophy className="h-5 w-5 text-white" />
+                                    </div>
+                                    <div className="text-2xl font-bold text-gray-900">
                                         ${(hackathon.prizePool || 0).toLocaleString()}
                                     </div>
                                     <div className="text-sm text-gray-600">Prize Pool</div>
                                 </div>
-                                <div className="text-center">
-                                    <div className="text-2xl font-bold text-green-600">
+                                <div className="text-center p-4 bg-green-50 rounded-xl">
+                                    <div className="h-10 w-10 rounded-xl bg-green-600 flex items-center justify-center mx-auto mb-2">
+                                        <Users className="h-5 w-5 text-white" />
+                                    </div>
+                                    <div className="text-2xl font-bold text-gray-900">
                                         {hackathon.minTeamSize}-{hackathon.maxTeamSize}
                                     </div>
                                     <div className="text-sm text-gray-600">Team Size</div>
@@ -229,33 +257,43 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
                             </div>
                         </div>
 
+                        {/* Announcements */}
+                        <HackathonAnnouncements 
+                            hackathonId={hackathon.id} 
+                            hackathonSlug={hackathon.slug} 
+                        />
+
                         {/* About */}
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                            <h2 className="text-xl font-semibold text-gray-900 mb-4">About</h2>
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 animate-fade-in-up" style={{ animationDelay: "150ms" }}>
+                            <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                <span className="text-lg">📋</span> About
+                            </h2>
                             <div className="prose prose-gray max-w-none">
-                                <p className="whitespace-pre-wrap">{hackathon.description}</p>
+                                <p className="whitespace-pre-wrap text-gray-600 leading-relaxed">{hackathon.description}</p>
                             </div>
                         </div>
 
                         {/* Tracks */}
                         {hackathon.tracks.length > 0 && (
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                                <h2 className="text-xl font-semibold text-gray-900 mb-4">Tracks</h2>
+                            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 animate-fade-in-up" style={{ animationDelay: "200ms" }}>
+                                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                    <span className="text-lg">🎯</span> Tracks
+                                </h2>
                                 <div className="grid gap-4">
                                     {hackathon.tracks.map((track) => (
                                         <div
                                             key={track.id}
-                                            className="flex gap-4 p-4 bg-gray-50 rounded-lg"
-                                            style={{ borderLeft: `4px solid ${track.color || "#6366f1"}` }}
+                                            className="flex gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+                                            style={{ borderLeft: `4px solid ${track.color || "#2563eb"}` }}
                                         >
                                             <div className="flex-1">
-                                                <h3 className="font-medium text-gray-900">{track.name}</h3>
+                                                <h3 className="font-semibold text-gray-900">{track.name}</h3>
                                                 {track.description && (
                                                     <p className="text-sm text-gray-600 mt-1">{track.description}</p>
                                                 )}
                                             </div>
                                             {track.prizeAmount && (
-                                                <div className="text-sm text-green-600 font-medium">
+                                                <div className="text-sm text-green-600 font-semibold bg-green-50 px-3 py-1 rounded-lg">
                                                     ${track.prizeAmount.toLocaleString()}
                                                 </div>
                                             )}
@@ -267,40 +305,40 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
 
                         {/* Prizes */}
                         {hackathon.prizes.length > 0 && (
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                                <h2 className="text-xl font-semibold text-gray-900 mb-4">Prizes</h2>
+                            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 animate-fade-in-up" style={{ animationDelay: "250ms" }}>
+                                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                    <span className="text-lg">🏆</span> Prizes
+                                </h2>
                                 <div className="grid gap-4">
                                     {hackathon.prizes.map((prize, index) => (
                                         <div
                                             key={prize.id}
                                             className={cn(
-                                                "flex gap-4 p-4 rounded-lg",
-                                                index === 0 ? "bg-amber-50 border border-amber-200" :
-                                                    index === 1 ? "bg-gray-100 border border-gray-200" :
-                                                        index === 2 ? "bg-orange-50 border border-orange-200" :
-                                                            "bg-gray-50"
+                                                "flex gap-4 p-5 rounded-xl transition-all duration-200 hover:scale-[1.01]",
+                                                index === 0 ? "bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200" :
+                                                    index === 1 ? "bg-gradient-to-r from-gray-50 to-slate-50 border border-gray-200" :
+                                                        index === 2 ? "bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200" :
+                                                            "bg-gray-50 border border-gray-100"
                                             )}
                                         >
-                                            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-white shadow-sm">
-                                                <Trophy
-                                                    className={cn(
-                                                        "h-6 w-6",
-                                                        index === 0 ? "text-amber-500" :
-                                                            index === 1 ? "text-gray-500" :
-                                                                index === 2 ? "text-orange-500" :
-                                                                    "text-indigo-500"
-                                                    )}
-                                                />
+                                            <div className={cn(
+                                                "flex items-center justify-center w-14 h-14 rounded-xl shadow-sm",
+                                                index === 0 ? "bg-gradient-to-br from-amber-400 to-yellow-500" :
+                                                    index === 1 ? "bg-gradient-to-br from-gray-300 to-slate-400" :
+                                                        index === 2 ? "bg-gradient-to-br from-orange-400 to-amber-500" :
+                                                            "bg-blue-600"
+                                            )}>
+                                                <Trophy className="h-7 w-7 text-white" />
                                             </div>
                                             <div className="flex-1">
-                                                <div className="flex items-center gap-2">
-                                                    <h3 className="font-medium text-gray-900">{prize.title}</h3>
-                                                    <span className="text-lg font-bold text-green-600">
+                                                <div className="flex items-center gap-3 mb-1">
+                                                    <h3 className="font-semibold text-gray-900">{prize.title}</h3>
+                                                    <span className="text-xl font-bold text-green-600">
                                                         ${(prize.amount || 0).toLocaleString()}
                                                     </span>
                                                 </div>
                                                 {prize.description && (
-                                                    <p className="text-sm text-gray-600 mt-1">{prize.description}</p>
+                                                    <p className="text-sm text-gray-600">{prize.description}</p>
                                                 )}
                                             </div>
                                         </div>
@@ -311,22 +349,25 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
 
                         {/* Timeline / Stages */}
                         {hackathon.stages.length > 0 && (
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                                <h2 className="text-xl font-semibold text-gray-900 mb-4">Timeline</h2>
+                            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 animate-fade-in-up" style={{ animationDelay: "300ms" }}>
+                                <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                                    <span className="text-lg">📅</span> Timeline
+                                </h2>
                                 <div className="relative">
-                                    <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200" />
+                                    <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-blue-100" />
                                     <div className="space-y-6">
                                         {hackathon.stages.map((stage) => (
                                             <div key={stage.id} className="relative flex gap-4 pl-10">
-                                                <div className="absolute left-2.5 w-3 h-3 rounded-full bg-indigo-600 border-2 border-white" />
+                                                <div className="absolute left-2 w-4 h-4 rounded-full bg-blue-600 border-4 border-white shadow-sm" />
                                                 <div className="flex-1 pb-6">
-                                                    <div className="flex items-center gap-2 mb-1">
-                                                        <h3 className="font-medium text-gray-900">{stage.name}</h3>
-                                                        <span className="text-xs px-2 py-0.5 rounded bg-gray-100 text-gray-600">
+                                                    <div className="flex items-center gap-3 mb-2">
+                                                        <h3 className="font-semibold text-gray-900">{stage.name}</h3>
+                                                        <span className="text-xs px-2 py-1 rounded-lg bg-blue-50 text-blue-700 font-medium">
                                                             {stage.type.replace("_", " ")}
                                                         </span>
                                                     </div>
-                                                    <div className="text-sm text-gray-600">
+                                                    <div className="text-sm text-gray-600 flex items-center gap-2">
+                                                        <Clock className="h-4 w-4" />
                                                         {formatDateTime(stage.startDate)} - {formatDateTime(stage.endDate)}
                                                     </div>
                                                     {stage.description && (
@@ -342,10 +383,12 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
 
                         {/* Rules */}
                         {hackathon.rules && (
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                                <h2 className="text-xl font-semibold text-gray-900 mb-4">Rules</h2>
+                            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 animate-fade-in-up" style={{ animationDelay: "350ms" }}>
+                                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                    <span className="text-lg">📜</span> Rules
+                                </h2>
                                 <div className="prose prose-gray max-w-none">
-                                    <p className="whitespace-pre-wrap">{hackathon.rules}</p>
+                                    <p className="whitespace-pre-wrap text-gray-600 leading-relaxed">{hackathon.rules}</p>
                                 </div>
                             </div>
                         )}
@@ -354,23 +397,23 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
                     {/* Right Column - Sidebar */}
                     <div className="space-y-6">
                         {/* Registration Card */}
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sticky top-4">
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sticky top-4 animate-fade-in" style={{ animationDelay: "200ms" }}>
                             {/* Registration Status */}
                             {userRegistration ? (
-                                <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-xl">
                                     <div className="flex items-center gap-2 text-green-700">
                                         <CheckCircle className="h-5 w-5" />
-                                        <span className="font-medium">You are registered!</span>
+                                        <span className="font-semibold">You&apos;re registered!</span>
                                     </div>
                                     <p className="text-sm text-green-600 mt-1">
                                         Status: {userRegistration.status}
                                     </p>
                                 </div>
                             ) : spotsLeft === 0 ? (
-                                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl">
                                     <div className="flex items-center gap-2 text-red-700">
                                         <XCircle className="h-5 w-5" />
-                                        <span className="font-medium">Registration Full</span>
+                                        <span className="font-semibold">Registration Full</span>
                                     </div>
                                 </div>
                             ) : null}
@@ -385,57 +428,65 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
 
                             {/* Spots */}
                             {hackathon.maxParticipants && (
-                                <div className="mt-4 text-center text-sm text-gray-600">
+                                <div className="mt-4 text-center">
                                     {spotsLeft !== null && spotsLeft > 0 ? (
-                                        <span>{spotsLeft} of {hackathon.maxParticipants} spots left</span>
+                                        <div className="bg-blue-50 rounded-xl p-3">
+                                            <span className="text-sm font-medium text-blue-700">{spotsLeft} of {hackathon.maxParticipants} spots left</span>
+                                            <div className="mt-2 h-2 bg-blue-100 rounded-full overflow-hidden">
+                                                <div 
+                                                    className="h-full bg-blue-600 rounded-full transition-all duration-500"
+                                                    style={{ width: `${((hackathon.maxParticipants - spotsLeft) / hackathon.maxParticipants) * 100}%` }}
+                                                />
+                                            </div>
+                                        </div>
                                     ) : spotsLeft === 0 ? (
-                                        <span className="text-red-600">All spots filled</span>
+                                        <span className="text-sm text-red-600 font-medium">All spots filled</span>
                                     ) : null}
                                 </div>
                             )}
                         </div>
 
                         {/* Key Dates */}
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                            <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                                <Calendar className="h-5 w-5 text-indigo-600" />
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 animate-fade-in" style={{ animationDelay: "250ms" }}>
+                            <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                <Calendar className="h-5 w-5 text-blue-600" />
                                 Key Dates
                             </h3>
-                            <div className="space-y-3 text-sm">
+                            <div className="space-y-4 text-sm">
                                 {hackathon.registrationStart && (
-                                    <div className="flex justify-between">
+                                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
                                         <span className="text-gray-600">Registration Opens</span>
-                                        <span className="font-medium">{formatDate(hackathon.registrationStart)}</span>
+                                        <span className="font-semibold text-gray-900">{formatDate(hackathon.registrationStart)}</span>
                                     </div>
                                 )}
                                 {hackathon.registrationEnd && (
-                                    <div className="flex justify-between">
+                                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
                                         <span className="text-gray-600">Registration Closes</span>
-                                        <span className="font-medium">{formatDate(hackathon.registrationEnd)}</span>
+                                        <span className="font-semibold text-gray-900">{formatDate(hackathon.registrationEnd)}</span>
                                     </div>
                                 )}
-                                <hr />
-                                <div className="flex justify-between">
+                                <div className="border-t border-gray-100 my-2" />
+                                <div className="flex justify-between items-center p-3 bg-green-50 rounded-xl">
                                     <span className="text-gray-600">Hackathon Starts</span>
-                                    <span className="font-medium">{formatDate(hackathon.hackathonStart)}</span>
+                                    <span className="font-semibold text-green-700">{formatDate(hackathon.hackathonStart)}</span>
                                 </div>
-                                <div className="flex justify-between">
+                                <div className="flex justify-between items-center p-3 bg-red-50 rounded-xl">
                                     <span className="text-gray-600">Hackathon Ends</span>
-                                    <span className="font-medium">{formatDate(hackathon.hackathonEnd)}</span>
+                                    <span className="font-semibold text-red-700">{formatDate(hackathon.hackathonEnd)}</span>
                                 </div>
                             </div>
                         </div>
 
                         {/* Organizer */}
                         {hackathon.organization && (
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                                <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                                    <Building2 className="h-5 w-5 text-indigo-600" />
+                            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 animate-fade-in" style={{ animationDelay: "300ms" }}>
+                                <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                    <Building2 className="h-5 w-5 text-blue-600" />
                                     Organized By
                                 </h3>
                                 <Link
                                     href={`/organizations/${hackathon.organization.slug}`}
-                                    className="flex items-center gap-3 hover:bg-gray-50 -m-2 p-2 rounded-lg transition-colors"
+                                    className="flex items-center gap-4 hover:bg-gray-50 -m-2 p-3 rounded-xl transition-colors group"
                                 >
                                     {hackathon.organization.logo ? (
                                         <Image
@@ -443,17 +494,18 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
                                             alt={hackathon.organization.name}
                                             width={48}
                                             height={48}
-                                            className="rounded-lg"
+                                            className="rounded-xl"
                                         />
                                     ) : (
-                                        <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
-                                            <Building2 className="h-6 w-6 text-indigo-600" />
+                                        <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                                            <Building2 className="h-6 w-6 text-blue-600" />
                                         </div>
                                     )}
-                                    <div>
-                                        <div className="font-medium text-gray-900">{hackathon.organization.name}</div>
+                                    <div className="flex-1">
+                                        <div className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">{hackathon.organization.name}</div>
                                         <div className="text-sm text-gray-500">View organization</div>
                                     </div>
+                                    <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-blue-600 transition-colors" />
                                 </Link>
                             </div>
                         )}

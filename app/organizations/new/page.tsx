@@ -4,21 +4,55 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { createOrganization, type ActionResult } from "@/lib/actions/organization"
+import { 
+    Building2, 
+    ArrowLeft, 
+    Globe, 
+    Users, 
+    MapPin, 
+    Briefcase, 
+    FileText, 
+    Link as LinkIcon, 
+    Sparkles,
+    CheckCircle2,
+    AlertCircle,
+    Loader2,
+    GraduationCap,
+    Heart,
+    Landmark,
+    MoreHorizontal,
+    Building
+} from "lucide-react"
 
 const organizationTypes = [
-    { value: "COMPANY", label: "Company", description: "A business or startup", icon: "🏢" },
-    { value: "UNIVERSITY", label: "University", description: "Educational institution", icon: "🎓" },
-    { value: "NONPROFIT", label: "Non-Profit", description: "Non-profit organization", icon: "💚" },
-    { value: "GOVERNMENT", label: "Government", description: "Government agency", icon: "🏛️" },
-    { value: "OTHER", label: "Other", description: "Other type of organization", icon: "🔷" },
+    { value: "COMPANY", label: "Company", description: "A business, startup, or corporation", icon: Building },
+    { value: "UNIVERSITY", label: "University", description: "Educational institution or school", icon: GraduationCap },
+    { value: "NONPROFIT", label: "Non-Profit", description: "Non-profit organization or NGO", icon: Heart },
+    { value: "GOVERNMENT", label: "Government", description: "Government agency or department", icon: Landmark },
+    { value: "OTHER", label: "Other", description: "Community group or other type", icon: MoreHorizontal },
 ]
 
 const organizationSizes = [
-    { value: "1-10", label: "1-10 employees" },
-    { value: "11-50", label: "11-50 employees" },
-    { value: "51-200", label: "51-200 employees" },
-    { value: "201-500", label: "201-500 employees" },
-    { value: "500+", label: "500+ employees" },
+    { value: "1-10", label: "1-10", description: "Small team" },
+    { value: "11-50", label: "11-50", description: "Growing team" },
+    { value: "51-200", label: "51-200", description: "Medium-sized" },
+    { value: "201-500", label: "201-500", description: "Large organization" },
+    { value: "500+", label: "500+", description: "Enterprise" },
+]
+
+const industries = [
+    "Technology",
+    "Healthcare",
+    "Education",
+    "Finance",
+    "E-commerce",
+    "Manufacturing",
+    "Media & Entertainment",
+    "Real Estate",
+    "Transportation",
+    "Energy",
+    "Agriculture",
+    "Other"
 ]
 
 export default function NewOrganizationPage() {
@@ -27,6 +61,7 @@ export default function NewOrganizationPage() {
     const [result, setResult] = useState<ActionResult | null>(null)
     const [slug, setSlug] = useState("")
     const [selectedType, setSelectedType] = useState("")
+    const [selectedSize, setSelectedSize] = useState("")
 
     function generateSlug(name: string) {
         return name
@@ -60,234 +95,327 @@ export default function NewOrganizationPage() {
     }
 
     return (
-        <div className="min-h-screen pattern-bg">
-            {/* Premium Header */}
-            <header className="relative overflow-hidden border-b border-slate-200/60">
-                <div className="absolute inset-0 bg-gradient-to-br from-white via-slate-50/50 to-amber-50/30" />
-                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-amber-100/40 via-orange-100/30 to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/4" />
-                
-                <div className="relative mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
-                    <div className="flex items-center gap-5">
-                        <Link href="/organizations" className="text-slate-400 hover:text-amber-500 transition-colors">
-                            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                            </svg>
-                        </Link>
-                        <div className="flex items-center gap-4">
-                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 via-orange-500 to-rose-500 flex items-center justify-center shadow-lg shadow-amber-500/30">
-                                <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                                </svg>
-                            </div>
+        <div className="min-h-screen bg-gray-50">
+            {/* Hero Header */}
+            <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 relative overflow-hidden">
+                {/* Background Pattern */}
+                <div className="absolute inset-0 opacity-10">
+                    <div className="absolute inset-0" style={{
+                        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+                    }} />
+                </div>
+
+                <div className="relative mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
+                    <Link 
+                        href="/organizations" 
+                        className="inline-flex items-center gap-2 text-blue-100 hover:text-white transition-colors mb-6 group"
+                    >
+                        <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+                        Back to Organizations
+                    </Link>
+                    <div className="animate-fade-in-up">
+                        <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-1.5 mb-4">
+                            <Sparkles className="h-4 w-4 text-yellow-300" />
+                            <span className="text-sm font-medium text-white/90">Create Something Great</span>
+                        </div>
+                        <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white">
+                            Create Your Organization
+                        </h1>
+                        <p className="mt-3 text-lg text-blue-100 max-w-2xl">
+                            Set up your organization to host hackathons, manage teams, and collaborate with innovators worldwide.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
+                {/* Error Alert */}
+                {result && !result.success && (
+                    <div className="mb-6 rounded-2xl bg-red-50 border border-red-200 p-4 animate-fade-in-up">
+                        <div className="flex items-start gap-3">
+                            <AlertCircle className="h-5 w-5 text-red-500 mt-0.5" />
                             <div>
-                                <span className="text-xs font-semibold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full">
-                                    New Organization
-                                </span>
-                                <h1 className="text-2xl font-bold gradient-text mt-1">Create Organization</h1>
+                                <h3 className="text-sm font-medium text-red-800">There was an error creating your organization</h3>
+                                <p className="text-sm text-red-700 mt-1">{result.message}</p>
                             </div>
                         </div>
                     </div>
-                </div>
-            </header>
+                )}
 
-            <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
-                <div className="glass-card rounded-3xl p-8">
-                    {result && !result.success && (
-                        <div className="mb-6 rounded-2xl bg-gradient-to-r from-red-50 to-rose-50 border border-red-100 p-4 flex items-start gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center shrink-0">
-                                <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
+                <form action={handleSubmit} className="space-y-6">
+                    {/* Section 1: Basic Information */}
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden animate-fade-in-up animation-delay-100">
+                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-200">
+                            <div className="flex items-center gap-3">
+                                <div className="h-10 w-10 rounded-xl bg-blue-100 flex items-center justify-center">
+                                    <Building2 className="h-5 w-5 text-blue-600" />
+                                </div>
+                                <div>
+                                    <h2 className="text-lg font-semibold text-gray-900">Basic Information</h2>
+                                    <p className="text-sm text-gray-600">Tell us about your organization</p>
+                                </div>
                             </div>
+                        </div>
+                        <div className="p-6 space-y-6">
+                            {/* Organization Name */}
                             <div>
-                                <p className="font-medium text-red-800">{result.message}</p>
-                            </div>
-                        </div>
-                    )}
-
-                    <form action={handleSubmit} className="space-y-8">
-                        {/* Organization Name */}
-                        <div>
-                            <label htmlFor="name" className="block text-sm font-semibold text-slate-700 mb-2">
-                                Organization Name <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="text"
-                                id="name"
-                                name="name"
-                                required
-                                onChange={handleNameChange}
-                                className="w-full px-4 py-3.5 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all"
-                                placeholder="Acme Corporation"
-                            />
-                            {result?.errors?.name && (
-                                <p className="mt-2 text-sm text-red-500 flex items-center gap-1">
-                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                                    </svg>
-                                    {result.errors.name[0]}
-                                </p>
-                            )}
-                        </div>
-
-                        {/* Slug */}
-                        <div>
-                            <label htmlFor="slug" className="block text-sm font-semibold text-slate-700 mb-2">
-                                URL Slug
-                            </label>
-                            <div className="flex rounded-xl overflow-hidden border border-slate-200 focus-within:ring-2 focus-within:ring-amber-500/20 focus-within:border-amber-500 transition-all">
-                                <span className="inline-flex items-center px-4 bg-slate-100/50 text-slate-500 text-sm border-r border-slate-200">
-                                    /organizations/
-                                </span>
+                                <label htmlFor="name" className="block text-sm font-medium text-gray-900 mb-2">
+                                    Organization Name <span className="text-red-500">*</span>
+                                </label>
                                 <input
                                     type="text"
-                                    id="slug"
-                                    name="slug"
-                                    value={slug}
-                                    onChange={(e) => setSlug(e.target.value)}
-                                    className="flex-1 px-4 py-3.5 bg-slate-50/50 text-slate-700 placeholder:text-slate-400 focus:outline-none"
-                                    placeholder="acme-corporation"
+                                    id="name"
+                                    name="name"
+                                    required
+                                    onChange={handleNameChange}
+                                    className="w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+                                    placeholder="Enter your organization name"
                                 />
+                                {result?.errors?.name && (
+                                    <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                                        <AlertCircle className="h-4 w-4" />
+                                        {result.errors.name[0]}
+                                    </p>
+                                )}
                             </div>
-                            {result?.errors?.slug && (
-                                <p className="mt-2 text-sm text-red-500 flex items-center gap-1">
-                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                                    </svg>
-                                    {result.errors.slug[0]}
+
+                            {/* URL Slug */}
+                            <div>
+                                <label htmlFor="slug" className="block text-sm font-medium text-gray-900 mb-2">
+                                    URL Slug
+                                </label>
+                                <div className="flex rounded-xl border border-gray-300 overflow-hidden focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
+                                    <span className="inline-flex items-center bg-gray-50 px-4 text-gray-500 text-sm border-r border-gray-300">
+                                        /organizations/
+                                    </span>
+                                    <input
+                                        type="text"
+                                        id="slug"
+                                        name="slug"
+                                        value={slug}
+                                        onChange={(e) => setSlug(e.target.value)}
+                                        className="flex-1 px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none"
+                                        placeholder="your-organization"
+                                    />
+                                </div>
+                                {result?.errors?.slug && (
+                                    <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                                        <AlertCircle className="h-4 w-4" />
+                                        {result.errors.slug[0]}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Description */}
+                            <div>
+                                <label htmlFor="description" className="block text-sm font-medium text-gray-900 mb-2">
+                                    Description
+                                </label>
+                                <textarea
+                                    id="description"
+                                    name="description"
+                                    rows={4}
+                                    className="w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all resize-none"
+                                    placeholder="Describe what your organization does, its mission, and goals..."
+                                />
+                                <p className="mt-2 text-xs text-gray-500">A good description helps attract the right members and participants.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Section 2: Organization Type */}
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden animate-fade-in-up animation-delay-200">
+                        <div className="bg-gradient-to-r from-purple-50 to-pink-50 px-6 py-4 border-b border-gray-200">
+                            <div className="flex items-center gap-3">
+                                <div className="h-10 w-10 rounded-xl bg-purple-100 flex items-center justify-center">
+                                    <Briefcase className="h-5 w-5 text-purple-600" />
+                                </div>
+                                <div>
+                                    <h2 className="text-lg font-semibold text-gray-900">Organization Type</h2>
+                                    <p className="text-sm text-gray-600">Select the category that best describes you</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="p-6">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                                {organizationTypes.map((type) => {
+                                    const IconComponent = type.icon
+                                    return (
+                                        <label
+                                            key={type.value}
+                                            className={`relative flex flex-col items-center cursor-pointer rounded-xl border-2 p-4 transition-all hover:border-blue-300 hover:bg-blue-50/50 ${
+                                                selectedType === type.value
+                                                    ? "border-blue-500 bg-blue-50 ring-2 ring-blue-500/20"
+                                                    : "border-gray-200 bg-white"
+                                            }`}
+                                        >
+                                            <input
+                                                type="radio"
+                                                name="type"
+                                                value={type.value}
+                                                className="sr-only"
+                                                required
+                                                onChange={(e) => setSelectedType(e.target.value)}
+                                            />
+                                            <div className={`h-12 w-12 rounded-xl flex items-center justify-center mb-3 transition-colors ${
+                                                selectedType === type.value ? "bg-blue-100" : "bg-gray-100"
+                                            }`}>
+                                                <IconComponent className={`h-6 w-6 ${
+                                                    selectedType === type.value ? "text-blue-600" : "text-gray-500"
+                                                }`} />
+                                            </div>
+                                            <span className={`text-sm font-medium text-center ${
+                                                selectedType === type.value ? "text-blue-900" : "text-gray-900"
+                                            }`}>
+                                                {type.label}
+                                            </span>
+                                            <span className="text-xs text-gray-500 text-center mt-1 hidden sm:block">
+                                                {type.description}
+                                            </span>
+                                            {selectedType === type.value && (
+                                                <CheckCircle2 className="absolute top-2 right-2 h-5 w-5 text-blue-500" />
+                                            )}
+                                        </label>
+                                    )
+                                })}
+                            </div>
+                            {result?.errors?.type && (
+                                <p className="mt-3 text-sm text-red-600 flex items-center gap-1">
+                                    <AlertCircle className="h-4 w-4" />
+                                    {result.errors.type[0]}
                                 </p>
                             )}
                         </div>
+                    </div>
 
-                        {/* Organization Type */}
-                        <div>
-                            <label className="block text-sm font-semibold text-slate-700 mb-3">
-                                Organization Type <span className="text-red-500">*</span>
-                            </label>
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                                {organizationTypes.map((type) => (
-                                    <label
-                                        key={type.value}
-                                        className={`relative flex cursor-pointer rounded-2xl p-4 transition-all duration-200 ${
-                                            selectedType === type.value
-                                                ? "bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-400 shadow-lg shadow-amber-500/10"
-                                                : "glass-card hover:shadow-lg hover:-translate-y-0.5 border-2 border-transparent"
-                                        }`}
-                                    >
-                                        <input
-                                            type="radio"
-                                            name="type"
-                                            value={type.value}
-                                            className="sr-only"
-                                            required
-                                            onChange={() => setSelectedType(type.value)}
-                                        />
-                                        <span className="flex flex-1 flex-col items-center text-center gap-2">
-                                            <span className="text-2xl">{type.icon}</span>
-                                            <span className={`text-sm font-semibold ${selectedType === type.value ? "text-amber-700" : "text-slate-700"}`}>
-                                                {type.label}
-                                            </span>
-                                            <span className={`text-xs ${selectedType === type.value ? "text-amber-600" : "text-slate-500"}`}>
-                                                {type.description}
-                                            </span>
-                                        </span>
-                                        {selectedType === type.value && (
-                                            <span className="absolute top-2 right-2 w-5 h-5 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center">
-                                                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                                </svg>
-                                            </span>
-                                        )}
+                    {/* Section 3: Details */}
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden animate-fade-in-up animation-delay-300">
+                        <div className="bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4 border-b border-gray-200">
+                            <div className="flex items-center gap-3">
+                                <div className="h-10 w-10 rounded-xl bg-green-100 flex items-center justify-center">
+                                    <FileText className="h-5 w-5 text-green-600" />
+                                </div>
+                                <div>
+                                    <h2 className="text-lg font-semibold text-gray-900">Additional Details</h2>
+                                    <p className="text-sm text-gray-600">Help others learn more about you</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="p-6 space-y-6">
+                            <div className="grid sm:grid-cols-2 gap-6">
+                                {/* Website */}
+                                <div>
+                                    <label htmlFor="website" className="block text-sm font-medium text-gray-900 mb-2">
+                                        <div className="flex items-center gap-2">
+                                            <Globe className="h-4 w-4 text-gray-400" />
+                                            Website
+                                        </div>
                                     </label>
-                                ))}
+                                    <input
+                                        type="url"
+                                        id="website"
+                                        name="website"
+                                        className="w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+                                        placeholder="https://yourwebsite.com"
+                                    />
+                                </div>
+
+                                {/* Location */}
+                                <div>
+                                    <label htmlFor="location" className="block text-sm font-medium text-gray-900 mb-2">
+                                        <div className="flex items-center gap-2">
+                                            <MapPin className="h-4 w-4 text-gray-400" />
+                                            Location
+                                        </div>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="location"
+                                        name="location"
+                                        className="w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+                                        placeholder="San Francisco, CA"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid sm:grid-cols-2 gap-6">
+                                {/* Industry */}
+                                <div>
+                                    <label htmlFor="industry" className="block text-sm font-medium text-gray-900 mb-2">
+                                        <div className="flex items-center gap-2">
+                                            <Briefcase className="h-4 w-4 text-gray-400" />
+                                            Industry
+                                        </div>
+                                    </label>
+                                    <select
+                                        id="industry"
+                                        name="industry"
+                                        className="w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all bg-white"
+                                    >
+                                        <option value="">Select an industry</option>
+                                        {industries.map((industry) => (
+                                            <option key={industry} value={industry}>
+                                                {industry}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Size */}
+                                <div>
+                                    <label htmlFor="size" className="block text-sm font-medium text-gray-900 mb-2">
+                                        <div className="flex items-center gap-2">
+                                            <Users className="h-4 w-4 text-gray-400" />
+                                            Organization Size
+                                        </div>
+                                    </label>
+                                    <select
+                                        id="size"
+                                        name="size"
+                                        value={selectedSize}
+                                        onChange={(e) => setSelectedSize(e.target.value)}
+                                        className="w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all bg-white"
+                                    >
+                                        <option value="">Select size</option>
+                                        {organizationSizes.map((size) => (
+                                            <option key={size.value} value={size.value}>
+                                                {size.label} employees
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
                             </div>
                         </div>
+                    </div>
 
-                        {/* Organization Size */}
-                        <div>
-                            <label htmlFor="size" className="block text-sm font-semibold text-slate-700 mb-2">
-                                Organization Size
-                            </label>
-                            <div className="relative">
-                                <select
-                                    id="size"
-                                    name="size"
-                                    className="w-full appearance-none px-4 py-3.5 pr-12 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all cursor-pointer"
-                                >
-                                    <option value="">Select size</option>
-                                    {organizationSizes.map((size) => (
-                                        <option key={size.value} value={size.value}>
-                                            {size.label}
-                                        </option>
-                                    ))}
-                                </select>
-                                <svg className="w-5 h-5 text-slate-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </div>
-                        </div>
-
-                        {/* Website */}
-                        <div>
-                            <label htmlFor="website" className="block text-sm font-semibold text-slate-700 mb-2">
-                                Website
-                            </label>
-                            <input
-                                type="url"
-                                id="website"
-                                name="website"
-                                className="w-full px-4 py-3.5 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all"
-                                placeholder="https://example.com"
-                            />
-                        </div>
-
-                        {/* Description */}
-                        <div>
-                            <label htmlFor="description" className="block text-sm font-semibold text-slate-700 mb-2">
-                                Description
-                            </label>
-                            <textarea
-                                id="description"
-                                name="description"
-                                rows={4}
-                                className="w-full px-4 py-3.5 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all resize-none"
-                                placeholder="Tell us about your organization..."
-                            />
-                        </div>
-
-                        {/* Submit Button */}
-                        <div className="flex items-center justify-end gap-4 pt-4">
-                            <Link
-                                href="/organizations"
-                                className="px-6 py-3 text-slate-600 font-medium hover:text-slate-800 transition-colors"
-                            >
-                                Cancel
-                            </Link>
-                            <button
-                                type="submit"
-                                disabled={isLoading}
-                                className="px-8 py-3.5 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white font-semibold shadow-lg shadow-amber-500/30 hover:shadow-xl hover:shadow-amber-500/40 hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 flex items-center gap-2"
-                            >
-                                {isLoading ? (
-                                    <>
-                                        <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                                        </svg>
-                                        Creating...
-                                    </>
-                                ) : (
-                                    <>
-                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                                        </svg>
-                                        Create Organization
-                                    </>
-                                )}
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                    {/* Actions */}
+                    <div className="flex items-center justify-between py-4 animate-fade-in-up animation-delay-400">
+                        <Link
+                            href="/organizations"
+                            className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 font-medium transition-colors"
+                        >
+                            <ArrowLeft className="h-4 w-4" />
+                            Cancel
+                        </Link>
+                        <button
+                            type="submit"
+                            disabled={isLoading}
+                            className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-8 py-3 text-sm font-semibold text-white hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105 hover:shadow-lg btn-animate"
+                        >
+                            {isLoading ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    Creating...
+                                </>
+                            ) : (
+                                <>
+                                    <Sparkles className="h-4 w-4" />
+                                    Create Organization
+                                </>
+                            )}
+                        </button>
+                    </div>
+                </form>
             </main>
         </div>
     )

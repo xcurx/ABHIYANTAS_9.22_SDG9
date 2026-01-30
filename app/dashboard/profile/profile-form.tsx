@@ -1,9 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useRouter } from "next/navigation"
-import Link from "next/link"
 import { updateProfile } from "@/lib/actions/user"
+import { Camera, X, Plus, Github, Linkedin, Globe, Save, Loader2 } from "lucide-react"
 
 type UserRole = "SUPER_ADMIN" | "ORGANIZATION_ADMIN" | "MENTOR" | "JUDGE" | "PARTICIPANT" | "SPONSOR"
 
@@ -16,19 +16,81 @@ type User = {
     createdAt: Date
 }
 
-export default function ProfileForm({ user }: { user: User }) {
+type MockData = {
+    bio: string
+    location: string
+    skills: string[]
+    github: string
+    linkedin: string
+    twitter: string
+    portfolio: string
+}
+
+export default function ProfileForm({ user, mockData }: { user: User; mockData?: MockData }) {
     const router = useRouter()
+    const fileInputRef = useRef<HTMLInputElement>(null)
     const [isLoading, setIsLoading] = useState(false)
     const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
+    
+    // Form state with mock data fallbacks
+    const [avatarPreview, setAvatarPreview] = useState<string | null>(user.avatar)
+    const [name, setName] = useState(user.name || "")
+    const [bio, setBio] = useState(mockData?.bio || "")
+    const [location, setLocation] = useState(mockData?.location || "")
+    const [skills, setSkills] = useState<string[]>(mockData?.skills || [])
+    const [newSkill, setNewSkill] = useState("")
+    const [github, setGithub] = useState(mockData?.github || "")
+    const [linkedin, setLinkedin] = useState(mockData?.linkedin || "")
+    const [twitter, setTwitter] = useState(mockData?.twitter || "")
+    const [portfolio, setPortfolio] = useState(mockData?.portfolio || "")
 
-    async function handleSubmit(formData: FormData) {
+    const handleAvatarClick = () => {
+        fileInputRef.current?.click()
+    }
+
+    const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (file) {
+            // Create preview URL
+            const reader = new FileReader()
+            reader.onloadend = () => {
+                setAvatarPreview(reader.result as string)
+            }
+            reader.readAsDataURL(file)
+        }
+    }
+
+    const handleAddSkill = () => {
+        if (newSkill.trim() && !skills.includes(newSkill.trim())) {
+            setSkills([...skills, newSkill.trim()])
+            setNewSkill("")
+        }
+    }
+
+    const handleRemoveSkill = (skillToRemove: string) => {
+        setSkills(skills.filter(skill => skill !== skillToRemove))
+    }
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === "Enter") {
+            e.preventDefault()
+            handleAddSkill()
+        }
+    }
+
+    async function handleSubmit(e: React.FormEvent) {
+        e.preventDefault()
         setIsLoading(true)
         setMessage(null)
+
+        const formData = new FormData()
+        formData.append("name", name)
+        formData.append("avatar", avatarPreview || "")
 
         const result = await updateProfile(formData)
         
         if (result.success) {
-            setMessage({ type: "success", text: result.message })
+            setMessage({ type: "success", text: "Profile updated successfully! (Note: Some features use mock data)" })
             router.refresh()
         } else {
             setMessage({ type: "error", text: result.message })
@@ -38,13 +100,13 @@ export default function ProfileForm({ user }: { user: User }) {
     }
 
     return (
-        <form action={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-8">
             {message && (
                 <div
-                    className={`rounded-2xl p-4 flex items-start gap-3 ${
+                    className={`rounded-lg p-4 ${
                         message.type === "success"
-                            ? "bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100"
-                            : "bg-gradient-to-r from-red-50 to-rose-50 border border-red-100"
+                            ? "bg-green-50 text-green-800 border border-green-200"
+                            : "bg-red-50 text-red-800 border border-red-200"
                     }`}
                 >
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
@@ -70,131 +132,294 @@ export default function ProfileForm({ user }: { user: User }) {
                 </div>
             )}
 
-            {/* Avatar URL */}
-            <div>
-                <label htmlFor="avatar" className="block text-sm font-semibold text-slate-700 mb-2">
-                    Avatar URL
-                </label>
-                <div className="relative">
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2">
-                        <svg className="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
+            {/* Avatar Upload Section */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+                <div className="relative group">
+                    <div 
+                        onClick={handleAvatarClick}
+                        className="h-24 w-24 rounded-xl bg-blue-100 flex items-center justify-center overflow-hidden cursor-pointer border-2 border-dashed border-gray-300 hover:border-blue-500 transition-colors"
+                    >
+                        {avatarPreview ? (
+                            <img
+                                src={avatarPreview}
+                                alt="Avatar"
+                                className="h-24 w-24 object-cover"
+                            />
+                        ) : (
+                            <span className="text-4xl font-bold text-blue-600">
+                                {name?.charAt(0) || user.email.charAt(0)}
+                            </span>
+                        )}
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-xl">
+                            <Camera className="h-6 w-6 text-white" />
+                        </div>
                     </div>
                     <input
-                        type="url"
-                        id="avatar"
-                        name="avatar"
-                        defaultValue={user.avatar || ""}
-                        placeholder="https://example.com/avatar.jpg"
-                        className="w-full pl-12 pr-4 py-3.5 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAvatarChange}
+                        className="hidden"
                     />
                 </div>
-                <p className="mt-2 text-xs text-slate-500">Enter a URL to an image for your profile picture</p>
+                <div className="flex-1">
+                    <h4 className="font-medium text-gray-900">Profile Photo</h4>
+                    <p className="text-sm text-gray-500 mt-1">
+                        Click on the avatar to upload a new photo. JPG, PNG or GIF. Max 2MB.
+                    </p>
+                    <div className="flex gap-2 mt-3">
+                        <button
+                            type="button"
+                            onClick={handleAvatarClick}
+                            className="text-sm font-medium text-blue-600 hover:text-blue-700"
+                        >
+                            Upload new
+                        </button>
+                        {avatarPreview && (
+                            <button
+                                type="button"
+                                onClick={() => setAvatarPreview(null)}
+                                className="text-sm font-medium text-red-600 hover:text-red-700"
+                            >
+                                Remove
+                            </button>
+                        )}
+                    </div>
+                </div>
             </div>
 
-            {/* Name */}
-            <div>
-                <label htmlFor="name" className="block text-sm font-semibold text-slate-700 mb-2">
-                    Full Name <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2">
-                        <svg className="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
+            <div className="border-t border-gray-200 pt-6">
+                <h4 className="font-medium text-gray-900 mb-4">Basic Information</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Name */}
+                    <div>
+                        <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1.5">
+                            Full Name *
+                        </label>
+                        <input
+                            type="text"
+                            id="name"
+                            name="name"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            required
+                            className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
+                            placeholder="John Doe"
+                        />
                     </div>
-                    <input
-                        type="text"
-                        id="name"
-                        name="name"
-                        defaultValue={user.name || ""}
-                        required
-                        className="w-full pl-12 pr-4 py-3.5 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+
+                    {/* Email (read-only) */}
+                    <div>
+                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
+                            Email Address
+                        </label>
+                        <input
+                            type="email"
+                            id="email"
+                            value={user.email}
+                            disabled
+                            className="block w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-gray-500 cursor-not-allowed"
+                        />
+                        <p className="mt-1 text-xs text-gray-500">Email cannot be changed</p>
+                    </div>
+
+                    {/* Location */}
+                    <div>
+                        <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1.5">
+                            Location
+                        </label>
+                        <input
+                            type="text"
+                            id="location"
+                            value={location}
+                            onChange={(e) => setLocation(e.target.value)}
+                            className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
+                            placeholder="San Francisco, CA"
+                        />
+                    </div>
+
+                    {/* Role (read-only) */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Role</label>
+                        <div className="px-4 py-2.5">
+                            <span className="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-700">
+                                {user.role}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Bio */}
+                <div className="mt-6">
+                    <label htmlFor="bio" className="block text-sm font-medium text-gray-700 mb-1.5">
+                        Bio
+                    </label>
+                    <textarea
+                        id="bio"
+                        value={bio}
+                        onChange={(e) => setBio(e.target.value)}
+                        rows={4}
+                        className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors resize-none"
+                        placeholder="Tell us about yourself..."
                     />
+                    <p className="mt-1 text-xs text-gray-500">{bio.length}/500 characters</p>
                 </div>
             </div>
 
-            {/* Email (read-only) */}
-            <div>
-                <label htmlFor="email" className="block text-sm font-semibold text-slate-700 mb-2">
-                    Email Address
-                </label>
-                <div className="relative">
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2">
-                        <svg className="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                        </svg>
+            {/* Skills Section */}
+            <div className="border-t border-gray-200 pt-6">
+                <h4 className="font-medium text-gray-900 mb-4">Skills & Expertise</h4>
+                <div className="space-y-4">
+                    <div className="flex gap-2">
+                        <input
+                            type="text"
+                            value={newSkill}
+                            onChange={(e) => setNewSkill(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            className="flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
+                            placeholder="Add a skill (e.g., React, Python, UI/UX)"
+                        />
+                        <button
+                            type="button"
+                            onClick={handleAddSkill}
+                            disabled={!newSkill.trim()}
+                            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                            <Plus className="h-4 w-4" />
+                            Add
+                        </button>
                     </div>
-                    <input
-                        type="email"
-                        id="email"
-                        value={user.email}
-                        disabled
-                        className="w-full pl-12 pr-12 py-3.5 bg-slate-100/50 border border-slate-200 rounded-xl text-slate-500 cursor-not-allowed"
-                    />
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                        <svg className="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                        </svg>
+                    
+                    {skills.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                            {skills.map((skill, index) => (
+                                <span
+                                    key={index}
+                                    className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1.5 text-sm font-medium text-blue-700"
+                                >
+                                    {skill}
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRemoveSkill(skill)}
+                                        className="hover:text-blue-900 transition-colors"
+                                    >
+                                        <X className="h-3.5 w-3.5" />
+                                    </button>
+                                </span>
+                            ))}
+                        </div>
+                    )}
+                    
+                    {skills.length === 0 && (
+                        <p className="text-sm text-gray-500">No skills added yet. Add your first skill above.</p>
+                    )}
+                </div>
+            </div>
+
+            {/* Social Links Section */}
+            <div className="border-t border-gray-200 pt-6">
+                <h4 className="font-medium text-gray-900 mb-4">Social Links</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label htmlFor="github" className="block text-sm font-medium text-gray-700 mb-1.5">
+                            GitHub
+                        </label>
+                        <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <Github className="h-5 w-5 text-gray-400" />
+                            </div>
+                            <input
+                                type="text"
+                                id="github"
+                                value={github}
+                                onChange={(e) => setGithub(e.target.value)}
+                                className="block w-full rounded-lg border border-gray-300 pl-10 pr-4 py-2.5 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
+                                placeholder="github.com/username"
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label htmlFor="linkedin" className="block text-sm font-medium text-gray-700 mb-1.5">
+                            LinkedIn
+                        </label>
+                        <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <Linkedin className="h-5 w-5 text-gray-400" />
+                            </div>
+                            <input
+                                type="text"
+                                id="linkedin"
+                                value={linkedin}
+                                onChange={(e) => setLinkedin(e.target.value)}
+                                className="block w-full rounded-lg border border-gray-300 pl-10 pr-4 py-2.5 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
+                                placeholder="linkedin.com/in/username"
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label htmlFor="twitter" className="block text-sm font-medium text-gray-700 mb-1.5">
+                            Twitter / X
+                        </label>
+                        <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg className="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                            </div>
+                            <input
+                                type="text"
+                                id="twitter"
+                                value={twitter}
+                                onChange={(e) => setTwitter(e.target.value)}
+                                className="block w-full rounded-lg border border-gray-300 pl-10 pr-4 py-2.5 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
+                                placeholder="twitter.com/username"
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label htmlFor="portfolio" className="block text-sm font-medium text-gray-700 mb-1.5">
+                            Portfolio Website
+                        </label>
+                        <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <Globe className="h-5 w-5 text-gray-400" />
+                            </div>
+                            <input
+                                type="text"
+                                id="portfolio"
+                                value={portfolio}
+                                onChange={(e) => setPortfolio(e.target.value)}
+                                className="block w-full rounded-lg border border-gray-300 pl-10 pr-4 py-2.5 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
+                                placeholder="yourwebsite.com"
+                            />
+                        </div>
                     </div>
                 </div>
-                <p className="mt-2 text-xs text-slate-500">Email cannot be changed</p>
-            </div>
-
-            {/* Role (read-only) */}
-            <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Role</label>
-                <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold bg-gradient-to-r from-indigo-50 to-violet-50 text-indigo-600 border border-indigo-100">
-                    <span className="w-2 h-2 rounded-full bg-indigo-500" />
-                    {user.role.replace(/_/g, ' ')}
-                </span>
-            </div>
-
-            {/* Member Since */}
-            <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Member Since</label>
-                <p className="text-slate-600 flex items-center gap-2">
-                    <svg className="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    {new Date(user.createdAt).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                    })}
-                </p>
             </div>
 
             {/* Actions */}
-            <div className="flex items-center justify-between pt-6 border-t border-slate-100">
-                <Link
-                    href="/dashboard"
-                    className="text-slate-600 font-medium hover:text-indigo-600 transition-colors flex items-center gap-2"
+            <div className="border-t border-gray-200 pt-6 flex items-center justify-end gap-4">
+                <button
+                    type="button"
+                    onClick={() => router.push("/dashboard")}
+                    className="rounded-lg border border-gray-300 bg-white px-6 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                 >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
-                    Back to Dashboard
-                </Link>
+                    Cancel
+                </button>
                 <button
                     type="submit"
                     disabled={isLoading}
-                    className="px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-500 text-white font-semibold shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 flex items-center gap-2"
+                    className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                     {isLoading ? (
                         <>
-                            <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                            </svg>
+                            <Loader2 className="h-4 w-4 animate-spin" />
                             Saving...
                         </>
                     ) : (
                         <>
-                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
+                            <Save className="h-4 w-4" />
                             Save Changes
                         </>
                     )}

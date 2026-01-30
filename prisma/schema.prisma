@@ -27,6 +27,9 @@ model User {
     // Coding Contest Relations
     contestParticipations ContestParticipant[]
     hackathonRegistrations  HackathonRegistration[]
+    notifications           Notification[]
+    stageSubmissions        StageSubmission[]
+    announcements           Announcement[]
 }
 
 model Account {
@@ -96,6 +99,7 @@ model Organization {
     // Coding Contest Relations
     codingContests CodingContest[]
     hackathons Hackathon[]
+    stageTemplates StageTemplate[]
 }
 
 model OrganizationMember {
@@ -387,6 +391,7 @@ model Hackathon {
     stages        HackathonStage[]
     registrations HackathonRegistration[]
     prizes        Prize[]
+    announcements Announcement[]
 }
 
 enum HackathonType {
@@ -492,21 +497,48 @@ model HackathonStage {
     description String?
     type        StageType
     order       Int // Stage sequence order
+    color       String?   // Color for UI display (hex)
 
     // Timing
     startDate DateTime
     endDate   DateTime
 
+    // Dependencies
+    dependsOnStageId String?           // Stage that must complete before this one
+    dependsOnStage   HackathonStage?   @relation("StageDependency", fields: [dependsOnStageId], references: [id], onDelete: SetNull)
+    dependentStages  HackathonStage[]  @relation("StageDependency")
+    allowParallel    Boolean           @default(false) // Can run parallel with other stages
+
     // Elimination Settings
-    isElimination    Boolean          @default(false)
-    eliminationType  EliminationType?
-    eliminationValue Float? // Top N teams, percentage, or score threshold
+    isElimination     Boolean          @default(false)
+    eliminationType   EliminationType?
+    eliminationValue  Float?           // Top N teams, percentage, or score threshold
+    eliminationNotes  String?          // Notes about elimination criteria
+
+    // Judging Settings (for EVALUATION stages)
+    judgingCriteria   Json?            // Array of {name, description, weight, maxScore}
+    minJudgesRequired Int?             // Minimum judges per submission
+    blindJudging      Boolean          @default(false)
 
     // Stage Requirements
     requiresSubmission     Boolean @default(false)
     submissionInstructions String?
+    submissionDeadline     DateTime? // Can be different from endDate
+    allowLateSubmission    Boolean   @default(false)
+    lateSubmissionPenalty  Float?    // Percentage penalty for late submissions
 
-    // Settings
+    // Mentoring Settings (for MENTORING_SESSION stages)
+    mentorSlotDuration     Int?      // Duration in minutes
+    maxSlotsPerTeam        Int?      // Max mentoring slots per team
+    
+    // Notification Settings
+    notifyOnStart          Boolean   @default(true)
+    notifyBeforeDeadline   Boolean   @default(true)
+    deadlineReminderHours  Int[]     @default([24, 6, 1]) // Hours before deadline to send reminders
+    notifyOnComplete       Boolean   @default(true)
+    notifyOnElimination    Boolean   @default(true)
+
+    // Status
     isActive    Boolean   @default(true)
     isCompleted Boolean   @default(false)
     completedAt DateTime?
@@ -514,7 +546,57 @@ model HackathonStage {
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    hackathon Hackathon @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
+    // Relations
+    hackathon   Hackathon          @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
+    submissions StageSubmission[]
+    
+    @@index([hackathonId, order])
+}
+
+// Stage submissions from teams/participants
+model StageSubmission {
+    id          String   @id @default(cuid())
+    stageId     String
+    hackathonId String
+    userId      String   // Who submitted (team leader or individual)
+    teamId      String?  // If team submission
+    
+    // Submission content
+    title       String?
+    description String?
+    content     String?  // Rich text content
+    links       Json?    // Array of {label, url}
+    attachments Json?    // Array of {name, url, type, size}
+    
+    // Status
+    status      SubmissionStatus @default(PENDING)
+    submittedAt DateTime         @default(now())
+    isLate      Boolean          @default(false)
+    
+    // Judging
+    score       Float?
+    feedback    String?
+    judgedAt    DateTime?
+    judgedBy    String?
+    
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+    
+    // Relations
+    stage       HackathonStage @relation(fields: [stageId], references: [id], onDelete: Cascade)
+    user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+    
+    @@unique([stageId, userId])
+    @@index([stageId, status])
+}
+
+enum SubmissionStatus {
+    PENDING
+    SUBMITTED
+    UNDER_REVIEW
+    APPROVED
+    REJECTED
+    NEEDS_REVISION
 }
 
 enum StageType {
@@ -534,6 +616,30 @@ enum EliminationType {
     TOP_N // Top N teams advance
     PERCENTAGE // Top X% advance
     SCORE_THRESHOLD // Teams above score threshold advance
+}
+
+// Stage Templates for reusability
+model StageTemplate {
+    id             String    @id @default(cuid())
+    organizationId String
+    name           String
+    description    String?
+    type           StageType
+    color          String?
+    
+    // Default duration in hours
+    defaultDurationHours Int @default(24)
+    
+    // Template settings (stored as JSON for flexibility)
+    settings       Json      // All the stage settings as a template
+    
+    isPublic       Boolean   @default(false) // Can other organizations use this?
+    usageCount     Int       @default(0)     // How many times used
+    
+    createdAt      DateTime  @default(now())
+    updatedAt      DateTime  @updatedAt
+    
+    organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 }
 
 // ==================== HACKATHON REGISTRATION ====================
@@ -560,4 +666,101 @@ enum RegistrationStatus {
     REJECTED
     WAITLISTED
     CANCELLED
+}
+
+// ==================== ANNOUNCEMENTS & NOTIFICATIONS ====================
+
+model Announcement {
+    id          String             @id @default(cuid())
+    title       String
+    content     String             // Rich text / Markdown content
+    type        AnnouncementType   @default(INFO)
+    priority    AnnouncementPriority @default(NORMAL)
+    
+    // Targeting
+    hackathonId String?            // If null, it's a platform-wide announcement
+    targetAudience TargetAudience  @default(ALL)
+    
+    // Scheduling
+    publishAt   DateTime           @default(now())
+    expiresAt   DateTime?          // Optional expiration
+    
+    // Metadata
+    isPinned    Boolean            @default(false)
+    isPublished Boolean            @default(true)
+    authorId    String
+    
+    createdAt   DateTime           @default(now())
+    updatedAt   DateTime           @updatedAt
+    
+    // Relations
+    hackathon   Hackathon?         @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
+    author      User               @relation(fields: [authorId], references: [id])
+    notifications Notification[]
+    
+    @@index([hackathonId])
+    @@index([publishAt])
+}
+
+model Notification {
+    id             String           @id @default(cuid())
+    userId         String
+    type           NotificationType
+    title          String
+    message        String
+    link           String?          // Optional link to navigate to
+    
+    // Source reference
+    announcementId String?
+    hackathonId    String?
+    
+    // Status
+    isRead         Boolean          @default(false)
+    readAt         DateTime?
+    
+    createdAt      DateTime         @default(now())
+    
+    // Relations
+    user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+    announcement   Announcement?    @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+    
+    @@index([userId, isRead])
+    @@index([userId, createdAt])
+}
+
+enum AnnouncementType {
+    INFO
+    UPDATE
+    DEADLINE
+    URGENT
+    RESULT
+    SCHEDULE_CHANGE
+}
+
+enum AnnouncementPriority {
+    LOW
+    NORMAL
+    HIGH
+    URGENT
+}
+
+enum TargetAudience {
+    ALL                    // All participants
+    REGISTERED             // Only registered participants
+    APPROVED               // Only approved participants
+    TEAM_LEADERS           // Only team leaders
+    MENTORS                // Only mentors
+    JUDGES                 // Only judges
+    ORGANIZERS             // Only organizers
+}
+
+enum NotificationType {
+    ANNOUNCEMENT           // From announcement
+    REGISTRATION           // Registration status update
+    TEAM                   // Team-related notification
+    SUBMISSION             // Submission-related
+    JUDGING                // Judging/evaluation related
+    DEADLINE               // Deadline reminder
+    STAGE                  // Stage transition
+    SYSTEM                 // System notification
 }
