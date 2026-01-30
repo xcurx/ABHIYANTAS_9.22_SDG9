@@ -282,35 +282,35 @@ export default function ProctoringWrapper({
     // Fullscreen prompt overlay
     if (showFullscreenPrompt && enableFullscreenLock) {
         return (
-            <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
-                <div className="max-w-lg w-full mx-4 p-8 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl text-center">
-                    <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-purple-600/20 flex items-center justify-center">
-                        <svg className="w-10 h-10 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="fixed inset-0 z-[9999] bg-blue-600 flex items-center justify-center">
+                <div className="max-w-lg w-full mx-4 p-8 bg-white rounded-2xl shadow-2xl text-center">
+                    <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-blue-100 flex items-center justify-center">
+                        <svg className="w-10 h-10 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
                         </svg>
                     </div>
-                    <h2 className="text-2xl font-bold text-white mb-4">Enter Fullscreen Mode</h2>
-                    <p className="text-gray-400 mb-6">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-4">Enter Fullscreen Mode</h2>
+                    <p className="text-gray-500 mb-6">
                         This contest requires fullscreen mode to ensure fair competition. 
                         Exiting fullscreen will be logged as a violation.
                     </p>
-                    <div className="space-y-3 text-left mb-8 p-4 bg-black/20 rounded-lg">
-                        <div className="flex items-center gap-2 text-sm text-gray-300">
-                            <span className="text-yellow-500">⚠️</span>
-                            Tab switching will be monitored and limited
+                    <div className="space-y-3 text-left mb-8 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                        <div className="flex items-center gap-3 text-sm text-gray-700">
+                            <span className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center text-amber-600">⚠️</span>
+                            <span>Tab switching will be monitored and limited</span>
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-300">
-                            <span className="text-red-500">🚫</span>
-                            Copy/paste is disabled during the contest
+                        <div className="flex items-center gap-3 text-sm text-gray-700">
+                            <span className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center text-red-600">🚫</span>
+                            <span>Copy/paste is disabled during the contest</span>
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-300">
-                            <span className="text-red-500">🔒</span>
-                            Developer tools access is blocked
+                        <div className="flex items-center gap-3 text-sm text-gray-700">
+                            <span className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center text-red-600">🔒</span>
+                            <span>Developer tools access is blocked</span>
                         </div>
                     </div>
                     <button
                         onClick={enterFullscreen}
-                        className="w-full py-4 rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold text-lg hover:from-purple-500 hover:to-blue-500 transition-all"
+                        className="w-full py-4 rounded-xl bg-blue-600 text-white font-semibold text-lg hover:bg-blue-700 transition-colors"
                     >
                         Enter Fullscreen & Start
                     </button>

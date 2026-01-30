@@ -2,6 +2,7 @@ import { auth } from "@/auth"
 import { notFound, redirect } from "next/navigation"
 import Link from "next/link"
 import { getCodingContestBySlug, getContestLeaderboard } from "@/lib/actions/coding-contest"
+import { Trophy, Users, Target, ArrowLeft, Medal } from "lucide-react"
 
 export default async function LeaderboardPage({
     params,
@@ -36,25 +37,26 @@ export default async function LeaderboardPage({
     const maxScore = contest.questions.reduce((sum, q) => sum + q.points, 0)
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+        <div className="min-h-screen bg-gray-50">
             {/* Header */}
-            <header className="border-b border-white/10 bg-black/20 backdrop-blur-xl sticky top-0 z-50">
+            <header className="bg-blue-600 text-white sticky top-0 z-50">
                 <div className="mx-auto max-w-5xl px-4 py-4 sm:px-6 lg:px-8">
-                    <Link href={`/coding-contests/${contest.slug}`} className="text-purple-400 hover:text-purple-300 text-sm mb-2 inline-flex items-center gap-1">
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                        </svg>
+                    <Link href={`/coding-contests/${contest.slug}`} className="text-blue-200 hover:text-white text-sm mb-2 inline-flex items-center gap-1 transition-colors">
+                        <ArrowLeft className="w-4 h-4" />
                         Back to Contest
                     </Link>
                     <div className="flex items-center justify-between">
                         <div>
-                            <h1 className="text-2xl font-bold text-white">🏆 Leaderboard</h1>
-                            <p className="text-gray-400">{contest.title}</p>
+                            <h1 className="text-2xl font-bold flex items-center gap-2">
+                                <Trophy className="w-6 h-6" />
+                                Leaderboard
+                            </h1>
+                            <p className="text-blue-200">{contest.title}</p>
                         </div>
                         {isLive && (
-                            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-red-600/20 border border-red-500/30">
-                                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-                                <span className="text-red-400 text-sm">Live</span>
+                            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/20 border border-red-400/30">
+                                <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse"></span>
+                                <span className="text-red-100 text-sm">Live</span>
                             </div>
                         )}
                     </div>
@@ -64,18 +66,27 @@ export default async function LeaderboardPage({
             <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
                 {/* Stats */}
                 <div className="grid grid-cols-3 gap-4 mb-8">
-                    <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
-                        <p className="text-3xl font-bold text-white">{leaderboard.length}</p>
-                        <p className="text-sm text-gray-400">Participants</p>
+                    <div className="bg-white border border-gray-200 rounded-xl p-4 text-center">
+                        <div className="w-10 h-10 mx-auto mb-2 rounded-xl bg-blue-100 flex items-center justify-center">
+                            <Users className="w-5 h-5 text-blue-600" />
+                        </div>
+                        <p className="text-3xl font-bold text-gray-900">{leaderboard.length}</p>
+                        <p className="text-sm text-gray-500">Participants</p>
                     </div>
-                    <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
-                        <p className="text-3xl font-bold text-white">{maxScore}</p>
-                        <p className="text-sm text-gray-400">Max Score</p>
+                    <div className="bg-white border border-gray-200 rounded-xl p-4 text-center">
+                        <div className="w-10 h-10 mx-auto mb-2 rounded-xl bg-amber-100 flex items-center justify-center">
+                            <Target className="w-5 h-5 text-amber-600" />
+                        </div>
+                        <p className="text-3xl font-bold text-gray-900">{maxScore}</p>
+                        <p className="text-sm text-gray-500">Max Score</p>
                     </div>
                     {currentUserRank && (
-                        <div className="bg-purple-600/20 border border-purple-500/30 rounded-xl p-4 text-center">
-                            <p className="text-3xl font-bold text-purple-400">#{currentUserRank}</p>
-                            <p className="text-sm text-gray-400">Your Rank</p>
+                        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center">
+                            <div className="w-10 h-10 mx-auto mb-2 rounded-xl bg-blue-100 flex items-center justify-center">
+                                <Medal className="w-5 h-5 text-blue-600" />
+                            </div>
+                            <p className="text-3xl font-bold text-blue-600">#{currentUserRank}</p>
+                            <p className="text-sm text-gray-500">Your Rank</p>
                         </div>
                     )}
                 </div>
@@ -85,58 +96,58 @@ export default async function LeaderboardPage({
                     <div className="flex items-end justify-center gap-4 mb-12">
                         {/* 2nd Place */}
                         <div className="text-center">
-                            <div className="w-20 h-20 mx-auto mb-2 rounded-full bg-gradient-to-br from-gray-400 to-gray-600 flex items-center justify-center text-3xl">
+                            <div className="w-20 h-20 mx-auto mb-2 rounded-full bg-gray-100 border-4 border-gray-300 flex items-center justify-center text-3xl">
                                 🥈
                             </div>
-                            <div className="bg-white/5 border border-white/10 rounded-xl p-4 w-36">
-                                <p className="font-semibold text-white truncate">{leaderboard[1].user.name}</p>
-                                <p className="text-2xl font-bold text-gray-300">{leaderboard[1].totalScore}</p>
+                            <div className="bg-white border border-gray-200 rounded-xl p-4 w-36">
+                                <p className="font-semibold text-gray-900 truncate">{leaderboard[1].user.name}</p>
+                                <p className="text-2xl font-bold text-gray-700">{leaderboard[1].totalScore}</p>
                                 <p className="text-xs text-gray-500">points</p>
                             </div>
-                            <div className="h-24 bg-gradient-to-t from-gray-700 to-gray-600 rounded-t-lg mt-2"></div>
+                            <div className="h-24 bg-gray-200 rounded-t-lg mt-2"></div>
                         </div>
 
                         {/* 1st Place */}
                         <div className="text-center -mt-8">
-                            <div className="w-24 h-24 mx-auto mb-2 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center text-4xl animate-pulse">
+                            <div className="w-24 h-24 mx-auto mb-2 rounded-full bg-amber-100 border-4 border-amber-400 flex items-center justify-center text-4xl animate-pulse">
                                 🥇
                             </div>
-                            <div className="bg-yellow-600/20 border border-yellow-500/30 rounded-xl p-4 w-40">
-                                <p className="font-semibold text-white truncate">{leaderboard[0].user.name}</p>
-                                <p className="text-3xl font-bold text-yellow-400">{leaderboard[0].totalScore}</p>
-                                <p className="text-xs text-gray-400">points</p>
+                            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 w-40">
+                                <p className="font-semibold text-gray-900 truncate">{leaderboard[0].user.name}</p>
+                                <p className="text-3xl font-bold text-amber-600">{leaderboard[0].totalScore}</p>
+                                <p className="text-xs text-gray-500">points</p>
                             </div>
-                            <div className="h-32 bg-gradient-to-t from-yellow-700 to-yellow-600 rounded-t-lg mt-2"></div>
+                            <div className="h-32 bg-amber-200 rounded-t-lg mt-2"></div>
                         </div>
 
                         {/* 3rd Place */}
                         <div className="text-center">
-                            <div className="w-20 h-20 mx-auto mb-2 rounded-full bg-gradient-to-br from-orange-600 to-orange-800 flex items-center justify-center text-3xl">
+                            <div className="w-20 h-20 mx-auto mb-2 rounded-full bg-orange-100 border-4 border-orange-300 flex items-center justify-center text-3xl">
                                 🥉
                             </div>
-                            <div className="bg-white/5 border border-white/10 rounded-xl p-4 w-36">
-                                <p className="font-semibold text-white truncate">{leaderboard[2].user.name}</p>
-                                <p className="text-2xl font-bold text-orange-400">{leaderboard[2].totalScore}</p>
+                            <div className="bg-white border border-gray-200 rounded-xl p-4 w-36">
+                                <p className="font-semibold text-gray-900 truncate">{leaderboard[2].user.name}</p>
+                                <p className="text-2xl font-bold text-orange-600">{leaderboard[2].totalScore}</p>
                                 <p className="text-xs text-gray-500">points</p>
                             </div>
-                            <div className="h-16 bg-gradient-to-t from-orange-800 to-orange-700 rounded-t-lg mt-2"></div>
+                            <div className="h-16 bg-orange-200 rounded-t-lg mt-2"></div>
                         </div>
                     </div>
                 )}
 
                 {/* Full Leaderboard Table */}
-                <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
+                <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
                     <table className="w-full">
                         <thead>
-                            <tr className="border-b border-white/10">
-                                <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">Rank</th>
-                                <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">Participant</th>
-                                <th className="px-6 py-4 text-center text-sm font-medium text-gray-400">Score</th>
-                                <th className="px-6 py-4 text-center text-sm font-medium text-gray-400">Questions Solved</th>
-                                <th className="px-6 py-4 text-right text-sm font-medium text-gray-400">Time</th>
+                            <tr className="border-b border-gray-200 bg-gray-50">
+                                <th className="px-6 py-4 text-left text-sm font-medium text-gray-500">Rank</th>
+                                <th className="px-6 py-4 text-left text-sm font-medium text-gray-500">Participant</th>
+                                <th className="px-6 py-4 text-center text-sm font-medium text-gray-500">Score</th>
+                                <th className="px-6 py-4 text-center text-sm font-medium text-gray-500">Questions Solved</th>
+                                <th className="px-6 py-4 text-right text-sm font-medium text-gray-500">Time</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-white/5">
+                        <tbody className="divide-y divide-gray-100">
                             {leaderboard.map((participant, index) => {
                                 const isCurrentUser = session?.user?.id === participant.user.id
                                 const rank = index + 1
@@ -144,31 +155,31 @@ export default async function LeaderboardPage({
                                 return (
                                     <tr
                                         key={participant.id}
-                                        className={`${isCurrentUser ? "bg-purple-600/10" : "hover:bg-white/5"} transition-colors`}
+                                        className={`${isCurrentUser ? "bg-blue-50" : "hover:bg-gray-50"} transition-colors`}
                                     >
                                         <td className="px-6 py-4">
                                             <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${
                                                 rank === 1
-                                                    ? "bg-yellow-600/30 text-yellow-400"
+                                                    ? "bg-amber-100 text-amber-600"
                                                     : rank === 2
-                                                    ? "bg-gray-600/30 text-gray-300"
+                                                    ? "bg-gray-100 text-gray-600"
                                                     : rank === 3
-                                                    ? "bg-orange-600/30 text-orange-400"
-                                                    : "bg-white/10 text-gray-400"
+                                                    ? "bg-orange-100 text-orange-600"
+                                                    : "bg-gray-100 text-gray-500"
                                             }`}>
                                                 {rank}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center text-white font-medium">
+                                                <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-medium">
                                                     {participant.user.name?.charAt(0).toUpperCase() || "?"}
                                                 </div>
                                                 <div>
-                                                    <p className="font-medium text-white">
+                                                    <p className="font-medium text-gray-900">
                                                         {participant.user.name}
                                                         {isCurrentUser && (
-                                                            <span className="ml-2 text-xs text-purple-400">(You)</span>
+                                                            <span className="ml-2 text-xs text-blue-600">(You)</span>
                                                         )}
                                                     </p>
                                                     <p className="text-sm text-gray-500">@{participant.user.email?.split("@")[0]}</p>
@@ -176,14 +187,14 @@ export default async function LeaderboardPage({
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 text-center">
-                                            <span className="text-xl font-bold text-white">{participant.totalScore}</span>
-                                            <span className="text-sm text-gray-500">/{maxScore}</span>
+                                            <span className="text-xl font-bold text-gray-900">{participant.totalScore}</span>
+                                            <span className="text-sm text-gray-400">/{maxScore}</span>
                                         </td>
                                         <td className="px-6 py-4 text-center">
-                                            <span className="text-white">{participant.questionsAttempted}</span>
-                                            <span className="text-gray-500">/{contest.questions.length}</span>
+                                            <span className="text-gray-900">{participant.questionsAttempted}</span>
+                                            <span className="text-gray-400">/{contest.questions.length}</span>
                                         </td>
-                                        <td className="px-6 py-4 text-right text-gray-400 text-sm">
+                                        <td className="px-6 py-4 text-right text-gray-500 text-sm">
                                             {participant.submittedAt
                                                 ? new Date(participant.submittedAt).toLocaleTimeString()
                                                 : participant.status === "IN_PROGRESS"
@@ -199,7 +210,7 @@ export default async function LeaderboardPage({
 
                     {leaderboard.length === 0 && (
                         <div className="text-center py-12">
-                            <p className="text-gray-400">No participants yet</p>
+                            <p className="text-gray-500">No participants yet</p>
                         </div>
                     )}
                 </div>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import { Calendar, Clock, Play, UserPlus, Settings, BarChart3, CheckCircle } from "lucide-react"
 
 interface ContestActionCardProps {
     contest: {
@@ -39,15 +40,15 @@ export default function ContestActionCard({
     // Loading skeleton
     if (!now) {
         return (
-            <div className="glass-card rounded-3xl p-6 overflow-hidden">
+            <div className="bg-white rounded-2xl border border-gray-200 p-6 overflow-hidden">
                 <div className="animate-pulse space-y-4">
-                    <div className="h-16 bg-gradient-to-r from-slate-100 to-slate-200 rounded-2xl" />
-                    <div className="h-4 bg-slate-100 rounded w-3/4 mx-auto" />
+                    <div className="h-16 bg-gray-100 rounded-xl" />
+                    <div className="h-4 bg-gray-100 rounded w-3/4 mx-auto" />
                     <div className="space-y-3 pt-4">
-                        <div className="h-12 bg-slate-100 rounded-xl" />
-                        <div className="h-12 bg-slate-100 rounded-xl" />
+                        <div className="h-12 bg-gray-100 rounded-xl" />
+                        <div className="h-12 bg-gray-100 rounded-xl" />
                     </div>
-                    <div className="h-12 bg-gradient-to-r from-indigo-200 to-violet-200 rounded-xl" />
+                    <div className="h-12 bg-blue-100 rounded-xl" />
                 </div>
             </div>
         )
@@ -112,24 +113,17 @@ export default function ContestActionCard({
         : getTimeUntil(contest.startTime)
 
     return (
-        <div className="glass-card rounded-3xl overflow-hidden">
+        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
             {/* Timer Header */}
-            <div className={`relative px-6 py-6 text-center overflow-hidden ${
+            <div className={`relative px-6 py-6 text-center ${
                 isLive 
-                    ? 'bg-gradient-to-br from-red-500 via-rose-500 to-pink-500' 
+                    ? 'bg-red-600' 
                     : isEnded 
-                        ? 'bg-gradient-to-br from-slate-500 to-slate-600'
-                        : 'bg-gradient-to-br from-indigo-500 via-violet-500 to-purple-500'
+                        ? 'bg-gray-600'
+                        : 'bg-blue-600'
             }`}>
-                {/* Animated Background Pattern */}
-                <div className="absolute inset-0 opacity-20">
-                    <div className="absolute top-0 left-0 w-full h-full" style={{
-                        backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.3) 0%, transparent 50%)'
-                    }} />
-                </div>
-                
                 {isLive ? (
-                    <div className="relative space-y-2">
+                    <div className="space-y-2">
                         <div className="flex items-center justify-center gap-2">
                             <span className="w-3 h-3 bg-white rounded-full animate-pulse" />
                             <span className="font-bold text-white/90 text-sm uppercase tracking-wider">Live Now</span>
@@ -142,7 +136,7 @@ export default function ContestActionCard({
                         </p>
                     </div>
                 ) : isBeforeStart ? (
-                    <div className="relative space-y-2">
+                    <div className="space-y-2">
                         <p className="text-white/70 text-xs uppercase tracking-wider font-medium">Starts In</p>
                         <p className="text-4xl font-bold text-white font-mono tracking-wide">
                             {timeInfo.value}
@@ -150,7 +144,7 @@ export default function ContestActionCard({
                         <p className="text-white/60 text-xs">{timeInfo.unit}</p>
                     </div>
                 ) : (
-                    <div className="relative text-white/90 font-semibold">
+                    <div className="text-white font-semibold">
                         Contest Ended
                     </div>
                 )}
@@ -160,52 +154,46 @@ export default function ContestActionCard({
             <div className="p-6 space-y-5">
                 {/* Schedule Details */}
                 <div className="space-y-3">
-                    <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50/80 hover:bg-slate-100/80 transition-colors">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shrink-0">
-                            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">
+                        <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center shrink-0">
+                            <Calendar className="w-5 h-5 text-green-600" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <div className="text-xs text-slate-500 font-medium">Start</div>
-                            <div className="text-sm font-semibold text-slate-700 truncate">{formatDate(contest.startTime)}</div>
+                            <div className="text-xs text-gray-500 font-medium">Start</div>
+                            <div className="text-sm font-semibold text-gray-900 truncate">{formatDate(contest.startTime)}</div>
                         </div>
                     </div>
                     
-                    <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50/80 hover:bg-slate-100/80 transition-colors">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-rose-500 flex items-center justify-center shrink-0">
-                            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">
+                        <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center shrink-0">
+                            <Clock className="w-5 h-5 text-red-600" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <div className="text-xs text-slate-500 font-medium">End</div>
-                            <div className="text-sm font-semibold text-slate-700 truncate">{formatDate(contest.endTime)}</div>
+                            <div className="text-xs text-gray-500 font-medium">End</div>
+                            <div className="text-sm font-semibold text-gray-900 truncate">{formatDate(contest.endTime)}</div>
                         </div>
                     </div>
                     
-                    <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50/80 hover:bg-slate-100/80 transition-colors">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-500 flex items-center justify-center shrink-0">
-                            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                            </svg>
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">
+                        <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
+                            <Clock className="w-5 h-5 text-blue-600" />
                         </div>
                         <div className="flex-1">
-                            <div className="text-xs text-slate-500 font-medium">Duration</div>
-                            <div className="text-sm font-semibold text-slate-700">{contest.duration} minutes</div>
+                            <div className="text-xs text-gray-500 font-medium">Duration</div>
+                            <div className="text-sm font-semibold text-gray-900">{contest.duration} minutes</div>
                         </div>
                     </div>
                 </div>
 
                 {/* Divider */}
-                <div className="h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
+                <div className="h-px bg-gray-200" />
 
                 {/* Action Buttons */}
                 <div className="space-y-3">
                     {!isLoggedIn ? (
                         <Link
                             href="/sign-in"
-                            className="group block w-full text-center py-3.5 rounded-xl bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-500 text-white font-semibold shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 hover:-translate-y-0.5 transition-all duration-300"
+                            className="block w-full text-center py-3.5 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors"
                         >
                             Sign in to Register
                         </Link>
@@ -214,7 +202,7 @@ export default function ContestActionCard({
                             type="button"
                             onClick={handleRegister}
                             disabled={isRegistering}
-                            className="group w-full py-3.5 rounded-xl bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-500 text-white font-semibold shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+                            className="w-full py-3.5 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isRegistering ? (
                                 <span className="flex items-center justify-center gap-2">
@@ -223,39 +211,32 @@ export default function ContestActionCard({
                                 </span>
                             ) : (
                                 <span className="flex items-center justify-center gap-2">
-                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                                    </svg>
+                                    <UserPlus className="w-5 h-5" />
                                     Register Now
                                 </span>
                             )}
                         </button>
                     ) : contest.isRegistered ? (
                         <div className="space-y-3">
-                            <div className="py-3 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200/50 text-center">
-                                <span className="text-emerald-600 font-semibold flex items-center justify-center gap-2">
-                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                    </svg>
+                            <div className="py-3 rounded-xl bg-green-50 border border-green-200 text-center">
+                                <span className="text-green-700 font-semibold flex items-center justify-center gap-2">
+                                    <CheckCircle className="w-5 h-5" />
                                     Registered
                                 </span>
                             </div>
                             {canStart && (
                                 <Link
                                     href={`/coding-contests/${contest.slug}/participate`}
-                                    className="group block w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold text-center shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40 hover:-translate-y-0.5 transition-all duration-300"
+                                    className="block w-full py-3.5 rounded-xl bg-green-600 text-white font-semibold text-center hover:bg-green-700 transition-colors"
                                 >
                                     <span className="flex items-center justify-center gap-2">
-                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
+                                        <Play className="w-5 h-5" />
                                         Start Contest
                                     </span>
                                 </Link>
                             )}
                             {isBeforeStart && !contest.allowLateJoin && (
-                                <p className="text-center text-slate-500 text-sm">
+                                <p className="text-center text-gray-500 text-sm">
                                     You can start when the contest begins
                                 </p>
                             )}
@@ -263,7 +244,7 @@ export default function ContestActionCard({
                     ) : isEnded ? (
                         <Link
                             href={`/coding-contests/${contest.slug}/results`}
-                            className="block w-full py-3.5 rounded-xl bg-slate-100 text-slate-700 font-semibold text-center hover:bg-slate-200 transition-colors"
+                            className="block w-full py-3.5 rounded-xl bg-gray-100 text-gray-700 font-semibold text-center hover:bg-gray-200 transition-colors"
                         >
                             View Results
                         </Link>
@@ -273,12 +254,9 @@ export default function ContestActionCard({
                     {contest.isAdmin && (
                         <Link
                             href={`/coding-contests/${contest.slug}/manage`}
-                            className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border-2 border-slate-200 text-slate-700 font-medium hover:bg-slate-50 hover:border-slate-300 transition-all"
+                            className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium hover:bg-gray-50 hover:border-gray-300 transition-all"
                         >
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
+                            <Settings className="w-4 h-4" />
                             Manage Contest
                         </Link>
                     )}
@@ -287,11 +265,9 @@ export default function ContestActionCard({
                     {contest.showLeaderboard && !isBeforeStart && (
                         <Link
                             href={`/coding-contests/${contest.slug}/leaderboard`}
-                            className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border-2 border-slate-200 text-slate-700 font-medium hover:bg-slate-50 hover:border-slate-300 transition-all"
+                            className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium hover:bg-gray-50 hover:border-gray-300 transition-all"
                         >
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                            </svg>
+                            <BarChart3 className="w-4 h-4" />
                             Leaderboard
                         </Link>
                     )}
