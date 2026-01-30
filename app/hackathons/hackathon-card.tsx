@@ -68,7 +68,7 @@ export default function HackathonCard({ hackathon }: HackathonCardProps) {
 
     return (
         <Link href={`/hackathons/${hackathon.slug}`}>
-            <article className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:border-blue-200 hover:shadow-lg transition-all duration-300">
+            <article className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:border-blue-200 hover:shadow-lg transition-all duration-300 h-full flex flex-col">
                 {/* Banner Image */}
                 <div className="relative h-44 bg-blue-600">
                     {hackathon.bannerImage ? (
@@ -122,43 +122,47 @@ export default function HackathonCard({ hackathon }: HackathonCardProps) {
                 </div>
 
                 {/* Content */}
-                <div className="p-5">
+                <div className="p-5 flex flex-col flex-grow">
                     {/* Organization */}
-                    {hackathon.organization && (
-                        <div className="flex items-center gap-2 mb-3">
-                            {hackathon.organization.logo ? (
-                                <Image
-                                    src={hackathon.organization.logo}
-                                    alt={hackathon.organization.name}
-                                    width={20}
-                                    height={20}
-                                    className="rounded-full"
-                                />
-                            ) : (
-                                <div className="h-5 w-5 rounded-full bg-blue-100 flex items-center justify-center">
-                                    <Building2 className="h-3 w-3 text-blue-600" />
-                                </div>
-                            )}
-                            <span className="text-sm text-gray-600 truncate">
-                                {hackathon.organization.name}
-                            </span>
-                        </div>
-                    )}
+                    <div className="h-7 mb-3">
+                        {hackathon.organization ? (
+                            <div className="flex items-center gap-2">
+                                {hackathon.organization.logo ? (
+                                    <Image
+                                        src={hackathon.organization.logo}
+                                        alt={hackathon.organization.name}
+                                        width={20}
+                                        height={20}
+                                        className="rounded-full"
+                                    />
+                                ) : (
+                                    <div className="h-5 w-5 rounded-full bg-blue-100 flex items-center justify-center">
+                                        <Building2 className="h-3 w-3 text-blue-600" />
+                                    </div>
+                                )}
+                                <span className="text-sm text-gray-600 truncate">
+                                    {hackathon.organization.name}
+                                </span>
+                            </div>
+                        ) : (
+                            <div className="h-5" />
+                        )}
+                    </div>
 
                     {/* Title */}
                     <h3 className="font-bold text-lg text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-1">
                         {hackathon.title}
                     </h3>
                     
-                    {/* Description */}
-                    {hackathon.shortDescription && (
-                        <p className="text-sm text-gray-600 mt-2 line-clamp-2">
-                            {hackathon.shortDescription}
+                    {/* Description - fixed height */}
+                    <div className="h-12 mt-2">
+                        <p className="text-sm text-gray-600 line-clamp-2">
+                            {hackathon.shortDescription || "\u00A0"}
                         </p>
-                    )}
+                    </div>
 
                     {/* Meta Info */}
-                    <div className="mt-4 space-y-2.5">
+                    <div className="mt-4 space-y-2.5 flex-grow">
                         {/* Dates */}
                         <div className="flex items-center gap-2.5 text-sm text-gray-600">
                             <div className="h-8 w-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
@@ -206,7 +210,7 @@ export default function HackathonCard({ hackathon }: HackathonCardProps) {
                     </div>
 
                     {/* Footer */}
-                    <div className="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between">
+                    <div className="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between mt-auto">
                         {/* Tracks Count */}
                         <div className="flex items-center gap-2">
                             {hackathon._count.tracks > 0 && (

@@ -461,7 +461,7 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
                     {/* Right Column - Sidebar */}
                     <div className="space-y-6">
                         {/* Registration Card */}
-                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sticky top-4 animate-fade-in" style={{ animationDelay: "200ms" }}>
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 animate-fade-in" style={{ animationDelay: "200ms" }}>
                             {/* Registration Status */}
                             {userRegistration ? (
                                 <div className="mb-4">
