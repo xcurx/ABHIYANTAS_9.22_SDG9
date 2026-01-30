@@ -29,6 +29,7 @@ model User {
     hackathonRegistrations  HackathonRegistration[]
     notifications           Notification[]
     stageSubmissions        StageSubmission[]
+    announcements           Announcement[]
 }
 
 model Account {
@@ -694,6 +695,7 @@ model Announcement {
     
     // Relations
     hackathon   Hackathon?         @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
+    author      User               @relation(fields: [authorId], references: [id])
     notifications Notification[]
     
     @@index([hackathonId])

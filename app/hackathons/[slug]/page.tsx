@@ -21,6 +21,7 @@ import {
 } from "lucide-react"
 import { formatDate, formatDateTime, cn } from "@/lib/utils"
 import RegisterButton from "./register-button"
+import HackathonAnnouncements from "@/components/hackathon/hackathon-announcements"
 
 interface HackathonPageProps {
     params: Promise<{ slug: string }>
@@ -255,6 +256,12 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
                                 </div>
                             </div>
                         </div>
+
+                        {/* Announcements */}
+                        <HackathonAnnouncements 
+                            hackathonId={hackathon.id} 
+                            hackathonSlug={hackathon.slug} 
+                        />
 
                         {/* About */}
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 animate-fade-in-up" style={{ animationDelay: "150ms" }}>

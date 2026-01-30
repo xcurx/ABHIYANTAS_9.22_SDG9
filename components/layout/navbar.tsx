@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { NotificationDropdown } from "./notification-dropdown"
+import { NotificationBell } from "@/components/notifications/notification-bell"
 
 interface NavbarProps {
     user?: {
@@ -65,7 +65,7 @@ export function Navbar({ user, signOutAction }: NavbarProps) {
                         {user ? (
                             <>
                                 {/* Notifications */}
-                                <NotificationDropdown />
+                                <NotificationBell />
 
                                 {/* User Dropdown */}
                                 <div className="relative group">

@@ -3,6 +3,18 @@
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { updateOrganization } from "@/lib/actions/organization"
+import { 
+    Building2, 
+    Globe, 
+    MapPin, 
+    Briefcase, 
+    Users, 
+    FileText, 
+    CheckCircle2, 
+    AlertCircle, 
+    Loader2,
+    Save
+} from "lucide-react"
 
 type OrganizationType = "COMPANY" | "UNIVERSITY" | "NONPROFIT" | "GOVERNMENT" | "OTHER"
 
@@ -82,159 +94,205 @@ export default function SettingsForm({ organization }: SettingsFormProps) {
     }
 
     return (
-        <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-6">General Settings</h2>
-
-            {error && (
-                <div className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700">
-                    {error}
-                </div>
-            )}
-
-            {success && (
-                <div className="mb-4 rounded-md bg-green-50 p-3 text-sm text-green-700">
-                    {success}
-                </div>
-            )}
-
-            <div className="space-y-6">
-                {/* Name */}
-                <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                        Organization Name *
-                    </label>
-                    <input
-                        type="text"
-                        id="name"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        required
-                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                    />
-                </div>
-
-                {/* Slug (readonly) */}
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Organization URL
-                    </label>
-                    <div className="flex items-center rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-500">
-                        <span>/organizations/{organization.slug}</span>
-                    </div>
-                    <p className="mt-1 text-xs text-gray-500">
-                        The URL slug will update automatically when you change the name.
-                    </p>
-                </div>
-
-                {/* Type */}
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Organization Type *
-                    </label>
-                    <div className="flex flex-wrap gap-4">
-                        {organizationTypes.map((orgType) => (
-                            <label key={orgType.value} className="flex items-center">
-                                <input
-                                    type="radio"
-                                    name="type"
-                                    value={orgType.value}
-                                    checked={type === orgType.value}
-                                    onChange={(e) => setType(e.target.value as OrganizationType)}
-                                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
-                                />
-                                <span className="ml-2 text-sm text-gray-700">{orgType.label}</span>
-                            </label>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Description */}
-                <div>
-                    <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-                        Description
-                    </label>
-                    <textarea
-                        id="description"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        rows={4}
-                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                        placeholder="Tell us about your organization..."
-                    />
-                </div>
-
-                {/* Website */}
-                <div>
-                    <label htmlFor="website" className="block text-sm font-medium text-gray-700 mb-1">
-                        Website
-                    </label>
-                    <input
-                        type="url"
-                        id="website"
-                        value={website}
-                        onChange={(e) => setWebsite(e.target.value)}
-                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                        placeholder="https://example.com"
-                    />
-                </div>
-
-                {/* Industry & Size */}
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label htmlFor="industry" className="block text-sm font-medium text-gray-700 mb-1">
-                            Industry
-                        </label>
-                        <input
-                            type="text"
-                            id="industry"
-                            value={industry}
-                            onChange={(e) => setIndustry(e.target.value)}
-                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                            placeholder="Technology, Healthcare, etc."
-                        />
+        <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mb-8 animate-fade-in-up">
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-200">
+                <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-xl bg-blue-100 flex items-center justify-center">
+                        <Building2 className="h-5 w-5 text-blue-600" />
                     </div>
                     <div>
-                        <label htmlFor="size" className="block text-sm font-medium text-gray-700 mb-1">
-                            Size
-                        </label>
-                        <select
-                            id="size"
-                            value={size}
-                            onChange={(e) => setSize(e.target.value)}
-                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                        >
-                            <option value="">Select size</option>
-                            {sizeOptions.map((opt) => (
-                                <option key={opt} value={opt}>{opt} employees</option>
-                            ))}
-                        </select>
+                        <h2 className="text-lg font-semibold text-gray-900">General Settings</h2>
+                        <p className="text-sm text-gray-600">Update your organization information</p>
                     </div>
-                </div>
-
-                {/* Location */}
-                <div>
-                    <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
-                        Location
-                    </label>
-                    <input
-                        type="text"
-                        id="location"
-                        value={location}
-                        onChange={(e) => setLocation(e.target.value)}
-                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                        placeholder="City, Country"
-                    />
                 </div>
             </div>
 
-            <div className="mt-6 flex justify-end">
-                <button
-                    type="submit"
-                    disabled={isPending}
-                    className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-50"
-                >
-                    {isPending ? "Saving..." : "Save Changes"}
-                </button>
+            <div className="p-6 sm:p-8">
+                {error && (
+                    <div className="mb-6 rounded-xl bg-red-50 border border-red-200 p-4 flex items-start gap-3 animate-fade-in-up">
+                        <AlertCircle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
+                        <p className="text-sm text-red-700">{error}</p>
+                    </div>
+                )}
+
+                {success && (
+                    <div className="mb-6 rounded-xl bg-green-50 border border-green-200 p-4 flex items-start gap-3 animate-fade-in-up">
+                        <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                        <p className="text-sm text-green-700">{success}</p>
+                    </div>
+                )}
+
+                <div className="space-y-6">
+                    {/* Name */}
+                    <div>
+                        <label htmlFor="name" className="block text-sm font-medium text-gray-900 mb-2">
+                            Organization Name <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            id="name"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            required
+                            className="w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+                        />
+                    </div>
+
+                    {/* Slug (readonly) */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-900 mb-2">
+                            Organization URL
+                        </label>
+                        <div className="flex items-center rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-500">
+                            <span>/organizations/{organization.slug}</span>
+                        </div>
+                        <p className="mt-2 text-xs text-gray-500">
+                            The URL slug cannot be changed after creation.
+                        </p>
+                    </div>
+
+                    {/* Type */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-900 mb-3">
+                            Organization Type <span className="text-red-500">*</span>
+                        </label>
+                        <div className="flex flex-wrap gap-3">
+                            {organizationTypes.map((orgType) => (
+                                <label 
+                                    key={orgType.value} 
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-xl border cursor-pointer transition-all ${
+                                        type === orgType.value 
+                                            ? "border-blue-500 bg-blue-50 text-blue-700" 
+                                            : "border-gray-200 hover:border-gray-300 text-gray-700"
+                                    }`}
+                                >
+                                    <input
+                                        type="radio"
+                                        name="type"
+                                        value={orgType.value}
+                                        checked={type === orgType.value}
+                                        onChange={(e) => setType(e.target.value as OrganizationType)}
+                                        className="sr-only"
+                                    />
+                                    <span className="text-sm font-medium">{orgType.label}</span>
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Description */}
+                    <div>
+                        <label htmlFor="description" className="block text-sm font-medium text-gray-900 mb-2">
+                            <div className="flex items-center gap-2">
+                                <FileText className="h-4 w-4 text-gray-400" />
+                                Description
+                            </div>
+                        </label>
+                        <textarea
+                            id="description"
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            rows={4}
+                            className="w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all resize-none"
+                            placeholder="Tell us about your organization..."
+                        />
+                    </div>
+
+                    {/* Website */}
+                    <div>
+                        <label htmlFor="website" className="block text-sm font-medium text-gray-900 mb-2">
+                            <div className="flex items-center gap-2">
+                                <Globe className="h-4 w-4 text-gray-400" />
+                                Website
+                            </div>
+                        </label>
+                        <input
+                            type="url"
+                            id="website"
+                            value={website}
+                            onChange={(e) => setWebsite(e.target.value)}
+                            className="w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+                            placeholder="https://example.com"
+                        />
+                    </div>
+
+                    {/* Industry & Size */}
+                    <div className="grid sm:grid-cols-2 gap-6">
+                        <div>
+                            <label htmlFor="industry" className="block text-sm font-medium text-gray-900 mb-2">
+                                <div className="flex items-center gap-2">
+                                    <Briefcase className="h-4 w-4 text-gray-400" />
+                                    Industry
+                                </div>
+                            </label>
+                            <input
+                                type="text"
+                                id="industry"
+                                value={industry}
+                                onChange={(e) => setIndustry(e.target.value)}
+                                className="w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+                                placeholder="Technology, Healthcare, etc."
+                            />
+                        </div>
+                        <div>
+                            <label htmlFor="size" className="block text-sm font-medium text-gray-900 mb-2">
+                                <div className="flex items-center gap-2">
+                                    <Users className="h-4 w-4 text-gray-400" />
+                                    Size
+                                </div>
+                            </label>
+                            <select
+                                id="size"
+                                value={size}
+                                onChange={(e) => setSize(e.target.value)}
+                                className="w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all bg-white"
+                            >
+                                <option value="">Select size</option>
+                                {sizeOptions.map((opt) => (
+                                    <option key={opt} value={opt}>{opt} employees</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+
+                    {/* Location */}
+                    <div>
+                        <label htmlFor="location" className="block text-sm font-medium text-gray-900 mb-2">
+                            <div className="flex items-center gap-2">
+                                <MapPin className="h-4 w-4 text-gray-400" />
+                                Location
+                            </div>
+                        </label>
+                        <input
+                            type="text"
+                            id="location"
+                            value={location}
+                            onChange={(e) => setLocation(e.target.value)}
+                            className="w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+                            placeholder="City, Country"
+                        />
+                    </div>
+                </div>
+
+                <div className="mt-8 flex justify-end">
+                    <button
+                        type="submit"
+                        disabled={isPending}
+                        className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-500 disabled:opacity-50 transition-all hover:scale-105 btn-animate"
+                    >
+                        {isPending ? (
+                            <>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                Saving...
+                            </>
+                        ) : (
+                            <>
+                                <Save className="h-4 w-4" />
+                                Save Changes
+                            </>
+                        )}
+                    </button>
+                </div>
             </div>
         </form>
     )
