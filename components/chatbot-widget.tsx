@@ -39,16 +39,13 @@ export function ChatbotWidget() {
                     <iframe
                         id="JotFormIFrame-019c101f8013722d8f3642e3cbb74af9235a"
                         title="ELEVATE: Website Support Specialist"
-                        allowTransparency={true}
                         allow="geolocation; microphone; camera; fullscreen"
                         src="https://agent.jotform.com/019c101f8013722d8f3642e3cbb74af9235a?embedMode=iframe&background=1&shadow=1"
-                        frameBorder="0"
                         style={{
                             width: "100%",
                             height: "100%",
                             border: "none",
                         }}
-                        scrolling="no"
                     />
                 </div>
             </div>
