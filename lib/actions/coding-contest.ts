@@ -798,3 +798,44 @@ export async function getUserCodingContests() {
         organizing: organizingContests,
     }
 }
+
+// ==================== CALENDAR ====================
+
+export async function getContestsForCalendar(year: number, month: number) {
+    // Month is 1-indexed (1 = January)
+    const startDate = new Date(year, month - 1, 1)
+    const endDate = new Date(year, month, 0, 23, 59, 59)
+    
+    const contests = await prisma.codingContest.findMany({
+        where: {
+            status: { not: "DRAFT" },
+            OR: [
+                { startTime: { gte: startDate, lte: endDate } },
+                { endTime: { gte: startDate, lte: endDate } },
+                { 
+                    AND: [
+                        { startTime: { lte: startDate } },
+                        { endTime: { gte: endDate } }
+                    ]
+                }
+            ]
+        },
+        select: {
+            id: true,
+            title: true,
+            slug: true,
+            startTime: true,
+            endTime: true,
+            status: true,
+            organization: {
+                select: { name: true }
+            },
+            _count: {
+                select: { participants: true }
+            }
+        },
+        orderBy: { startTime: "asc" }
+    })
+
+    return contests
+}

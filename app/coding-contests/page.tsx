@@ -119,7 +119,7 @@ export default async function CodingContestsPage({
                         </p>
                         
                         {session && (
-                            <div className="mt-8 animate-fade-in-up" style={{ animationDelay: '0.4s', animationFillMode: 'forwards', opacity: 0 }}>
+                            <div className="mt-8 flex items-center justify-center gap-4 animate-fade-in-up" style={{ animationDelay: '0.4s', animationFillMode: 'forwards', opacity: 0 }}>
                                 <Link
                                     href="/coding-contests/new"
                                     className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold text-blue-600 hover:bg-blue-50 transition-all duration-200 hover:scale-105"
@@ -130,6 +130,25 @@ export default async function CodingContestsPage({
                                         </svg>
                                     </span>
                                     Create Contest
+                                </Link>
+                                <Link
+                                    href="/coding-contests/calendar"
+                                    className="inline-flex items-center gap-2 rounded-xl bg-white/10 border border-white/20 px-6 py-3 text-sm font-semibold text-white hover:bg-white/20 transition-all duration-200"
+                                >
+                                    <Calendar className="h-4 w-4" />
+                                    View Calendar
+                                </Link>
+                            </div>
+                        )}
+
+                        {!session && (
+                            <div className="mt-8 animate-fade-in-up" style={{ animationDelay: '0.4s', animationFillMode: 'forwards', opacity: 0 }}>
+                                <Link
+                                    href="/coding-contests/calendar"
+                                    className="inline-flex items-center gap-2 rounded-xl bg-white/10 border border-white/20 px-6 py-3 text-sm font-semibold text-white hover:bg-white/20 transition-all duration-200"
+                                >
+                                    <Calendar className="h-4 w-4" />
+                                    View Calendar
                                 </Link>
                             </div>
                         )}
