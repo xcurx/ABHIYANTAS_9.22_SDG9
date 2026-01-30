@@ -4,6 +4,7 @@ import Link from "next/link"
 import { getOrganizationBySlug } from "@/lib/actions/organization"
 import SettingsForm from "./settings-form"
 import DangerZone from "./danger-zone"
+import { ArrowLeft, Settings, Sparkles } from "lucide-react"
 
 export default async function OrganizationSettingsPage({ params }: { params: Promise<{ slug: string }> }) {
     const session = await auth()
@@ -26,26 +27,41 @@ export default async function OrganizationSettingsPage({ params }: { params: Pro
 
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Header */}
-            <header className="bg-white shadow">
-                <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-                    <div className="flex items-center gap-4">
-                        <Link href={`/organizations/${slug}`} className="text-gray-400 hover:text-gray-600">
-                            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                            </svg>
-                        </Link>
+            {/* Hero Header */}
+            <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 relative overflow-hidden">
+                {/* Background Pattern */}
+                <div className="absolute inset-0 opacity-10">
+                    <div className="absolute inset-0" style={{
+                        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+                    }} />
+                </div>
+
+                <div className="relative mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
+                    <Link 
+                        href={`/organizations/${slug}`} 
+                        className="inline-flex items-center gap-2 text-blue-100 hover:text-white transition-colors mb-6 group"
+                    >
+                        <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+                        Back to Organization
+                    </Link>
+                    <div className="flex items-center gap-4 animate-fade-in-up">
+                        <div className="h-14 w-14 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                            <Settings className="h-7 w-7 text-white" />
+                        </div>
                         <div>
-                            <h1 className="text-2xl font-bold tracking-tight text-gray-900">
+                            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-3 py-1 mb-2">
+                                <Sparkles className="h-3 w-3 text-yellow-300" />
+                                <span className="text-xs font-medium text-white/90">{organization.name}</span>
+                            </div>
+                            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white">
                                 Organization Settings
                             </h1>
-                            <p className="text-sm text-gray-500">{organization.name}</p>
                         </div>
                     </div>
                 </div>
-            </header>
+            </div>
 
-            <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
+            <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
                 <SettingsForm organization={organization} />
                 
                 {organization.isOwner && (

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useTransition } from "react"
 import { getOrganizationMembers, removeOrganizationMember, updateMemberRole, addOrganizationMember } from "@/lib/actions/organization"
+import { UserPlus, Trash2, Crown, Shield, User, Loader2, X, AlertCircle } from "lucide-react"
 
 // Role for members fetched from API (includes OWNER)
 type MemberRole = "OWNER" | "ADMIN" | "MEMBER"
@@ -25,6 +26,12 @@ interface MembersTabProps {
     organizationSlug: string
     isAdmin: boolean
     isOwner: boolean
+}
+
+const roleConfig = {
+    OWNER: { label: "Owner", icon: Crown, color: "bg-purple-100 text-purple-700 border-purple-200" },
+    ADMIN: { label: "Admin", icon: Shield, color: "bg-blue-100 text-blue-700 border-blue-200" },
+    MEMBER: { label: "Member", icon: User, color: "bg-gray-100 text-gray-700 border-gray-200" },
 }
 
 export default function MembersTab({ organizationId, organizationSlug, isAdmin, isOwner }: MembersTabProps) {
@@ -101,8 +108,9 @@ export default function MembersTab({ organizationId, organizationSlug, isAdmin, 
 
     if (loading) {
         return (
-            <div className="flex justify-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+            <div className="flex flex-col items-center justify-center py-16">
+                <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
+                <p className="mt-3 text-sm text-gray-500">Loading members...</p>
             </div>
         )
     }
@@ -110,104 +118,121 @@ export default function MembersTab({ organizationId, organizationSlug, isAdmin, 
     return (
         <div>
             {/* Header */}
-            <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900">
-                    Members ({members.length})
-                </h3>
+            <div className="flex items-center justify-between mb-8">
+                <div>
+                    <h3 className="text-lg font-semibold text-gray-900">
+                        Team Members
+                    </h3>
+                    <p className="text-sm text-gray-500">{members.length} member{members.length !== 1 ? "s" : ""} in this organization</p>
+                </div>
                 {isAdmin && (
                     <button
                         onClick={() => setShowAddModal(true)}
-                        className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500"
+                        className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500 transition-all hover:scale-105 btn-animate"
                     >
+                        <UserPlus className="h-4 w-4" />
                         Add Member
                     </button>
                 )}
             </div>
 
             {/* Members list */}
-            <div className="bg-white rounded-lg shadow overflow-hidden">
-                <ul className="divide-y divide-gray-200">
-                    {members.map((member) => (
-                        <li key={member.id} className="px-6 py-4 flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                                <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                                    {member.user.avatar ? (
-                                        <img 
-                                            src={member.user.avatar} 
-                                            alt={member.user.name || ''} 
-                                            className="h-10 w-10 rounded-full object-cover" 
-                                        />
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                <ul className="divide-y divide-gray-100">
+                    {members.map((member, index) => {
+                        const config = roleConfig[member.role]
+                        const IconComponent = config.icon
+                        return (
+                            <li 
+                                key={member.id} 
+                                className="px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors animate-fade-in-up"
+                                style={{ animationDelay: `${index * 50}ms` }}
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-sm">
+                                        {member.user.avatar ? (
+                                            <img 
+                                                src={member.user.avatar} 
+                                                alt={member.user.name || ''} 
+                                                className="h-12 w-12 rounded-xl object-cover" 
+                                            />
+                                        ) : (
+                                            <span className="text-lg font-semibold text-white">
+                                                {(member.user.name || member.user.email).charAt(0).toUpperCase()}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-900">
+                                            {member.user.name || 'Unnamed User'}
+                                        </p>
+                                        <p className="text-sm text-gray-500">{member.user.email}</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-4">
+                                    {/* Role badge or selector */}
+                                    {isOwner && member.role !== 'OWNER' ? (
+                                        <select
+                                            value={member.role}
+                                            onChange={(e) => handleUpdateRole(member.id, e.target.value as AssignableRole)}
+                                            disabled={isPending}
+                                            className="rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 bg-white"
+                                        >
+                                            <option value="ADMIN">Admin</option>
+                                            <option value="MEMBER">Member</option>
+                                        </select>
                                     ) : (
-                                        <span className="text-sm font-medium text-indigo-600">
-                                            {(member.user.name || member.user.email).charAt(0).toUpperCase()}
+                                        <span className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-medium border ${config.color}`}>
+                                            <IconComponent className="h-3.5 w-3.5" />
+                                            {config.label}
                                         </span>
                                     )}
-                                </div>
-                                <div>
-                                    <p className="text-sm font-medium text-gray-900">
-                                        {member.user.name || 'Unnamed User'}
-                                    </p>
-                                    <p className="text-sm text-gray-500">{member.user.email}</p>
-                                </div>
-                            </div>
 
-                            <div className="flex items-center gap-4">
-                                {/* Role badge or selector */}
-                                {isOwner && member.role !== 'OWNER' ? (
-                                    <select
-                                        value={member.role}
-                                        onChange={(e) => handleUpdateRole(member.id, e.target.value as AssignableRole)}
-                                        disabled={isPending}
-                                        className="rounded-md border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    >
-                                        <option value="ADMIN">Admin</option>
-                                        <option value="MEMBER">Member</option>
-                                    </select>
-                                ) : (
-                                    <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${
-                                        member.role === 'OWNER' 
-                                            ? 'bg-purple-100 text-purple-800' 
-                                            : member.role === 'ADMIN'
-                                            ? 'bg-blue-100 text-blue-800'
-                                            : 'bg-gray-100 text-gray-800'
-                                    }`}>
-                                        {member.role}
-                                    </span>
-                                )}
-
-                                {/* Remove button */}
-                                {isAdmin && member.role !== 'OWNER' && (
-                                    <button
-                                        onClick={() => handleRemoveMember(member.id, member.user.name)}
-                                        disabled={isPending}
-                                        className="text-red-600 hover:text-red-800 disabled:opacity-50"
-                                    >
-                                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                    </button>
-                                )}
-                            </div>
-                        </li>
-                    ))}
+                                    {/* Remove button */}
+                                    {isAdmin && member.role !== 'OWNER' && (
+                                        <button
+                                            onClick={() => handleRemoveMember(member.id, member.user.name)}
+                                            disabled={isPending}
+                                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg disabled:opacity-50 transition-colors"
+                                            title="Remove member"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </button>
+                                    )}
+                                </div>
+                            </li>
+                        )
+                    })}
                 </ul>
             </div>
 
             {/* Add Member Modal */}
             {showAddModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Add Member</h3>
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] animate-fade-in p-4">
+                    <div className="bg-white rounded-2xl shadow-xl max-w-md w-full mx-4 overflow-hidden animate-scale-in">
+                        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-lg font-semibold text-white">Add New Member</h3>
+                                <button 
+                                    onClick={() => setShowAddModal(false)}
+                                    className="text-white/80 hover:text-white transition-colors"
+                                >
+                                    <X className="h-5 w-5" />
+                                </button>
+                            </div>
+                        </div>
                         
-                        <form onSubmit={handleAddMember}>
+                        <form onSubmit={handleAddMember} className="p-6">
                             {error && (
-                                <div className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700">
-                                    {error}
+                                <div className="mb-4 rounded-xl bg-red-50 border border-red-200 p-3 flex items-start gap-2">
+                                    <AlertCircle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
+                                    <p className="text-sm text-red-700">{error}</p>
                                 </div>
                             )}
 
                             <div className="mb-4">
-                                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                                <label htmlFor="email" className="block text-sm font-medium text-gray-900 mb-2">
                                     Email Address
                                 </label>
                                 <input
@@ -216,23 +241,23 @@ export default function MembersTab({ organizationId, organizationSlug, isAdmin, 
                                     value={newMemberEmail}
                                     onChange={(e) => setNewMemberEmail(e.target.value)}
                                     required
-                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    className="w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                                     placeholder="user@example.com"
                                 />
-                                <p className="mt-1 text-xs text-gray-500">
+                                <p className="mt-2 text-xs text-gray-500">
                                     The user must already have an account on the platform.
                                 </p>
                             </div>
 
                             <div className="mb-6">
-                                <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
+                                <label htmlFor="role" className="block text-sm font-medium text-gray-900 mb-2">
                                     Role
                                 </label>
                                 <select
                                     id="role"
                                     value={newMemberRole}
                                     onChange={(e) => setNewMemberRole(e.target.value as AssignableRole)}
-                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    className="w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all bg-white"
                                 >
                                     <option value="MEMBER">Member</option>
                                     <option value="ADMIN">Admin</option>
@@ -243,16 +268,26 @@ export default function MembersTab({ organizationId, organizationSlug, isAdmin, 
                                 <button
                                     type="button"
                                     onClick={() => setShowAddModal(false)}
-                                    className="rounded-md bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-200"
+                                    className="rounded-full bg-gray-100 px-5 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-200 transition-colors"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={isPending}
-                                    className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-50"
+                                    className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500 disabled:opacity-50 transition-all"
                                 >
-                                    {isPending ? "Adding..." : "Add Member"}
+                                    {isPending ? (
+                                        <>
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                            Adding...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <UserPlus className="h-4 w-4" />
+                                            Add Member
+                                        </>
+                                    )}
                                 </button>
                             </div>
                         </form>

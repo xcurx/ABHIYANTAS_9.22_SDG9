@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useEffect, useState } from "react"
-import { Calendar, Users, Trophy, Plus, ExternalLink, Settings } from "lucide-react"
+import { Calendar, Users, Trophy, Plus, ExternalLink, Settings, Loader2, Sparkles, ChevronRight } from "lucide-react"
 
 interface Hackathon {
     id: string
@@ -30,15 +30,21 @@ interface HackathonsTabProps {
     isAdmin: boolean
 }
 
-const statusColors: Record<string, { bg: string; text: string }> = {
-    DRAFT: { bg: "bg-gray-100", text: "text-gray-600" },
-    PUBLISHED: { bg: "bg-blue-100", text: "text-blue-700" },
-    REGISTRATION_OPEN: { bg: "bg-green-100", text: "text-green-700" },
-    REGISTRATION_CLOSED: { bg: "bg-yellow-100", text: "text-yellow-700" },
-    IN_PROGRESS: { bg: "bg-purple-100", text: "text-purple-700" },
-    JUDGING: { bg: "bg-orange-100", text: "text-orange-700" },
-    COMPLETED: { bg: "bg-gray-100", text: "text-gray-600" },
-    CANCELLED: { bg: "bg-red-100", text: "text-red-700" },
+const statusColors: Record<string, { bg: string; text: string; border: string }> = {
+    DRAFT: { bg: "bg-gray-50", text: "text-gray-600", border: "border-gray-200" },
+    PUBLISHED: { bg: "bg-blue-50", text: "text-blue-700", border: "border-blue-200" },
+    REGISTRATION_OPEN: { bg: "bg-green-50", text: "text-green-700", border: "border-green-200" },
+    REGISTRATION_CLOSED: { bg: "bg-yellow-50", text: "text-yellow-700", border: "border-yellow-200" },
+    IN_PROGRESS: { bg: "bg-purple-50", text: "text-purple-700", border: "border-purple-200" },
+    JUDGING: { bg: "bg-orange-50", text: "text-orange-700", border: "border-orange-200" },
+    COMPLETED: { bg: "bg-gray-50", text: "text-gray-600", border: "border-gray-200" },
+    CANCELLED: { bg: "bg-red-50", text: "text-red-700", border: "border-red-200" },
+}
+
+const modeColors: Record<string, string> = {
+    VIRTUAL: "🌐",
+    IN_PERSON: "📍",
+    HYBRID: "🔄",
 }
 
 function formatDate(dateString: string) {
@@ -72,50 +78,48 @@ export default function HackathonsTab({ organizationId, organizationSlug, isAdmi
 
     if (loading) {
         return (
-            <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
-                <p className="mt-2 text-sm text-gray-500">Loading hackathons...</p>
+            <div className="flex flex-col items-center justify-center py-16">
+                <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
+                <p className="mt-3 text-sm text-gray-500">Loading hackathons...</p>
             </div>
         )
     }
 
     if (hackathons.length === 0) {
         return (
-            <div className="text-center py-12">
-                <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                </svg>
-                <h3 className="mt-2 text-sm font-semibold text-gray-900">No hackathons yet</h3>
-                <p className="mt-1 text-sm text-gray-500">
-                    Get started by creating your first hackathon.
+            <div className="text-center py-16 bg-white rounded-2xl border border-gray-200">
+                <div className="mx-auto h-20 w-20 rounded-2xl bg-blue-100 flex items-center justify-center mb-6">
+                    <Trophy className="h-10 w-10 text-blue-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">No hackathons yet</h3>
+                <p className="text-gray-600 mb-8 max-w-md mx-auto">
+                    Get started by creating your first hackathon. Host amazing events and bring innovators together!
                 </p>
                 {isAdmin && (
-                    <div className="mt-6">
-                        <Link
-                            href="/hackathons/new"
-                            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 transition-colors"
-                        >
-                            <Plus className="h-4 w-4" />
-                            Create Hackathon
-                        </Link>
-                    </div>
+                    <Link
+                        href="/hackathons/new"
+                        className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-blue-600 text-white text-sm font-semibold hover:bg-blue-500 transition-all hover:scale-105 btn-animate"
+                    >
+                        <Plus className="h-4 w-4" />
+                        Create Your First Hackathon
+                    </Link>
                 )}
             </div>
         )
     }
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-8">
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
                     <h3 className="text-lg font-semibold text-gray-900">Hackathons</h3>
-                    <p className="text-sm text-gray-500">{hackathons.length} hackathon{hackathons.length !== 1 ? "s" : ""}</p>
+                    <p className="text-sm text-gray-500">{hackathons.length} hackathon{hackathons.length !== 1 ? "s" : ""} hosted by this organization</p>
                 </div>
                 {isAdmin && (
                     <Link
                         href="/hackathons/new"
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 transition-colors"
+                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-blue-600 text-white text-sm font-semibold hover:bg-blue-500 transition-all hover:scale-105 btn-animate"
                     >
                         <Plus className="h-4 w-4" />
                         Create Hackathon
@@ -124,55 +128,61 @@ export default function HackathonsTab({ organizationId, organizationSlug, isAdmi
             </div>
 
             {/* Hackathon List */}
-            <div className="grid gap-4">
-                {hackathons.map((hackathon) => {
+            <div className="grid gap-5">
+                {hackathons.map((hackathon, index) => {
                     const status = statusColors[hackathon.status] || statusColors.DRAFT
+                    const modeIcon = modeColors[hackathon.mode] || "🌐"
                     return (
                         <div
                             key={hackathon.id}
-                            className="bg-white border border-gray-200 rounded-xl p-5 hover:border-indigo-300 transition-colors"
+                            className="group bg-white border border-gray-200 shadow-sm rounded-2xl p-6 hover:border-blue-300 hover:shadow-lg transition-all duration-300 animate-fade-in-up"
+                            style={{ animationDelay: `${index * 50}ms` }}
                         >
                             <div className="flex items-start justify-between gap-4">
                                 <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-3 mb-2">
+                                    <div className="flex items-center gap-3 mb-2 flex-wrap">
                                         <Link
                                             href={`/hackathons/${hackathon.slug}`}
-                                            className="text-lg font-semibold text-gray-900 hover:text-indigo-600 transition-colors"
+                                            className="text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors"
                                         >
                                             {hackathon.title}
                                         </Link>
-                                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${status.bg} ${status.text}`}>
+                                        <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${status.bg} ${status.text} ${status.border}`}>
                                             {hackathon.status.replace(/_/g, " ")}
                                         </span>
                                         {!hackathon.isPublic && (
-                                            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                                            <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">
                                                 Private
                                             </span>
                                         )}
+                                        <span className="text-sm">{modeIcon}</span>
                                     </div>
                                     {hackathon.shortDescription && (
-                                        <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                                        <p className="text-sm text-gray-600 mb-4 line-clamp-2">
                                             {hackathon.shortDescription}
                                         </p>
                                     )}
-                                    <div className="flex items-center gap-4 text-sm text-gray-500">
-                                        <span className="flex items-center gap-1">
-                                            <Calendar className="h-4 w-4" />
+                                    <div className="flex items-center gap-4 text-sm text-gray-500 flex-wrap">
+                                        <span className="inline-flex items-center gap-1.5 bg-gray-50 rounded-lg px-2.5 py-1">
+                                            <Calendar className="h-4 w-4 text-gray-400" />
                                             {formatDate(hackathon.hackathonStart)} - {formatDate(hackathon.hackathonEnd)}
                                         </span>
-                                        <span className="flex items-center gap-1">
-                                            <Users className="h-4 w-4" />
+                                        <span className="inline-flex items-center gap-1.5 bg-gray-50 rounded-lg px-2.5 py-1">
+                                            <Users className="h-4 w-4 text-gray-400" />
                                             {hackathon._count.registrations} registered
                                         </span>
                                         {hackathon.prizePool && hackathon.prizePool > 0 && (
-                                            <span className="flex items-center gap-1">
+                                            <span className="inline-flex items-center gap-1.5 bg-amber-50 rounded-lg px-2.5 py-1 text-amber-700">
                                                 <Trophy className="h-4 w-4" />
                                                 ${hackathon.prizePool.toLocaleString()}
                                             </span>
                                         )}
-                                        <span className="px-2 py-0.5 rounded bg-gray-100 text-xs">
-                                            {hackathon.mode}
-                                        </span>
+                                        {hackathon._count.tracks > 0 && (
+                                            <span className="inline-flex items-center gap-1.5 bg-purple-50 rounded-lg px-2.5 py-1 text-purple-700">
+                                                <Sparkles className="h-4 w-4" />
+                                                {hackathon._count.tracks} tracks
+                                            </span>
+                                        )}
                                     </div>
                                 </div>
 
@@ -180,7 +190,7 @@ export default function HackathonsTab({ organizationId, organizationSlug, isAdmi
                                 <div className="flex items-center gap-2">
                                     <Link
                                         href={`/hackathons/${hackathon.slug}`}
-                                        className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                                        className="p-2.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors"
                                         title="View"
                                     >
                                         <ExternalLink className="h-4 w-4" />
@@ -188,12 +198,13 @@ export default function HackathonsTab({ organizationId, organizationSlug, isAdmi
                                     {isAdmin && (
                                         <Link
                                             href={`/hackathons/${hackathon.slug}/manage`}
-                                            className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                                            className="p-2.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors"
                                             title="Manage"
                                         >
                                             <Settings className="h-4 w-4" />
                                         </Link>
                                     )}
+                                    <ChevronRight className="h-4 w-4 text-gray-300 group-hover:text-blue-500 group-hover:translate-x-1 transition-all" />
                                 </div>
                             </div>
                         </div>
