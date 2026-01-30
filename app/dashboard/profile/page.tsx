@@ -4,6 +4,7 @@ import Link from "next/link"
 import ProfileForm from "./profile-form"
 import prisma from "@/lib/prisma"
 import { Settings, Shield, Award, Calendar, MapPin, Mail, ExternalLink } from "lucide-react"
+import { getUserSkills } from "@/lib/actions/skill"
 
 export default async function ProfilePage() {
     const session = await auth()
@@ -12,7 +13,7 @@ export default async function ProfilePage() {
         redirect("/sign-in")
     }
 
-    // Fetch full user data from database
+    // Fetch full user data from database including profile fields
     const user = await prisma.user.findUnique({
         where: { id: session.user.id },
         select: {
@@ -20,6 +21,12 @@ export default async function ProfilePage() {
             name: true,
             email: true,
             avatar: true,
+            bio: true,
+            location: true,
+            github: true,
+            linkedin: true,
+            twitter: true,
+            portfolio: true,
             role: true,
             createdAt: true,
         },
@@ -29,29 +36,38 @@ export default async function ProfilePage() {
         redirect("/sign-in")
     }
 
-    // Mock data for enhanced profile (since we're not touching backend)
-    const mockProfileData = {
-        bio: "Passionate developer with a love for building innovative solutions. Always eager to learn new technologies and collaborate on exciting projects.",
-        location: "San Francisco, CA",
-        skills: ["React", "TypeScript", "Node.js", "Python", "AWS", "Docker", "GraphQL", "PostgreSQL"],
-        github: "github.com/johndoe",
-        linkedin: "linkedin.com/in/johndoe",
-        twitter: "twitter.com/johndoe",
-        portfolio: "johndoe.dev",
-        hackathonsParticipated: 12,
-        hackathonsWon: 3,
-        projectsBuilt: 28,
+    // Fetch user skills from database
+    const skillsResult = await getUserSkills(user.id)
+    const userSkills = skillsResult.success ? skillsResult.skills : []
+
+    // Fetch real stats from database
+    const [hackathonCount, contestCount] = await Promise.all([
+        prisma.hackathonRegistration.count({
+            where: { userId: user.id },
+        }),
+        prisma.contestParticipant.count({
+            where: { userId: user.id },
+        }),
+    ])
+
+    // Profile data with real + placeholder values
+    const profileData = {
+        bio: user.bio || "Passionate developer with a love for building innovative solutions. Always eager to learn new technologies and collaborate on exciting projects.",
+        location: user.location || "Not specified",
+        skills: userSkills.map(s => s.name),
+        github: user.github || "",
+        linkedin: user.linkedin || "",
+        twitter: user.twitter || "",
+        portfolio: user.portfolio || "",
+        hackathonsParticipated: hackathonCount,
+        contestsCompleted: contestCount,
+        projectsBuilt: 0, // TODO: Calculate from submissions
         badges: [
             { name: "First Hackathon", icon: "🎉", color: "bg-green-100 text-green-700" },
-            { name: "Winner", icon: "🏆", color: "bg-yellow-100 text-yellow-700" },
             { name: "Team Player", icon: "🤝", color: "bg-blue-100 text-blue-700" },
             { name: "Early Adopter", icon: "🚀", color: "bg-purple-100 text-purple-700" },
         ],
-        recentActivity: [
-            { type: "hackathon", name: "AI Innovation Challenge 2026", date: "2 days ago", status: "Registered" },
-            { type: "project", name: "EcoTrack - Carbon Footprint App", date: "1 week ago", status: "Submitted" },
-            { type: "achievement", name: "Earned 'Problem Solver' badge", date: "2 weeks ago", status: "Completed" },
-        ],
+        recentActivity: [] as { type: string; name: string; date: string; status: string }[],
     }
 
     return (
@@ -116,7 +132,7 @@ export default async function ProfilePage() {
                                                 </span>
                                                 <span className="text-gray-400 flex items-center gap-1.5 text-sm">
                                                     <MapPin className="h-4 w-4" />
-                                                    {mockProfileData.location}
+                                                    {profileData.location}
                                                 </span>
                                                 <span className="text-gray-400 flex items-center gap-1.5 text-sm">
                                                     <Calendar className="h-4 w-4" />
@@ -139,37 +155,37 @@ export default async function ProfilePage() {
                                     
                                     {/* Bio */}
                                     <p className="mt-4 text-gray-600 leading-relaxed">
-                                        {mockProfileData.bio}
+                                        {profileData.bio}
                                     </p>
                                     
                                     {/* Social Links */}
                                     <div className="flex flex-wrap gap-3 mt-4">
-                                        {mockProfileData.github && (
-                                            <a href={`https://${mockProfileData.github}`} target="_blank" rel="noopener noreferrer" 
+                                        {profileData.github && (
+                                            <a href={`https://${profileData.github}`} target="_blank" rel="noopener noreferrer" 
                                                className="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-blue-600 transition-colors">
                                                 <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
                                                 GitHub
                                                 <ExternalLink className="h-3 w-3" />
                                             </a>
                                         )}
-                                        {mockProfileData.linkedin && (
-                                            <a href={`https://${mockProfileData.linkedin}`} target="_blank" rel="noopener noreferrer"
+                                        {profileData.linkedin && (
+                                            <a href={`https://${profileData.linkedin}`} target="_blank" rel="noopener noreferrer"
                                                className="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-blue-600 transition-colors">
                                                 <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
                                                 LinkedIn
                                                 <ExternalLink className="h-3 w-3" />
                                             </a>
                                         )}
-                                        {mockProfileData.twitter && (
-                                            <a href={`https://${mockProfileData.twitter}`} target="_blank" rel="noopener noreferrer"
+                                        {profileData.twitter && (
+                                            <a href={`https://${profileData.twitter}`} target="_blank" rel="noopener noreferrer"
                                                className="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-blue-600 transition-colors">
                                                 <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                                                 Twitter
                                                 <ExternalLink className="h-3 w-3" />
                                             </a>
                                         )}
-                                        {mockProfileData.portfolio && (
-                                            <a href={`https://${mockProfileData.portfolio}`} target="_blank" rel="noopener noreferrer"
+                                        {profileData.portfolio && (
+                                            <a href={`https://${profileData.portfolio}`} target="_blank" rel="noopener noreferrer"
                                                className="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-blue-600 transition-colors">
                                                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
                                                 Portfolio
@@ -189,20 +205,20 @@ export default async function ProfilePage() {
                 {/* Stats Row - Full Width */}
                 <div className="grid grid-cols-3 md:grid-cols-6 gap-4 mb-8">
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 text-center">
-                        <div className="text-2xl font-bold text-blue-600">{mockProfileData.hackathonsParticipated}</div>
+                        <div className="text-2xl font-bold text-blue-600">{profileData.hackathonsParticipated}</div>
                         <div className="text-xs text-gray-500 mt-1">Hackathons</div>
                     </div>
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 text-center">
-                        <div className="text-2xl font-bold text-green-600">{mockProfileData.hackathonsWon}</div>
-                        <div className="text-xs text-gray-500 mt-1">Wins</div>
+                        <div className="text-2xl font-bold text-green-600">{profileData.contestsCompleted}</div>
+                        <div className="text-xs text-gray-500 mt-1">Contests</div>
                     </div>
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 text-center">
-                        <div className="text-2xl font-bold text-purple-600">{mockProfileData.projectsBuilt}</div>
-                        <div className="text-xs text-gray-500 mt-1">Projects</div>
+                        <div className="text-2xl font-bold text-purple-600">{profileData.skills.length}</div>
+                        <div className="text-xs text-gray-500 mt-1">Skills</div>
                     </div>
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 text-center col-span-3 md:col-span-3">
                         <div className="flex items-center justify-center gap-3">
-                            {mockProfileData.badges.map((badge, index) => (
+                            {profileData.badges.map((badge, index) => (
                                 <div key={index} className={`${badge.color} rounded-lg p-2 text-center`}>
                                     <span className="text-xl">{badge.icon}</span>
                                 </div>
@@ -216,7 +232,7 @@ export default async function ProfilePage() {
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
                     <h3 className="font-semibold text-gray-900 mb-4">Skills & Expertise</h3>
                     <div className="flex flex-wrap gap-2">
-                        {mockProfileData.skills.map((skill, index) => (
+                        {profileData.skills.map((skill, index) => (
                             <span
                                 key={index}
                                 className="inline-flex items-center rounded-full bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-blue-100 hover:text-blue-700 transition-colors cursor-default"
@@ -232,14 +248,14 @@ export default async function ProfilePage() {
                     {/* Edit Profile Form */}
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                         <h3 className="font-semibold text-gray-900 mb-6">Edit Profile</h3>
-                        <ProfileForm user={user} mockData={mockProfileData} />
+                        <ProfileForm user={user} mockData={profileData} />
                     </div>
 
                     {/* Recent Activity */}
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                         <h3 className="font-semibold text-gray-900 mb-4">Recent Activity</h3>
                         <div className="space-y-4">
-                            {mockProfileData.recentActivity.map((activity, index) => (
+                            {profileData.recentActivity.map((activity, index) => (
                                 <div key={index} className="flex items-start gap-4 p-4 rounded-lg hover:bg-gray-50 transition-colors border border-gray-100">
                                     <div className={`flex-shrink-0 h-12 w-12 rounded-xl flex items-center justify-center ${
                                         activity.type === "hackathon" ? "bg-blue-100 text-blue-600" :

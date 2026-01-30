@@ -226,7 +226,7 @@ export async function getOrganizationBySlug(slug: string) {
                 },
             },
             _count: {
-                select: { members: true },
+                select: { members: true, hackathons: true },
             },
         },
     })

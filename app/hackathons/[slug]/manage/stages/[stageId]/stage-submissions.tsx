@@ -214,25 +214,25 @@ export default function StageSubmissions({ submissions, stageId, slug }: StageSu
                             </div>
 
                             {/* Submission Content */}
-                            {Boolean(selectedSubmission.title) && (
+                            {selectedSubmission.title ? (
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
                                         Title
                                     </label>
                                     <p className="text-gray-900">{String(selectedSubmission.title)}</p>
                                 </div>
-                            )}
+                            ) : null}
 
-                            {Boolean(selectedSubmission.description) && (
+                            {selectedSubmission.description ? (
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
                                         Description
                                     </label>
                                     <p className="text-gray-600">{String(selectedSubmission.description)}</p>
                                 </div>
-                            )}
+                            ) : null}
 
-                            {selectedSubmission.links && Array.isArray(selectedSubmission.links) && (
+                            {selectedSubmission.links && Array.isArray(selectedSubmission.links) ? (
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
                                         Links
@@ -254,7 +254,7 @@ export default function StageSubmissions({ submissions, stageId, slug }: StageSu
                                         )}
                                     </div>
                                 </div>
-                            )}
+                            ) : null}
 
                             {/* Score Input */}
                             <div>

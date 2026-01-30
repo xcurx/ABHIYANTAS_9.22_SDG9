@@ -16,6 +16,12 @@ model User {
     name          String?
     password      String?
     avatar        String?
+    bio           String?
+    location      String?
+    github        String?
+    linkedin      String?
+    twitter       String?
+    portfolio     String?
     role          UserRole  @default(PARTICIPANT)
     createdAt     DateTime  @default(now())
     updatedAt     DateTime  @updatedAt
@@ -30,6 +36,45 @@ model User {
     notifications           Notification[]
     stageSubmissions        StageSubmission[]
     announcements           Announcement[]
+    userSkills              UserSkill[]
+}
+
+// ==================== SKILLS ====================
+
+model Skill {
+    id          String      @id @default(cuid())
+    name        String      @unique
+    slug        String      @unique
+    category    String?     // e.g., "Programming Language", "Framework", "Cloud", "Database", etc.
+    createdAt   DateTime    @default(now())
+    
+    // Relations
+    userSkills  UserSkill[]
+    
+    @@index([category])
+    @@index([name])
+}
+
+model UserSkill {
+    id          String   @id @default(cuid())
+    userId      String
+    skillId     String
+    proficiency SkillProficiency @default(INTERMEDIATE)
+    createdAt   DateTime @default(now())
+    
+    user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    skill       Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
+    
+    @@unique([userId, skillId])
+    @@index([userId])
+    @@index([skillId])
+}
+
+enum SkillProficiency {
+    BEGINNER
+    INTERMEDIATE
+    ADVANCED
+    EXPERT
 }
 
 model Account {
