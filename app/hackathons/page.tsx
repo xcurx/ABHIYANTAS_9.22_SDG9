@@ -5,7 +5,7 @@ import prisma from "@/lib/prisma"
 import { getHackathons } from "@/lib/actions/hackathon"
 import HackathonFilters from "./hackathon-filters"
 import HackathonCard from "./hackathon-card"
-import { Calendar, Users, Trophy, Sparkles, ArrowRight, Zap, Globe, Award, Clock, TrendingUp, Star, Shield, Code } from "lucide-react"
+import { Calendar, Users, Trophy, Sparkles, ArrowRight, Clock } from "lucide-react"
 
 interface PageProps {
     searchParams: Promise<{
@@ -132,90 +132,21 @@ export default async function HackathonsPage({ searchParams }: PageProps) {
                             <p className="text-sm text-blue-200">In Prizes</p>
                         </div>
                     </div>
+                    </div>
                 </div>
             </div>
 
-            {/* Featured Categories */}
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 -mt-8 relative z-20">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-fade-in-up" style={{ animationDelay: '0.6s', animationFillMode: 'forwards', opacity: 0 }}>
-                    <div className="bg-white rounded-2xl p-5 shadow-lg border border-gray-100 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group">
-                        <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                            <Code className="h-6 w-6 text-white" />
-                        </div>
-                        <h3 className="font-bold text-gray-900 mb-1">Open Innovation</h3>
-                        <p className="text-xs text-gray-500">Build anything you imagine</p>
-                    </div>
-                    <div className="bg-white rounded-2xl p-5 shadow-lg border border-gray-100 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group">
-                        <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                            <Zap className="h-6 w-6 text-white" />
-                        </div>
-                        <h3 className="font-bold text-gray-900 mb-1">AI & ML</h3>
-                        <p className="text-xs text-gray-500">Machine learning challenges</p>
-                    </div>
-                    <div className="bg-white rounded-2xl p-5 shadow-lg border border-gray-100 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group">
-                        <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                            <Globe className="h-6 w-6 text-white" />
-                        </div>
-                        <h3 className="font-bold text-gray-900 mb-1">Web3 & Blockchain</h3>
-                        <p className="text-xs text-gray-500">Decentralized solutions</p>
-                    </div>
-                    <div className="bg-white rounded-2xl p-5 shadow-lg border border-gray-100 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group">
-                        <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                            <Shield className="h-6 w-6 text-white" />
-                        </div>
-                        <h3 className="font-bold text-gray-900 mb-1">Cybersecurity</h3>
-                        <p className="text-xs text-gray-500">Security-focused hacks</p>
-                    </div>
+            {/* Filter Bar */}
+            <div className="sticky top-0 z-30 bg-white border-b border-gray-200 shadow-sm">
+                <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+                    <Suspense fallback={<div className="h-12 bg-gray-100 rounded-xl animate-pulse" />}>
+                        <HackathonFilters />
+                    </Suspense>
                 </div>
             </div>
 
             {/* Main Content */}
             <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-                {/* Why Join Section */}
-                <div className="mb-10 bg-gradient-to-r from-blue-50 to-purple-50 rounded-3xl p-8 border border-blue-100 animate-fade-in-up" style={{ animationDelay: '0.65s', animationFillMode: 'forwards', opacity: 0 }}>
-                    <div className="text-center mb-8">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-2">Why Join a Hackathon?</h2>
-                        <p className="text-gray-600">Unlock your potential and grow your skills</p>
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                        <div className="text-center">
-                            <div className="h-14 w-14 rounded-2xl bg-white shadow-md flex items-center justify-center mx-auto mb-3">
-                                <TrendingUp className="h-7 w-7 text-blue-600" />
-                            </div>
-                            <h4 className="font-semibold text-gray-900 text-sm">Skill Growth</h4>
-                            <p className="text-xs text-gray-500 mt-1">Learn by building real projects</p>
-                        </div>
-                        <div className="text-center">
-                            <div className="h-14 w-14 rounded-2xl bg-white shadow-md flex items-center justify-center mx-auto mb-3">
-                                <Users className="h-7 w-7 text-purple-600" />
-                            </div>
-                            <h4 className="font-semibold text-gray-900 text-sm">Networking</h4>
-                            <p className="text-xs text-gray-500 mt-1">Connect with like-minded devs</p>
-                        </div>
-                        <div className="text-center">
-                            <div className="h-14 w-14 rounded-2xl bg-white shadow-md flex items-center justify-center mx-auto mb-3">
-                                <Award className="h-7 w-7 text-amber-600" />
-                            </div>
-                            <h4 className="font-semibold text-gray-900 text-sm">Win Prizes</h4>
-                            <p className="text-xs text-gray-500 mt-1">Compete for exciting rewards</p>
-                        </div>
-                        <div className="text-center">
-                            <div className="h-14 w-14 rounded-2xl bg-white shadow-md flex items-center justify-center mx-auto mb-3">
-                                <Star className="h-7 w-7 text-green-600" />
-                            </div>
-                            <h4 className="font-semibold text-gray-900 text-sm">Portfolio</h4>
-                            <p className="text-xs text-gray-500 mt-1">Showcase your work</p>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Filters */}
-                <div className="animate-fade-in-up" style={{ animationDelay: '0.7s', animationFillMode: 'forwards', opacity: 0 }}>
-                    <Suspense fallback={<div className="h-20 bg-white rounded-2xl animate-pulse shadow-sm" />}>
-                        <HackathonFilters />
-                    </Suspense>
-                </div>
-
                 {/* Results */}
                 {hackathons.length === 0 ? (
                     <div className="mt-8 text-center py-16 bg-white rounded-2xl shadow-sm animate-fade-in-up" style={{ animationDelay: '0.75s', animationFillMode: 'forwards', opacity: 0 }}>
@@ -345,6 +276,5 @@ export default async function HackathonsPage({ searchParams }: PageProps) {
                 )}
             </main>
         </div>
-        </div>    
     )
 }
