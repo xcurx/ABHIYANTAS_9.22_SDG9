@@ -26,7 +26,7 @@ export default async function NotificationsPage() {
                     type: true,
                     priority: true,
                     hackathon: {
-                        select: { slug: true, name: true }
+                        select: { slug: true, title: true }
                     }
                 },
             },
@@ -131,7 +131,7 @@ interface NotificationItemProps {
             title: string
             type: string
             priority: string
-            hackathon: { slug: string; name: string } | null
+            hackathon: { slug: string; title: string } | null
         } | null
     }
     getNotificationIcon: (type: string) => React.ReactNode
@@ -167,7 +167,7 @@ function NotificationItem({ notification, getNotificationIcon, formatTime }: Not
                                     href={`/hackathons/${notification.announcement.hackathon.slug}`}
                                     className="inline-block mt-2 text-sm text-indigo-600 hover:underline"
                                 >
-                                    {notification.announcement.hackathon.name} →
+                                    {notification.announcement.hackathon.title} →
                                 </a>
                             )}
                         </div>

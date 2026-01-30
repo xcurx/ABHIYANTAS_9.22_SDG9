@@ -3,11 +3,12 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { BarChart3, Users, Trophy, FileText, Settings, Calendar, Megaphone } from "lucide-react"
+import { BarChart3, Users, Trophy, FileText, Settings, Calendar, Megaphone, UserCheck } from "lucide-react"
 
 const tabs = [
     { href: "", label: "Overview", icon: BarChart3 },
     { href: "/participants", label: "Participants", icon: Users },
+    { href: "/roles", label: "Judges & Mentors", icon: UserCheck },
     { href: "/tracks", label: "Tracks", icon: FileText },
     { href: "/prizes", label: "Prizes", icon: Trophy },
     { href: "/stages", label: "Timeline", icon: Calendar },

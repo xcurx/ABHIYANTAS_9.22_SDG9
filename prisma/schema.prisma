@@ -16,6 +16,12 @@ model User {
     name          String?
     password      String?
     avatar        String?
+    bio           String?
+    location      String?
+    github        String?
+    linkedin      String?
+    twitter       String?
+    portfolio     String?
     role          UserRole  @default(PARTICIPANT)
     createdAt     DateTime  @default(now())
     updatedAt     DateTime  @updatedAt
@@ -30,6 +36,53 @@ model User {
     notifications           Notification[]
     stageSubmissions        StageSubmission[]
     announcements           Announcement[]
+    userSkills              UserSkill[]
+    // Team Relations
+    teamsLed                Team[]           @relation("TeamLeader")
+    teamMemberships         TeamMember[]
+    teamInvitationsSent     TeamInvitation[] @relation("TeamInvitationsSent")
+    teamInvitationsReceived TeamInvitation[] @relation("TeamInvitationsReceived")
+    // Hackathon Role Relations
+    hackathonRoles          HackathonRole[]
+    roleInvitationsSent     HackathonRole[]  @relation("RoleInviter")
+}
+
+// ==================== SKILLS ====================
+
+model Skill {
+    id          String      @id @default(cuid())
+    name        String      @unique
+    slug        String      @unique
+    category    String?     // e.g., "Programming Language", "Framework", "Cloud", "Database", etc.
+    createdAt   DateTime    @default(now())
+    
+    // Relations
+    userSkills  UserSkill[]
+    
+    @@index([category])
+    @@index([name])
+}
+
+model UserSkill {
+    id          String   @id @default(cuid())
+    userId      String
+    skillId     String
+    proficiency SkillProficiency @default(INTERMEDIATE)
+    createdAt   DateTime @default(now())
+    
+    user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    skill       Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
+    
+    @@unique([userId, skillId])
+    @@index([userId])
+    @@index([skillId])
+}
+
+enum SkillProficiency {
+    BEGINNER
+    INTERMEDIATE
+    ADVANCED
+    EXPERT
 }
 
 model Account {
@@ -392,6 +445,55 @@ model Hackathon {
     registrations HackathonRegistration[]
     prizes        Prize[]
     announcements Announcement[]
+    teams         Team[]
+    roles         HackathonRole[]         // Mentors, Judges, etc.
+}
+
+// Hackathon-specific role assignments (mentors, judges, etc.)
+model HackathonRole {
+    id          String              @id @default(cuid())
+    hackathonId String
+    userId      String
+    role        HackathonRoleType
+    
+    // Invitation details
+    invitedBy   String?             // Who invited this person
+    invitedAt   DateTime            @default(now())
+    acceptedAt  DateTime?
+    status      RoleInvitationStatus @default(PENDING)
+    
+    // Role-specific settings
+    canJudgeAllTracks   Boolean @default(true)
+    assignedTrackIds    String[] // If not judging all tracks
+    bio                 String?  // Judge/Mentor bio for this hackathon
+    expertise           String[] // Areas of expertise
+    
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+    
+    // Relations
+    hackathon   Hackathon @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
+    user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+    inviter     User?     @relation("RoleInviter", fields: [invitedBy], references: [id])
+    
+    @@unique([hackathonId, userId, role])
+    @@index([hackathonId])
+    @@index([userId])
+}
+
+enum HackathonRoleType {
+    MENTOR
+    JUDGE
+    ORGANIZER
+    VOLUNTEER
+    SPONSOR_REP
+}
+
+enum RoleInvitationStatus {
+    PENDING
+    ACCEPTED
+    DECLINED
+    REVOKED
 }
 
 enum HackathonType {
@@ -585,9 +687,12 @@ model StageSubmission {
     // Relations
     stage       HackathonStage @relation(fields: [stageId], references: [id], onDelete: Cascade)
     user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+    team        Team?          @relation(fields: [teamId], references: [id], onDelete: SetNull)
     
     @@unique([stageId, userId])
+    @@unique([stageId, teamId]) // Only one submission per team per stage
     @@index([stageId, status])
+    @@index([teamId])
 }
 
 enum SubmissionStatus {
@@ -653,11 +758,25 @@ model HackathonRegistration {
     approvedAt   DateTime?
     rejectedAt   DateTime?
     rejectionReason String?
+    
+    // Application Details
+    motivation      String?         // Why do you want to participate?
+    experience      String?         // Relevant experience
+    skills          String[]        // Skills the participant brings
+    portfolioUrl    String?         // Portfolio/GitHub/LinkedIn
+    dietaryRestrictions String?     // For in-person events
+    tshirtSize      String?         // For swag
+    
+    // Team preferences
+    lookingForTeam  Boolean         @default(false)
+    teamPreferences String?         // What kind of teammates looking for
 
     hackathon Hackathon @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
     user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
     @@unique([hackathonId, userId])
+    @@index([hackathonId])
+    @@index([userId])
 }
 
 enum RegistrationStatus {
@@ -665,6 +784,93 @@ enum RegistrationStatus {
     APPROVED
     REJECTED
     WAITLISTED
+    CANCELLED
+}
+
+// ==================== TEAMS ====================
+
+model Team {
+    id          String      @id @default(cuid())
+    name        String
+    hackathonId String
+    leaderId    String      // Team leader's user ID
+    
+    // Team info
+    description String?
+    projectIdea String?     // Brief project idea
+    avatar      String?     // Team avatar/logo URL
+    
+    // Status
+    isComplete  Boolean     @default(false) // Has min team members
+    isLocked    Boolean     @default(false) // No more members can join
+    
+    createdAt   DateTime    @default(now())
+    updatedAt   DateTime    @updatedAt
+    
+    // Relations
+    hackathon   Hackathon   @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
+    leader      User        @relation("TeamLeader", fields: [leaderId], references: [id])
+    members     TeamMember[]
+    invitations TeamInvitation[]
+    submissions StageSubmission[]
+    
+    @@unique([hackathonId, name]) // Team names must be unique per hackathon
+    @@index([hackathonId])
+    @@index([leaderId])
+}
+
+model TeamMember {
+    id        String         @id @default(cuid())
+    teamId    String
+    userId    String
+    role      TeamMemberRole @default(MEMBER)
+    joinedAt  DateTime       @default(now())
+    
+    // Relations
+    team      Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+    user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+    
+    @@unique([teamId, userId]) // User can only be in one team per hackathon
+    @@index([teamId])
+    @@index([userId])
+}
+
+enum TeamMemberRole {
+    LEADER
+    MEMBER
+}
+
+model TeamInvitation {
+    id          String               @id @default(cuid())
+    teamId      String
+    inviterId   String               // Who sent the invitation
+    inviteeId   String?              // User being invited (if known)
+    email       String?              // Email for external invites
+    token       String               @unique @default(cuid()) // For accepting via link
+    
+    status      TeamInvitationStatus @default(PENDING)
+    message     String?              // Optional message from inviter
+    
+    createdAt   DateTime             @default(now())
+    expiresAt   DateTime             // Invitation expiry
+    respondedAt DateTime?
+    
+    // Relations
+    team        Team    @relation(fields: [teamId], references: [id], onDelete: Cascade)
+    inviter     User    @relation("TeamInvitationsSent", fields: [inviterId], references: [id])
+    invitee     User?   @relation("TeamInvitationsReceived", fields: [inviteeId], references: [id])
+    
+    @@index([teamId])
+    @@index([inviteeId])
+    @@index([token])
+    @@index([email])
+}
+
+enum TeamInvitationStatus {
+    PENDING
+    ACCEPTED
+    DECLINED
+    EXPIRED
     CANCELLED
 }
 
@@ -763,4 +969,5 @@ enum NotificationType {
     DEADLINE               // Deadline reminder
     STAGE                  // Stage transition
     SYSTEM                 // System notification
+    ROLE                   // Role invitation (mentor, judge, etc.)
 }

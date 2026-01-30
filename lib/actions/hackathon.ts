@@ -5,12 +5,122 @@ import prisma from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { createHackathonSchema, updateHackathonSchema, type CreateHackathonInput, type UpdateHackathonInput } from "@/lib/validations/hackathon"
 import { slugify } from "@/lib/utils"
+import { calculateHackathonStatus, type HackathonStatus } from "@/lib/utils/hackathon-status"
 
 export type ActionResult = {
     success: boolean
     message: string
     data?: unknown
     errors?: Record<string, string[]>
+}
+
+/**
+ * Publish a hackathon - sets appropriate status based on dates
+ */
+export async function publishHackathon(hackathonId: string): Promise<ActionResult> {
+    const session = await auth()
+
+    if (!session?.user?.id) {
+        return { success: false, message: "You must be logged in" }
+    }
+
+    const hackathon = await prisma.hackathon.findUnique({
+        where: { id: hackathonId },
+    })
+
+    if (!hackathon) {
+        return { success: false, message: "Hackathon not found" }
+    }
+
+    // Check permissions
+    const membership = await prisma.organizationMember.findUnique({
+        where: {
+            userId_organizationId: {
+                userId: session.user.id,
+                organizationId: hackathon.organizationId,
+            },
+        },
+    })
+
+    if (!membership || !["OWNER", "ADMIN"].includes(membership.role)) {
+        return { success: false, message: "You don't have permission to publish this hackathon" }
+    }
+
+    // Calculate the correct status based on current dates
+    const newStatus = calculateHackathonStatus(
+        hackathon.registrationStart,
+        hackathon.registrationEnd,
+        hackathon.hackathonStart,
+        hackathon.hackathonEnd,
+        "PUBLISHED", // Set base status as PUBLISHED since we're publishing
+        hackathon.resultsDate
+    )
+
+    try {
+        await prisma.hackathon.update({
+            where: { id: hackathonId },
+            data: { status: newStatus },
+        })
+
+        revalidatePath("/hackathons")
+        revalidatePath(`/hackathons/${hackathon.slug}`)
+
+        return { 
+            success: true, 
+            message: `Hackathon published! Status: ${newStatus.replace("_", " ").toLowerCase()}` 
+        }
+    } catch (error) {
+        console.error("Publish hackathon error:", error)
+        return { success: false, message: "Failed to publish hackathon" }
+    }
+}
+
+/**
+ * Update all hackathon statuses based on current date
+ * This should be called periodically (e.g., via cron or on page load)
+ */
+export async function syncAllHackathonStatuses(): Promise<{ updated: number; errors: number }> {
+    const hackathons = await prisma.hackathon.findMany({
+        where: {
+            status: {
+                notIn: ["DRAFT", "CANCELLED", "COMPLETED"],
+            },
+        },
+    })
+
+    let updated = 0
+    let errors = 0
+
+    for (const hackathon of hackathons) {
+        const newStatus = calculateHackathonStatus(
+            hackathon.registrationStart,
+            hackathon.registrationEnd,
+            hackathon.hackathonStart,
+            hackathon.hackathonEnd,
+            hackathon.status as HackathonStatus,
+            hackathon.resultsDate
+        )
+
+        if (newStatus !== hackathon.status) {
+            try {
+                await prisma.hackathon.update({
+                    where: { id: hackathon.id },
+                    data: { status: newStatus },
+                })
+                updated++
+                revalidatePath(`/hackathons/${hackathon.slug}`)
+            } catch (error) {
+                console.error(`Failed to update hackathon ${hackathon.id}:`, error)
+                errors++
+            }
+        }
+    }
+
+    if (updated > 0) {
+        revalidatePath("/hackathons")
+    }
+
+    return { updated, errors }
 }
 
 // Create a new hackathon
@@ -352,8 +462,21 @@ export async function getHackathons(options?: {
         prisma.hackathon.count({ where }),
     ])
 
+    // Compute real-time status for each hackathon
+    const hackathonsWithComputedStatus = hackathons.map(hackathon => ({
+        ...hackathon,
+        status: calculateHackathonStatus(
+            hackathon.registrationStart,
+            hackathon.registrationEnd,
+            hackathon.hackathonStart,
+            hackathon.hackathonEnd,
+            hackathon.status as HackathonStatus,
+            hackathon.resultsDate
+        ),
+    }))
+
     return {
-        hackathons,
+        hackathons: hackathonsWithComputedStatus,
         pagination: {
             page,
             limit,
@@ -613,6 +736,121 @@ export async function registerForHackathon(hackathonId: string): Promise<ActionR
             success: true,
             message: hackathon.requireApproval
                 ? "Registration submitted! Awaiting approval."
+                : "Successfully registered for the hackathon!",
+        }
+    } catch (error) {
+        console.error("Registration error:", error)
+        return { success: false, message: "Failed to register" }
+    }
+}
+
+// Register with application details
+export async function registerForHackathonWithDetails(
+    hackathonId: string,
+    details: {
+        motivation?: string
+        experience?: string
+        skills?: string[]
+        portfolioUrl?: string
+        dietaryRestrictions?: string
+        tshirtSize?: string
+        lookingForTeam?: boolean
+        teamPreferences?: string
+    }
+): Promise<ActionResult> {
+    const session = await auth()
+
+    if (!session?.user?.id) {
+        return { success: false, message: "You must be logged in to register" }
+    }
+
+    const hackathon = await prisma.hackathon.findUnique({
+        where: { id: hackathonId },
+    })
+
+    if (!hackathon) {
+        return { success: false, message: "Hackathon not found" }
+    }
+
+    // Check if registration is open
+    const now = new Date()
+    if (hackathon.status !== "REGISTRATION_OPEN" && hackathon.status !== "PUBLISHED") {
+        return { success: false, message: "Registration is not open for this hackathon" }
+    }
+
+    if (now < hackathon.registrationStart) {
+        return { success: false, message: "Registration has not started yet" }
+    }
+
+    if (now > hackathon.registrationEnd) {
+        return { success: false, message: "Registration has ended" }
+    }
+
+    // Check if already registered
+    const existingRegistration = await prisma.hackathonRegistration.findUnique({
+        where: {
+            hackathonId_userId: {
+                hackathonId,
+                userId: session.user.id,
+            },
+        },
+    })
+
+    if (existingRegistration) {
+        return { success: false, message: "You are already registered for this hackathon" }
+    }
+
+    // Check max participants
+    if (hackathon.maxParticipants) {
+        const currentCount = await prisma.hackathonRegistration.count({
+            where: {
+                hackathonId,
+                status: { in: ["PENDING", "APPROVED"] },
+            },
+        })
+
+        if (currentCount >= hackathon.maxParticipants) {
+            return { success: false, message: "This hackathon has reached maximum capacity" }
+        }
+    }
+
+    // Validate motivation if approval required
+    if (hackathon.requireApproval && (!details.motivation || details.motivation.trim().length < 20)) {
+        return {
+            success: false,
+            message: "Please provide a motivation of at least 20 characters",
+            errors: { motivation: ["Motivation must be at least 20 characters"] },
+        }
+    }
+
+    try {
+        const status = hackathon.requireApproval ? "PENDING" : "APPROVED"
+
+        await prisma.hackathonRegistration.create({
+            data: {
+                hackathonId,
+                userId: session.user.id,
+                status,
+                approvedAt: status === "APPROVED" ? new Date() : null,
+                motivation: details.motivation || null,
+                experience: details.experience || null,
+                skills: details.skills || [],
+                portfolioUrl: details.portfolioUrl || null,
+                dietaryRestrictions: details.dietaryRestrictions || null,
+                tshirtSize: details.tshirtSize || null,
+                lookingForTeam: details.lookingForTeam || false,
+                teamPreferences: details.teamPreferences || null,
+            },
+        })
+
+        revalidatePath(`/hackathons/${hackathon.slug}`)
+        revalidatePath("/dashboard")
+        revalidatePath("/dashboard/hackathons")
+
+        return {
+            success: true,
+            message: hackathon.requireApproval
+                ? "Application submitted! You'll be notified once reviewed."
                 : "Successfully registered for the hackathon!",
         }
     } catch (error) {
