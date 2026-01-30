@@ -1,4 +1,4 @@
-import { auth } from "@/auth"
+import { auth, signOut } from "@/auth"
 import { redirect } from "next/navigation"
 import Link from "next/link"
 import prisma from "@/lib/prisma"
@@ -44,8 +44,8 @@ export default async function MyHackathonsPage() {
                     slug: true,
                     mode: true,
                     status: true,
-                    startDate: true,
-                    endDate: true,
+                    hackathonStart: true,
+                    hackathonEnd: true,
                     organization: {
                         select: {
                             name: true,
@@ -94,8 +94,8 @@ export default async function MyHackathonsPage() {
 
     const getHackathonStatus = (hackathon: { 
         status: string
-        startDate: Date | null
-        endDate: Date | null 
+        hackathonStart: Date | null
+        hackathonEnd: Date | null 
     }) => {
         const now = new Date()
         
@@ -103,12 +103,12 @@ export default async function MyHackathonsPage() {
             return { label: "Cancelled", color: "bg-gray-100 text-gray-700" }
         }
         
-        if (hackathon.endDate && new Date(hackathon.endDate) < now) {
+        if (hackathon.hackathonEnd && new Date(hackathon.hackathonEnd) < now) {
             return { label: "Completed", color: "bg-blue-100 text-blue-700" }
         }
         
-        if (hackathon.startDate && new Date(hackathon.startDate) <= now && 
-            hackathon.endDate && new Date(hackathon.endDate) >= now) {
+        if (hackathon.hackathonStart && new Date(hackathon.hackathonStart) <= now && 
+            hackathon.hackathonEnd && new Date(hackathon.hackathonEnd) >= now) {
             return { label: "In Progress", color: "bg-green-100 text-green-700" }
         }
         
@@ -146,9 +146,14 @@ export default async function MyHackathonsPage() {
     const approvedRegistrations = registrations.filter(r => r.status === "APPROVED")
     const rejectedRegistrations = registrations.filter(r => r.status === "REJECTED")
 
+    const signOutAction = async () => {
+        "use server"
+        await signOut({ redirectTo: "/" })
+    }
+
     return (
         <div className="min-h-screen bg-gray-50">
-            <Navbar />
+            <Navbar user={session.user} signOutAction={signOutAction} />
             
             <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Header */}
@@ -284,7 +289,7 @@ export default async function MyHackathonsPage() {
                                                     <div className="flex items-center gap-1.5">
                                                         <Calendar className="h-4 w-4 text-gray-400" />
                                                         <span>
-                                                            {formatDate(registration.hackathon.startDate)} - {formatDate(registration.hackathon.endDate)}
+                                                            {formatDate(registration.hackathon.hackathonStart)} - {formatDate(registration.hackathon.hackathonEnd)}
                                                         </span>
                                                     </div>
                                                     <div className="flex items-center gap-1.5">

@@ -3,6 +3,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { auth } from "@/auth"
 import prisma from "@/lib/prisma"
+import { getComputedHackathonStatus } from "@/lib/utils/hackathon-status"
 import {
     Calendar,
     Users,
@@ -122,7 +123,9 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
         isOrganizer = membership?.role === "OWNER" || membership?.role === "ADMIN"
     }
 
-    const status = statusConfig[hackathon.status]
+    // Compute real-time status based on dates (not just DB status)
+    const computedStatus = getComputedHackathonStatus(hackathon)
+    const status = statusConfig[computedStatus]
     const mode = modeConfig[hackathon.mode]
     const ModeIcon = mode.icon
 
@@ -130,8 +133,13 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
         ? hackathon.maxParticipants - hackathon._count.registrations
         : null
 
+    // Calculate total prize pool from prizes (use stored value as fallback)
+    const calculatedPrizePool = hackathon.prizes.reduce((sum, prize) => sum + (prize.amount || 0), 0)
+    const totalPrizePool = calculatedPrizePool > 0 ? calculatedPrizePool : (hackathon.prizePool || 0)
+
+    // Use computed status for registration check
     const canRegister =
-        hackathon.status === "REGISTRATION_OPEN" &&
+        computedStatus === "REGISTRATION_OPEN" &&
         !userRegistration &&
         (spotsLeft === null || spotsLeft > 0)
 
@@ -195,10 +203,10 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
                                 <ModeIcon className="h-3.5 w-3.5" />
                                 {mode.label}
                             </span>
-                            {hackathon.prizePool && hackathon.prizePool > 0 && (
+                            {totalPrizePool > 0 && (
                                 <span className="px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-400 text-amber-900 flex items-center gap-1.5">
                                     <Trophy className="h-3.5 w-3.5" />
-                                    ${hackathon.prizePool.toLocaleString()} in prizes
+                                    ${totalPrizePool.toLocaleString()} in prizes
                                 </span>
                             )}
                         </div>
@@ -241,7 +249,7 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
                                         <Trophy className="h-5 w-5 text-white" />
                                     </div>
                                     <div className="text-2xl font-bold text-gray-900">
-                                        ${(hackathon.prizePool || 0).toLocaleString()}
+                                        ${totalPrizePool.toLocaleString()}
                                     </div>
                                     <div className="text-sm text-gray-600">Prize Pool</div>
                                 </div>
@@ -400,14 +408,37 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sticky top-4 animate-fade-in" style={{ animationDelay: "200ms" }}>
                             {/* Registration Status */}
                             {userRegistration ? (
-                                <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-xl">
-                                    <div className="flex items-center gap-2 text-green-700">
-                                        <CheckCircle className="h-5 w-5" />
-                                        <span className="font-semibold">You&apos;re registered!</span>
+                                <div className="mb-4">
+                                    <div className="p-4 bg-green-50 border border-green-200 rounded-xl">
+                                        <div className="flex items-center gap-2 text-green-700">
+                                            <CheckCircle className="h-5 w-5" />
+                                            <span className="font-semibold">You&apos;re registered!</span>
+                                        </div>
+                                        <p className="text-sm text-green-600 mt-1">
+                                            Status: {userRegistration.status}
+                                        </p>
                                     </div>
-                                    <p className="text-sm text-green-600 mt-1">
-                                        Status: {userRegistration.status}
-                                    </p>
+                                    {/* Team Link */}
+                                    {userRegistration.status === "APPROVED" && (
+                                        <>
+                                            <Link
+                                                href={`/hackathons/${hackathon.slug}/team`}
+                                                className="mt-3 flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-indigo-50 text-indigo-700 rounded-xl hover:bg-indigo-100 transition-colors font-medium text-sm"
+                                            >
+                                                <Users className="h-4 w-4" />
+                                                My Team
+                                                <ArrowRight className="h-4 w-4" />
+                                            </Link>
+                                            <Link
+                                                href={`/hackathons/${hackathon.slug}/stages`}
+                                                className="mt-2 flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-purple-50 text-purple-700 rounded-xl hover:bg-purple-100 transition-colors font-medium text-sm"
+                                            >
+                                                <Calendar className="h-4 w-4" />
+                                                View Stages & Submit
+                                                <ArrowRight className="h-4 w-4" />
+                                            </Link>
+                                        </>
+                                    )}
                                 </div>
                             ) : spotsLeft === 0 ? (
                                 <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl">
@@ -421,6 +452,7 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
                             {/* Register Button */}
                             <RegisterButton
                                 hackathonId={hackathon.id}
+                                hackathonSlug={hackathon.slug}
                                 canRegister={canRegister}
                                 isRegistered={!!userRegistration}
                                 isLoggedIn={!!session?.user}

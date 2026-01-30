@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation"
 import prisma from "@/lib/prisma"
 import { formatDate, formatDateTime } from "@/lib/utils"
-import { updateHackathonStatus } from "@/lib/actions/hackathon"
+import { publishHackathon } from "@/lib/actions/hackathon"
 import {
     Users,
     Trophy,
@@ -16,7 +16,7 @@ import Link from "next/link"
 
 async function handlePublish(hackathonId: string, slug: string) {
     "use server"
-    const result = await updateHackathonStatus(hackathonId, "PUBLISHED")
+    const result = await publishHackathon(hackathonId)
     if (result.success) {
         redirect(`/hackathons/${slug}/manage`)
     }
