@@ -5,6 +5,7 @@ import { formatDateTime } from "@/lib/utils"
 import ParticipantActions from "./participant-actions"
 import { ExternalLink, ChevronDown, ChevronUp, Users } from "lucide-react"
 import ParticipantDetails from "./participant-details"
+import ExportButton from "./export-button"
 
 interface ParticipantsPageProps {
     params: Promise<{ slug: string }>
@@ -46,6 +47,12 @@ export default async function ParticipantsPage({ params, searchParams }: Partici
         notFound()
     }
 
+    // Serialize registrations for client component
+    const serializedRegistrations = hackathon.registrations.map((reg) => ({
+        ...reg,
+        registeredAt: reg.registeredAt,
+    }))
+
     const statusCounts = await prisma.hackathonRegistration.groupBy({
         by: ["status"],
         where: { hackathonId: hackathon.id },
@@ -64,47 +71,53 @@ export default async function ParticipantsPage({ params, searchParams }: Partici
         <div className="space-y-6">
             {/* Filters */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                <div className="flex flex-wrap gap-2">
-                    <a
-                        href={`/hackathons/${slug}/manage/participants`}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                            !status
-                                ? "bg-indigo-100 text-indigo-700"
-                                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                        }`}
-                    >
-                        All ({counts.all})
-                    </a>
-                    <a
-                        href={`/hackathons/${slug}/manage/participants?status=PENDING`}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                            status === "PENDING"
-                                ? "bg-yellow-100 text-yellow-700"
-                                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                        }`}
-                    >
-                        Pending ({counts.PENDING})
-                    </a>
-                    <a
-                        href={`/hackathons/${slug}/manage/participants?status=APPROVED`}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                            status === "APPROVED"
-                                ? "bg-green-100 text-green-700"
-                                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                        }`}
-                    >
-                        Approved ({counts.APPROVED})
-                    </a>
-                    <a
-                        href={`/hackathons/${slug}/manage/participants?status=REJECTED`}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                            status === "REJECTED"
-                                ? "bg-red-100 text-red-700"
-                                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                        }`}
-                    >
-                        Rejected ({counts.REJECTED})
-                    </a>
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div className="flex flex-wrap gap-2">
+                        <a
+                            href={`/hackathons/${slug}/manage/participants`}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                !status
+                                    ? "bg-indigo-100 text-indigo-700"
+                                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                            }`}
+                        >
+                            All ({counts.all})
+                        </a>
+                        <a
+                            href={`/hackathons/${slug}/manage/participants?status=PENDING`}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                status === "PENDING"
+                                    ? "bg-yellow-100 text-yellow-700"
+                                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                            }`}
+                        >
+                            Pending ({counts.PENDING})
+                        </a>
+                        <a
+                            href={`/hackathons/${slug}/manage/participants?status=APPROVED`}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                status === "APPROVED"
+                                    ? "bg-green-100 text-green-700"
+                                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                            }`}
+                        >
+                            Approved ({counts.APPROVED})
+                        </a>
+                        <a
+                            href={`/hackathons/${slug}/manage/participants?status=REJECTED`}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                status === "REJECTED"
+                                    ? "bg-red-100 text-red-700"
+                                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                            }`}
+                        >
+                            Rejected ({counts.REJECTED})
+                        </a>
+                    </div>
+                    <ExportButton 
+                        registrations={serializedRegistrations} 
+                        hackathonTitle={hackathon.title} 
+                    />
                 </div>
             </div>
 
