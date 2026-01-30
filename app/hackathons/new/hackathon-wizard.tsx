@@ -26,7 +26,10 @@ const hackathonWizardSchema = z.object({
     hackathonEnd: z.string().min(1, "End date is required"),
 
     // Config
-    maxParticipants: z.coerce.number().int().positive().optional().nullable(),
+    maxParticipants: z.preprocess(
+        (val) => (val === "" || val === null || val === undefined ? undefined : Number(val)),
+        z.number().int().positive().optional()
+    ),
     minTeamSize: z.coerce.number().int().min(1).default(1),
     maxTeamSize: z.coerce.number().int().min(1).default(4),
     registrationFee: z.coerce.number().nonnegative().default(0),
@@ -34,7 +37,10 @@ const hackathonWizardSchema = z.object({
     allowSoloParticipants: z.boolean().default(true),
     requireApproval: z.boolean().default(false),
     isPublic: z.boolean().default(true),
-    prizePool: z.coerce.number().nonnegative().optional().nullable(),
+    prizePool: z.preprocess(
+        (val) => (val === "" || val === null || val === undefined ? undefined : Number(val)),
+        z.number().nonnegative().optional()
+    ),
 
     // Tracks
     tracks: z.array(z.object({
@@ -103,6 +109,9 @@ export default function HackathonWizard({ organizations }: HackathonWizardProps)
     const { register, handleSubmit, watch, setValue, formState: { errors } } = form
     const tracks = watch("tracks")
     const prizes = watch("prizes")
+
+    // Debug: Log form errors when they exist
+    console.log("Form errors:", errors)
 
     async function onSubmit(data: WizardFormData) {
         setIsSubmitting(true)
