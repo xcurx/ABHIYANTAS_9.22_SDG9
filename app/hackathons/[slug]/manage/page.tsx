@@ -1,6 +1,7 @@
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import prisma from "@/lib/prisma"
 import { formatDate, formatDateTime } from "@/lib/utils"
+import { updateHackathonStatus } from "@/lib/actions/hackathon"
 import {
     Users,
     Trophy,
@@ -12,6 +13,14 @@ import {
     ArrowUpRight,
 } from "lucide-react"
 import Link from "next/link"
+
+async function handlePublish(hackathonId: string, slug: string) {
+    "use server"
+    const result = await updateHackathonStatus(hackathonId, "PUBLISHED")
+    if (result.success) {
+        redirect(`/hackathons/${slug}/manage`)
+    }
+}
 
 interface ManageOverviewPageProps {
     params: Promise<{ slug: string }>
@@ -84,17 +93,28 @@ export default async function ManageOverviewPage({ params }: ManageOverviewPageP
             {hackathon.status === "DRAFT" && (
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3">
                     <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5" />
-                    <div>
+                    <div className="flex-1">
                         <h3 className="font-medium text-yellow-800">Hackathon is in Draft</h3>
                         <p className="text-sm text-yellow-700 mt-1">
-                            Your hackathon is not yet visible to the public. Update the status to make it live.
+                            Your hackathon is not yet visible to the public. Publish it to make it live.
                         </p>
-                        <Link
-                            href={`/hackathons/${slug}/manage/settings`}
-                            className="inline-flex items-center gap-1 text-sm font-medium text-yellow-800 hover:text-yellow-900 mt-2"
-                        >
-                            Go to Settings <ArrowUpRight className="h-4 w-4" />
-                        </Link>
+                        <div className="flex items-center gap-3 mt-3">
+                            <form action={handlePublish.bind(null, hackathon.id, slug)}>
+                                <button
+                                    type="submit"
+                                    className="inline-flex items-center gap-1 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors"
+                                >
+                                    <CheckCircle className="h-4 w-4" />
+                                    Publish Hackathon
+                                </button>
+                            </form>
+                            <Link
+                                href={`/hackathons/${slug}/manage/settings`}
+                                className="inline-flex items-center gap-1 text-sm font-medium text-yellow-800 hover:text-yellow-900"
+                            >
+                                Go to Settings <ArrowUpRight className="h-4 w-4" />
+                            </Link>
+                        </div>
                     </div>
                 </div>
             )}
