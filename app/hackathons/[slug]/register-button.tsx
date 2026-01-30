@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
-import { Loader2 } from "lucide-react"
+import { Loader2, ArrowRight, UserPlus, XCircle } from "lucide-react"
 import { registerForHackathon, cancelRegistration } from "@/lib/actions/hackathon"
 
 interface RegisterButtonProps {
@@ -57,15 +57,18 @@ export default function RegisterButton({
                 <button
                     onClick={handleCancel}
                     disabled={isPending}
-                    className="w-full py-3 px-4 bg-red-100 text-red-700 font-medium rounded-lg hover:bg-red-200 transition-colors disabled:opacity-50"
+                    className="w-full py-3.5 px-4 bg-red-50 text-red-700 font-semibold rounded-xl hover:bg-red-100 border border-red-200 transition-all duration-200 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                     {isPending ? (
-                        <span className="flex items-center justify-center gap-2">
+                        <>
                             <Loader2 className="h-4 w-4 animate-spin" />
                             Processing...
-                        </span>
+                        </>
                     ) : (
-                        "Cancel Registration"
+                        <>
+                            <XCircle className="h-4 w-4" />
+                            Cancel Registration
+                        </>
                     )}
                 </button>
                 {error && <p className="text-red-500 text-sm mt-2 text-center">{error}</p>}
@@ -77,7 +80,7 @@ export default function RegisterButton({
         return (
             <button
                 disabled
-                className="w-full py-3 px-4 bg-gray-200 text-gray-500 font-medium rounded-lg cursor-not-allowed"
+                className="w-full py-3.5 px-4 bg-gray-100 text-gray-400 font-semibold rounded-xl cursor-not-allowed border border-gray-200"
             >
                 Registration Closed
             </button>
@@ -89,17 +92,24 @@ export default function RegisterButton({
             <button
                 onClick={handleRegister}
                 disabled={isPending}
-                className="w-full py-3 px-4 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
+                className="w-full py-3.5 px-4 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-500 transition-all duration-200 disabled:opacity-50 shadow-lg shadow-blue-600/25 flex items-center justify-center gap-2 group"
             >
                 {isPending ? (
-                    <span className="flex items-center justify-center gap-2">
+                    <>
                         <Loader2 className="h-4 w-4 animate-spin" />
                         Processing...
-                    </span>
+                    </>
                 ) : !isLoggedIn ? (
-                    "Sign in to Register"
+                    <>
+                        Sign in to Register
+                        <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                    </>
                 ) : (
-                    "Register Now"
+                    <>
+                        <UserPlus className="h-4 w-4" />
+                        Register Now
+                        <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                    </>
                 )}
             </button>
             {error && <p className="text-red-500 text-sm mt-2 text-center">{error}</p>}

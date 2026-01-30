@@ -4,6 +4,84 @@ import Link from "next/link"
 import { getUserOrganizations } from "@/lib/actions/organization"
 import { Navbar } from "@/components/layout/navbar"
 
+// Static data for featured events
+const featuredEvents = [
+    {
+        id: "1",
+        title: "AI Innovation Challenge 2026",
+        type: "hackathon",
+        status: "Registration Open",
+        statusColor: "bg-green-100 text-green-700",
+        date: "Feb 15 - 17, 2026",
+        participants: 1250,
+        prizePool: "$50,000",
+        image: "🤖",
+        tags: ["AI/ML", "Innovation"],
+    },
+    {
+        id: "2",
+        title: "Web3 Builders Summit",
+        type: "hackathon",
+        status: "Starting Soon",
+        statusColor: "bg-amber-100 text-amber-700",
+        date: "Feb 20 - 22, 2026",
+        participants: 890,
+        prizePool: "$30,000",
+        image: "🔗",
+        tags: ["Blockchain", "Web3"],
+    },
+    {
+        id: "3",
+        title: "Algorithm Masters Weekly",
+        type: "contest",
+        status: "Live Now",
+        statusColor: "bg-red-100 text-red-700 animate-pulse",
+        date: "Every Saturday",
+        participants: 2400,
+        prizePool: "$5,000",
+        image: "💻",
+        tags: ["DSA", "Competitive"],
+    },
+]
+
+// Static user stats
+const userStats = {
+    hackathonsParticipated: 3,
+    contestsCompleted: 12,
+    projectsSubmitted: 5,
+    ranking: 156,
+    totalPrizesWon: "$2,500",
+    skillLevel: "Intermediate",
+}
+
+// Static participation history
+const participationHistory = [
+    {
+        id: "1",
+        name: "Green Tech Hackathon 2025",
+        date: "Dec 2025",
+        status: "Completed",
+        position: "2nd Place 🥈",
+        prize: "$2,000",
+    },
+    {
+        id: "2",
+        name: "Code Sprint #45",
+        date: "Jan 2026",
+        status: "Completed",
+        position: "Top 10%",
+        prize: "$500",
+    },
+    {
+        id: "3",
+        name: "Healthcare Innovation",
+        date: "Jan 2026",
+        status: "In Progress",
+        position: "-",
+        prize: "-",
+    },
+]
+
 export default async function DashboardPage() {
     const session = await auth()
     
@@ -60,324 +138,440 @@ export default async function DashboardPage() {
                     </div>
 
                     {/* Stats */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16 max-w-5xl mx-auto">
-                        <div className="text-center p-6 bg-white rounded-2xl border border-gray-200">
-                            <div className="text-3xl md:text-4xl font-bold text-gray-900">0</div>
-                            <div className="text-sm text-gray-600 mt-1">Active Hackathons</div>
-                            <p className="text-xs text-gray-400 mt-2">Events you're participating in</p>
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-12 max-w-6xl mx-auto">
+                        <div className="text-center p-5 bg-white rounded-2xl border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all">
+                            <div className="h-12 w-12 rounded-xl bg-blue-100 flex items-center justify-center mx-auto mb-3">
+                                <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                </svg>
+                            </div>
+                            <div className="text-2xl font-bold text-gray-900">{userStats.hackathonsParticipated}</div>
+                            <div className="text-xs text-gray-500 mt-1">Hackathons Joined</div>
                         </div>
-                        <div className="text-center p-6 bg-white rounded-2xl border border-gray-200">
-                            <div className="text-3xl md:text-4xl font-bold text-gray-900">0</div>
-                            <div className="text-sm text-gray-600 mt-1">Coding Contests</div>
-                            <p className="text-xs text-gray-400 mt-2">Competitive programming challenges</p>
+                        <div className="text-center p-5 bg-white rounded-2xl border border-gray-200 hover:border-purple-300 hover:shadow-md transition-all">
+                            <div className="h-12 w-12 rounded-xl bg-purple-100 flex items-center justify-center mx-auto mb-3">
+                                <svg className="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                                </svg>
+                            </div>
+                            <div className="text-2xl font-bold text-gray-900">{userStats.contestsCompleted}</div>
+                            <div className="text-xs text-gray-500 mt-1">Contests Completed</div>
                         </div>
-                        <div className="text-center p-6 bg-white rounded-2xl border border-gray-200">
-                            <div className="text-3xl md:text-4xl font-bold text-gray-900">{organizations?.length || 0}</div>
-                            <div className="text-sm text-gray-600 mt-1">Organizations</div>
-                            <p className="text-xs text-gray-400 mt-2">Teams & companies you belong to</p>
+                        <div className="text-center p-5 bg-white rounded-2xl border border-gray-200 hover:border-green-300 hover:shadow-md transition-all">
+                            <div className="h-12 w-12 rounded-xl bg-green-100 flex items-center justify-center mx-auto mb-3">
+                                <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                            </div>
+                            <div className="text-2xl font-bold text-gray-900">{userStats.projectsSubmitted}</div>
+                            <div className="text-xs text-gray-500 mt-1">Projects Submitted</div>
                         </div>
-                        <div className="text-center p-6 bg-white rounded-2xl border border-gray-200">
-                            <div className="text-3xl md:text-4xl font-bold text-gray-900">0</div>
-                            <div className="text-sm text-gray-600 mt-1">Achievements</div>
-                            <p className="text-xs text-gray-400 mt-2">Badges & awards earned</p>
+                        <div className="text-center p-5 bg-white rounded-2xl border border-gray-200 hover:border-amber-300 hover:shadow-md transition-all">
+                            <div className="h-12 w-12 rounded-xl bg-amber-100 flex items-center justify-center mx-auto mb-3">
+                                <svg className="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                                </svg>
+                            </div>
+                            <div className="text-2xl font-bold text-amber-600">{userStats.totalPrizesWon}</div>
+                            <div className="text-xs text-gray-500 mt-1">Total Prizes Won</div>
+                        </div>
+                        <div className="text-center p-5 bg-white rounded-2xl border border-gray-200 hover:border-rose-300 hover:shadow-md transition-all">
+                            <div className="h-12 w-12 rounded-xl bg-rose-100 flex items-center justify-center mx-auto mb-3">
+                                <svg className="h-6 w-6 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                </svg>
+                            </div>
+                            <div className="text-2xl font-bold text-gray-900">#{userStats.ranking}</div>
+                            <div className="text-xs text-gray-500 mt-1">Global Ranking</div>
+                        </div>
+                        <div className="text-center p-5 bg-white rounded-2xl border border-gray-200 hover:border-indigo-300 hover:shadow-md transition-all">
+                            <div className="h-12 w-12 rounded-xl bg-indigo-100 flex items-center justify-center mx-auto mb-3">
+                                <svg className="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                                </svg>
+                            </div>
+                            <div className="text-2xl font-bold text-gray-900">{userStats.skillLevel}</div>
+                            <div className="text-xs text-gray-500 mt-1">Skill Level</div>
                         </div>
                     </div>
 
-                    {/* Main Content */}
-                    <div className="grid lg:grid-cols-3 gap-8">
-                        {/* Profile Card */}
-                        <div className="lg:col-span-1">
-                            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-                                <div className="h-24 bg-blue-600"></div>
-                                <div className="px-6 pb-6 -mt-12">
-                                    <div className="h-24 w-24 rounded-2xl bg-white border-4 border-white flex items-center justify-center overflow-hidden shadow-sm">
-                                        {session.user.avatar ? (
-                                            <img
-                                                src={session.user.avatar}
-                                                alt="Avatar"
-                                                className="h-full w-full object-cover"
-                                            />
-                                        ) : (
-                                            <div className="h-full w-full bg-blue-600 flex items-center justify-center">
-                                                <span className="text-3xl font-semibold text-white">
-                                                    {session.user.name?.charAt(0) || session.user.email?.charAt(0) || "U"}
-                                                </span>
-                                            </div>
-                                        )}
+                    {/* Featured Events */}
+                    <div className="mb-12">
+                        <div className="flex items-center justify-between mb-6">
+                            <div>
+                                <h2 className="text-2xl font-bold text-gray-900">Featured Events</h2>
+                                <p className="text-gray-600 mt-1">Don't miss these exciting opportunities</p>
+                            </div>
+                            <Link
+                                href="/hackathons"
+                                className="text-sm font-medium text-blue-600 hover:text-blue-500"
+                            >
+                                View all →
+                            </Link>
+                        </div>
+                        <div className="grid md:grid-cols-3 gap-6">
+                            {featuredEvents.map((event) => (
+                                <Link
+                                    key={event.id}
+                                    href={event.type === "hackathon" ? "/hackathons" : "/coding-contests"}
+                                    className="group bg-white rounded-2xl border border-gray-200 overflow-hidden hover:border-blue-300 hover:shadow-lg transition-all"
+                                >
+                                    <div className="h-32 bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center relative">
+                                        <span className="text-5xl group-hover:scale-110 transition-transform">{event.image}</span>
+                                        <span className={`absolute top-3 right-3 px-2.5 py-1 text-xs font-semibold rounded-full ${event.statusColor}`}>
+                                            {event.status}
+                                        </span>
                                     </div>
-                                    <div className="mt-4">
-                                        <h2 className="text-2xl font-bold text-gray-900">
-                                            {session.user.name || "User"}
-                                        </h2>
-                                        <p className="text-gray-600 mt-1">{session.user.email}</p>
-                                        <div className="flex items-center gap-2 mt-3">
-                                            <span className="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">
-                                                {session.user.role?.replace("_", " ")}
-                                            </span>
-                                            <span className="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
-                                                ✓ Verified
+                                    <div className="p-5">
+                                        <div className="flex flex-wrap gap-1.5 mb-2">
+                                            {event.tags.map((tag) => (
+                                                <span key={tag} className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full">
+                                                    {tag}
+                                                </span>
+                                            ))}
+                                        </div>
+                                        <h3 className="font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">{event.title}</h3>
+                                        <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
+                                            <span className="flex items-center gap-1">
+                                                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                </svg>
+                                                {event.date}
                                             </span>
                                         </div>
-                                        <p className="text-sm text-gray-500 mt-4">
-                                            Member since January 2026. Ready to build amazing things with the community.
-                                        </p>
+                                        <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                                            <span className="text-sm text-gray-600">
+                                                <span className="font-semibold text-gray-900">{event.participants.toLocaleString()}</span> participants
+                                            </span>
+                                            <span className="text-sm font-bold text-green-600">{event.prizePool}</span>
+                                        </div>
                                     </div>
-                                    <div className="mt-6 flex gap-3">
-                                        <Link
-                                            href="/dashboard/profile"
-                                            className="flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-500 transition-colors"
-                                        >
-                                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                            </svg>
-                                            Edit Profile
-                                        </Link>
-                                        <Link
-                                            href="/dashboard/settings"
-                                            className="inline-flex items-center justify-center rounded-full bg-gray-100 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
-                                        >
-                                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                            </svg>
-                                        </Link>
-                                    </div>
-                                </div>
-                            </div>
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
 
-                            {/* Quick Links */}
-                            <div className="mt-6 bg-white rounded-2xl border border-gray-200 p-6">
-                                <h3 className="font-semibold text-gray-900 mb-2">Quick Actions</h3>
-                                <p className="text-sm text-gray-500 mb-4">Navigate to your most used features</p>
-                                <div className="space-y-2">
+                    {/* Quick Actions Row - Full Width */}
+                    <div className="mb-12">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Quick Actions</h2>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <Link
+                                href="/hackathons"
+                                className="flex items-center gap-4 p-5 bg-white rounded-2xl border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all group"
+                            >
+                                <div className="h-12 w-12 rounded-xl bg-blue-100 flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                                    <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                    </svg>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="font-semibold text-gray-900">Browse Hackathons</p>
+                                    <p className="text-xs text-gray-500 mt-0.5">Find events to join</p>
+                                </div>
+                            </Link>
+                            <Link
+                                href="/coding-contests"
+                                className="flex items-center gap-4 p-5 bg-white rounded-2xl border border-gray-200 hover:border-purple-300 hover:shadow-md transition-all group"
+                            >
+                                <div className="h-12 w-12 rounded-xl bg-purple-100 flex items-center justify-center group-hover:bg-purple-200 transition-colors">
+                                    <svg className="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                                    </svg>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="font-semibold text-gray-900">Coding Contests</p>
+                                    <p className="text-xs text-gray-500 mt-0.5">Compete & improve</p>
+                                </div>
+                            </Link>
+                            <Link
+                                href="/organizations"
+                                className="flex items-center gap-4 p-5 bg-white rounded-2xl border border-gray-200 hover:border-orange-300 hover:shadow-md transition-all group"
+                            >
+                                <div className="h-12 w-12 rounded-xl bg-orange-100 flex items-center justify-center group-hover:bg-orange-200 transition-colors">
+                                    <svg className="h-6 w-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                    </svg>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="font-semibold text-gray-900">Organizations</p>
+                                    <p className="text-xs text-gray-500 mt-0.5">Teams & companies</p>
+                                </div>
+                            </Link>
+                            <Link
+                                href="/dashboard/profile"
+                                className="flex items-center gap-4 p-5 bg-white rounded-2xl border border-gray-200 hover:border-green-300 hover:shadow-md transition-all group"
+                            >
+                                <div className="h-12 w-12 rounded-xl bg-green-100 flex items-center justify-center group-hover:bg-green-200 transition-colors">
+                                    <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="font-semibold text-gray-900">My Profile</p>
+                                    <p className="text-xs text-gray-500 mt-0.5">Edit your details</p>
+                                </div>
+                            </Link>
+                        </div>
+                    </div>
+
+                    {/* Main Content - Full Width Grid */}
+                    <div className="grid lg:grid-cols-2 gap-8 mb-12">
+                        {/* My Organizations */}
+                        <div className="bg-white rounded-2xl border border-gray-200 p-6">
+                            <div className="flex items-center justify-between mb-2">
+                                <h3 className="text-lg font-semibold text-gray-900">My Organizations</h3>
+                                <Link 
+                                    href="/organizations" 
+                                    className="text-sm text-blue-600 hover:text-blue-500 font-medium"
+                                >
+                                    View all →
+                                </Link>
+                            </div>
+                            <p className="text-sm text-gray-500 mb-6">Companies and teams you're a member of</p>
+                            
+                            {organizations && organizations.length > 0 ? (
+                                <div className="grid gap-4">
+                                    {organizations.slice(0, 3).map((org: any) => (
+                                        <Link
+                                            key={org.id}
+                                            href={`/organizations/${org.slug}`}
+                                            className="flex items-center gap-4 p-4 rounded-xl border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all group"
+                                        >
+                                            <div className="h-12 w-12 rounded-xl bg-blue-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                                                {org.logo ? (
+                                                    <img src={org.logo} alt={org.name} className="h-12 w-12 rounded-xl object-cover" />
+                                                ) : (
+                                                    <span className="text-lg font-bold text-white">
+                                                        {org.name.charAt(0)}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div className="min-w-0 flex-1">
+                                                <h4 className="font-semibold text-gray-900 truncate">{org.name}</h4>
+                                                <p className="text-sm text-gray-600 capitalize">{org.role.toLowerCase()}</p>
+                                            </div>
+                                            <span className="text-xs text-gray-400">{org._count?.members || 0} members</span>
+                                        </Link>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-8 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
+                                    <div className="h-12 w-12 rounded-xl bg-blue-100 flex items-center justify-center mx-auto mb-3">
+                                        <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                        </svg>
+                                    </div>
+                                    <h4 className="font-medium text-gray-900 mb-1">No organizations yet</h4>
+                                    <p className="text-sm text-gray-500 mb-4">Join or create an organization</p>
+                                    <Link
+                                        href="/organizations/new"
+                                        className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-500 transition-colors"
+                                    >
+                                        Create Organization
+                                    </Link>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* My Participation */}
+                        <div className="bg-white rounded-2xl border border-gray-200 p-6">
+                            <div className="flex items-center justify-between mb-2">
+                                <h3 className="text-lg font-semibold text-gray-900">My Participation</h3>
+                                <Link 
+                                    href="/hackathons" 
+                                    className="text-sm text-blue-600 hover:text-blue-500 font-medium"
+                                >
+                                    Browse all →
+                                </Link>
+                            </div>
+                            <p className="text-sm text-gray-500 mb-6">Your hackathon and contest history</p>
+                            
+                            {participationHistory.length > 0 ? (
+                                <div className="space-y-3">
+                                    {participationHistory.map((item) => (
+                                        <div
+                                            key={item.id}
+                                            className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+                                        >
+                                            <div className={`h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                                                item.status === "Completed" ? "bg-green-100" : "bg-blue-100"
+                                            }`}>
+                                                {item.status === "Completed" ? (
+                                                    <svg className="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                    </svg>
+                                                ) : (
+                                                    <svg className="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                )}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <h4 className="font-medium text-gray-900 truncate text-sm">{item.name}</h4>
+                                                <span className="text-xs text-gray-500">{item.date}</span>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-sm font-semibold text-gray-900">{item.position}</p>
+                                                {item.prize !== "-" && (
+                                                    <p className="text-xs text-green-600 font-medium">{item.prize}</p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-8 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
+                                    <div className="h-12 w-12 rounded-xl bg-blue-100 flex items-center justify-center mx-auto mb-3">
+                                        <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                    </div>
+                                    <h4 className="font-medium text-gray-900 mb-1">No participation yet</h4>
+                                    <p className="text-sm text-gray-500 mb-4">Start by joining a hackathon!</p>
                                     <Link
                                         href="/hackathons"
-                                        className="flex items-center gap-4 p-3 rounded-xl hover:bg-blue-50 transition-colors group"
+                                        className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-500 transition-colors"
                                     >
-                                        <div className="h-10 w-10 rounded-xl bg-blue-100 flex items-center justify-center group-hover:bg-blue-200 transition-colors">
-                                            <svg className="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                                            </svg>
+                                        Explore Hackathons
+                                    </Link>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Full Width Bottom Section */}
+                    <div className="grid lg:grid-cols-3 gap-8 mb-12">
+                        {/* Profile Card */}
+                        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+                            <div className="h-20 bg-blue-600"></div>
+                            <div className="px-6 pb-6 -mt-10">
+                                <div className="h-20 w-20 rounded-2xl bg-white border-4 border-white flex items-center justify-center overflow-hidden shadow-sm">
+                                    {session.user.avatar ? (
+                                        <img
+                                            src={session.user.avatar}
+                                            alt="Avatar"
+                                            className="h-full w-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="h-full w-full bg-blue-600 flex items-center justify-center">
+                                            <span className="text-2xl font-semibold text-white">
+                                                {session.user.name?.charAt(0) || session.user.email?.charAt(0) || "U"}
+                                            </span>
                                         </div>
-                                        <div className="flex-1">
-                                            <p className="font-medium text-gray-900">Browse Hackathons</p>
-                                            <p className="text-xs text-gray-500">Find events to participate in</p>
-                                        </div>
-                                        <svg className="h-5 w-5 text-gray-300 group-hover:text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                        </svg>
+                                    )}
+                                </div>
+                                <div className="mt-3">
+                                    <h2 className="text-xl font-bold text-gray-900">
+                                        {session.user.name || "User"}
+                                    </h2>
+                                    <p className="text-gray-600 text-sm mt-1">{session.user.email}</p>
+                                    <div className="flex items-center gap-2 mt-3">
+                                        <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-700">
+                                            {session.user.role?.replace("_", " ")}
+                                        </span>
+                                        <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700">
+                                            ✓ Verified
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="mt-4 flex gap-2">
+                                    <Link
+                                        href="/dashboard/profile"
+                                        className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-500 transition-colors"
+                                    >
+                                        Edit Profile
                                     </Link>
                                     <Link
-                                        href="/coding-contests"
-                                        className="flex items-center gap-4 p-3 rounded-xl hover:bg-blue-50 transition-colors group"
+                                        href="/dashboard/settings"
+                                        className="inline-flex items-center justify-center rounded-lg bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
                                     >
-                                        <div className="h-10 w-10 rounded-xl bg-blue-100 flex items-center justify-center group-hover:bg-blue-200 transition-colors">
-                                            <svg className="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                                            </svg>
-                                        </div>
-                                        <div className="flex-1">
-                                            <p className="font-medium text-gray-900">Coding Contests</p>
-                                            <p className="text-xs text-gray-500">Compete in programming challenges</p>
-                                        </div>
-                                        <svg className="h-5 w-5 text-gray-300 group-hover:text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                        </svg>
-                                    </Link>
-                                    <Link
-                                        href="/organizations"
-                                        className="flex items-center gap-4 p-3 rounded-xl hover:bg-orange-50 transition-colors group"
-                                    >
-                                        <div className="h-10 w-10 rounded-xl bg-orange-100 flex items-center justify-center group-hover:bg-orange-200 transition-colors">
-                                            <svg className="h-5 w-5 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                            </svg>
-                                        </div>
-                                        <div className="flex-1">
-                                            <p className="font-medium text-gray-900">Organizations</p>
-                                            <p className="text-xs text-gray-500">Manage teams & companies</p>
-                                        </div>
-                                        <svg className="h-5 w-5 text-gray-300 group-hover:text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                        </svg>
-                                    </Link>
-                                    <Link
-                                        href="/dashboard/submissions"
-                                        className="flex items-center gap-4 p-3 rounded-xl hover:bg-green-50 transition-colors group"
-                                    >
-                                        <div className="h-10 w-10 rounded-xl bg-green-100 flex items-center justify-center group-hover:bg-green-200 transition-colors">
-                                            <svg className="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                            </svg>
-                                        </div>
-                                        <div className="flex-1">
-                                            <p className="font-medium text-gray-900">My Submissions</p>
-                                            <p className="text-xs text-gray-500">View your project submissions</p>
-                                        </div>
-                                        <svg className="h-5 w-5 text-gray-300 group-hover:text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                         </svg>
                                     </Link>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Right Column */}
-                        <div className="lg:col-span-2 space-y-6">
-                            {/* My Organizations */}
-                            <div className="bg-white rounded-2xl border border-gray-200 p-6">
-                                <div className="flex items-center justify-between mb-2">
-                                    <h3 className="text-lg font-semibold text-gray-900">My Organizations</h3>
-                                    <Link 
-                                        href="/organizations" 
-                                        className="text-sm text-blue-600 hover:text-blue-500 font-medium"
-                                    >
-                                        View all →
-                                    </Link>
-                                </div>
-                                <p className="text-sm text-gray-500 mb-6">Companies and teams you're a member of</p>
-                                
-                                {organizations && organizations.length > 0 ? (
-                                    <div className="grid sm:grid-cols-2 gap-4">
-                                        {organizations.slice(0, 4).map((org: any) => (
-                                            <Link
-                                                key={org.id}
-                                                href={`/organizations/${org.slug}`}
-                                                className="flex items-center gap-4 p-4 rounded-xl border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all group"
-                                            >
-                                                <div className="h-14 w-14 rounded-xl bg-blue-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                                                    {org.logo ? (
-                                                        <img src={org.logo} alt={org.name} className="h-14 w-14 rounded-xl object-cover" />
-                                                    ) : (
-                                                        <span className="text-xl font-bold text-white">
-                                                            {org.name.charAt(0)}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <div className="min-w-0 flex-1">
-                                                    <h4 className="font-semibold text-gray-900 truncate">{org.name}</h4>
-                                                    <p className="text-sm text-gray-600">
-                                                        <span className="capitalize">{org.role.toLowerCase()}</span>
-                                                    </p>
-                                                    <p className="text-xs text-gray-400 mt-1">
-                                                        {org._count?.members || 0} members • {org._count?.hackathons || 0} hackathons
-                                                    </p>
-                                                </div>
-                                            </Link>
-                                        ))}
+                        {/* Recent Activity */}
+                        <div className="bg-white rounded-2xl border border-gray-200 p-6">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
+                            <div className="space-y-3">
+                                <div className="flex items-start gap-3 p-3 bg-amber-50 rounded-xl">
+                                    <span className="text-lg">🏆</span>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium text-gray-900">You won 2nd place!</p>
+                                        <p className="text-xs text-gray-500 mt-0.5">Green Tech Hackathon 2025</p>
                                     </div>
-                                ) : (
-                                    <div className="text-center py-12 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
-                                        <div className="h-16 w-16 rounded-2xl bg-blue-100 flex items-center justify-center mx-auto mb-4">
-                                            <svg className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                            </svg>
-                                        </div>
-                                        <h4 className="font-medium text-gray-900 mb-1">No organizations yet</h4>
-                                        <p className="text-sm text-gray-500 mb-4 max-w-sm mx-auto">
-                                            Join an existing organization or create your own to start hosting and participating in hackathons.
-                                        </p>
-                                        <div className="flex items-center justify-center gap-3">
-                                            <Link
-                                                href="/organizations"
-                                                className="inline-flex items-center gap-2 rounded-full bg-white border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-                                            >
-                                                Browse Organizations
-                                            </Link>
-                                            <Link
-                                                href="/organizations/new"
-                                                className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-500 transition-colors"
-                                            >
-                                                Create Organization
-                                            </Link>
-                                        </div>
+                                </div>
+                                <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-xl">
+                                    <span className="text-lg">📝</span>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium text-gray-900">Registered for Healthcare Innovation</p>
+                                        <p className="text-xs text-gray-500 mt-0.5">5 days ago</p>
                                     </div>
-                                )}
-                            </div>
-
-                            {/* Upcoming Events */}
-                            <div className="bg-white rounded-2xl border border-gray-200 p-6">
-                                <div className="flex items-center justify-between mb-2">
-                                    <h3 className="text-lg font-semibold text-gray-900">Upcoming Events</h3>
-                                    <Link 
-                                        href="/hackathons" 
-                                        className="text-sm text-blue-600 hover:text-blue-500 font-medium"
-                                    >
-                                        Browse all →
-                                    </Link>
                                 </div>
-                                <p className="text-sm text-gray-500 mb-6">Hackathons and contests you've registered for</p>
-                                
-                                <div className="text-center py-12 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
-                                    <div className="h-16 w-16 rounded-2xl bg-blue-100 flex items-center justify-center mx-auto mb-4">
-                                        <svg className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                        </svg>
-                                    </div>
-                                    <h4 className="font-medium text-gray-900 mb-1">No upcoming events</h4>
-                                    <p className="text-sm text-gray-500 mb-4 max-w-sm mx-auto">
-                                        You haven't registered for any hackathons yet. Explore available events and start your innovation journey!
-                                    </p>
-                                    <Link
-                                        href="/hackathons"
-                                        className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-500 transition-colors"
-                                    >
-                                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                        </svg>
-                                        Explore Hackathons
-                                    </Link>
-                                </div>
-                            </div>
-
-                            {/* Recent Activity */}
-                            <div className="bg-white rounded-2xl border border-gray-200 p-6">
-                                <div className="flex items-center justify-between mb-2">
-                                    <h3 className="text-lg font-semibold text-gray-900">Recent Activity</h3>
-                                </div>
-                                <p className="text-sm text-gray-500 mb-6">Your latest actions and updates</p>
-                                
-                                <div className="space-y-4">
-                                    <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl">
-                                        <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center shrink-0">
-                                            <svg className="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                            </svg>
-                                        </div>
-                                        <div className="flex-1">
-                                            <p className="text-sm font-medium text-gray-900">Account created successfully</p>
-                                            <p className="text-xs text-gray-500 mt-1">Welcome to ELEVATE! Start by exploring hackathons or joining an organization.</p>
-                                            <p className="text-xs text-gray-400 mt-2">Just now</p>
-                                        </div>
+                                <div className="flex items-start gap-3 p-3 bg-green-50 rounded-xl">
+                                    <span className="text-lg">✅</span>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium text-gray-900">Account verified</p>
+                                        <p className="text-xs text-gray-500 mt-0.5">1 week ago</p>
                                     </div>
                                 </div>
                             </div>
+                        </div>
 
+                        {/* Skills & Badges */}
+                        <div className="bg-white rounded-2xl border border-gray-200 p-6">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Skills & Badges</h3>
+                            <div className="space-y-4">
+                                <div>
+                                    <h4 className="text-xs font-medium text-gray-500 uppercase mb-2">Top Skills</h4>
+                                    <div className="flex flex-wrap gap-1.5">
+                                        <span className="px-2.5 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">React</span>
+                                        <span className="px-2.5 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">Node.js</span>
+                                        <span className="px-2.5 py-1 bg-purple-100 text-purple-700 text-xs font-medium rounded-full">Python</span>
+                                        <span className="px-2.5 py-1 bg-amber-100 text-amber-700 text-xs font-medium rounded-full">ML</span>
+                                    </div>
+                                </div>
+                                <div className="pt-3 border-t border-gray-100">
+                                    <h4 className="text-xs font-medium text-gray-500 uppercase mb-2">Badges</h4>
+                                    <div className="flex gap-2">
+                                        <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-lg shadow-sm">🥈</div>
+                                        <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-lg shadow-sm">🚀</div>
+                                        <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center text-lg shadow-sm">💻</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Admin Panels - Full Width */}
+                    {(session.user.role === "SUPER_ADMIN" || session.user.role === "ORGANIZATION_ADMIN") && (
+                        <div className="grid lg:grid-cols-2 gap-8">
                             {/* Organizer Panel */}
-                            {(session.user.role === "SUPER_ADMIN" || session.user.role === "ORGANIZATION_ADMIN") && (
-                                <div className="bg-blue-600 rounded-2xl p-6">
-                                    <div className="flex items-start gap-4">
-                                        <div className="h-12 w-12 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-                                            <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                            </svg>
-                                        </div>
-                                        <div className="flex-1">
-                                            <h3 className="font-semibold text-white text-lg">Organizer Dashboard</h3>
-                                            <p className="text-blue-100 text-sm mt-1">
-                                                As an organization admin, you can create and manage hackathons, review submissions, 
-                                                configure judging criteria, and track participant engagement.
-                                            </p>
-                                            <Link
-                                                href="/organizer"
-                                                className="inline-flex items-center gap-2 mt-4 rounded-full bg-white px-5 py-2.5 text-sm font-medium text-blue-600 hover:bg-blue-50 transition-colors"
-                                            >
-                                                Go to Organizer Panel →
-                                            </Link>
-                                        </div>
+                            <div className="bg-blue-600 rounded-2xl p-6">
+                                <div className="flex items-start gap-4">
+                                    <div className="h-12 w-12 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                                        <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                        </svg>
+                                    </div>
+                                    <div className="flex-1">
+                                        <h3 className="font-semibold text-white text-lg">Organizer Dashboard</h3>
+                                        <p className="text-blue-100 text-sm mt-1">
+                                            Create and manage hackathons, review submissions, and track engagement.
+                                        </p>
+                                        <Link
+                                            href="/organizer"
+                                            className="inline-flex items-center gap-2 mt-4 rounded-full bg-white px-5 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 transition-colors"
+                                        >
+                                            Go to Organizer Panel →
+                                        </Link>
                                     </div>
                                 </div>
-                            )}
+                            </div>
 
                             {/* Admin Panel */}
                             {session.user.role === "SUPER_ADMIN" && (
@@ -391,12 +585,11 @@ export default async function DashboardPage() {
                                         <div className="flex-1">
                                             <h3 className="font-semibold text-white text-lg">Platform Administration</h3>
                                             <p className="text-rose-100 text-sm mt-1">
-                                                Full access to platform management including user moderation, organization verification, 
-                                                system configuration, and analytics dashboard.
+                                                User moderation, organization verification, and system configuration.
                                             </p>
                                             <Link
                                                 href="/admin"
-                                                className="inline-flex items-center gap-2 mt-4 rounded-full bg-white px-5 py-2.5 text-sm font-medium text-rose-600 hover:bg-rose-50 transition-colors"
+                                                className="inline-flex items-center gap-2 mt-4 rounded-full bg-white px-5 py-2 text-sm font-medium text-rose-600 hover:bg-rose-50 transition-colors"
                                             >
                                                 Go to Admin Panel →
                                             </Link>
@@ -405,7 +598,7 @@ export default async function DashboardPage() {
                                 </div>
                             )}
                         </div>
-                    </div>
+                    )}
                 </div>
             </main>
         </div>
