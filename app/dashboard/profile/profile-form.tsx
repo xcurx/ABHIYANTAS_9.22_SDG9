@@ -86,11 +86,18 @@ export default function ProfileForm({ user, mockData }: { user: User; mockData?:
         const formData = new FormData()
         formData.append("name", name)
         formData.append("avatar", avatarPreview || "")
+        formData.append("bio", bio)
+        formData.append("location", location)
+        formData.append("github", github)
+        formData.append("linkedin", linkedin)
+        formData.append("twitter", twitter)
+        formData.append("portfolio", portfolio)
+        formData.append("skills", JSON.stringify(skills))
 
         const result = await updateProfile(formData)
         
         if (result.success) {
-            setMessage({ type: "success", text: "Profile updated successfully! (Note: Some features use mock data)" })
+            setMessage({ type: "success", text: "Profile updated successfully!" })
             router.refresh()
         } else {
             setMessage({ type: "error", text: result.message })

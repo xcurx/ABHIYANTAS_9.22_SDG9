@@ -3,6 +3,8 @@ import { redirect } from "next/navigation"
 import Link from "next/link"
 import { getUserOrganizations } from "@/lib/actions/organization"
 import { Navbar } from "@/components/layout/navbar"
+import { getRecommendedHackathons } from "@/lib/actions/recommendation"
+import { getUserSkills } from "@/lib/actions/skill"
 
 // Static data for featured events
 const featuredEvents = [
@@ -93,6 +95,15 @@ export default async function DashboardPage() {
     const organizations = orgsResult.success ? orgsResult.organizations : []
     
     const canCreateHackathon = organizations?.some(org => ["OWNER", "ADMIN"].includes(org.role)) ?? false
+
+    // Fetch recommendations and user skills
+    const [recommendationsResult, skillsResult] = await Promise.all([
+        getRecommendedHackathons(6),
+        getUserSkills(session.user.id),
+    ])
+    
+    const recommendations = recommendationsResult.recommendations
+    const userSkills = skillsResult.success ? skillsResult.skills : []
 
     const signOutAction = async () => {
         "use server"
@@ -194,6 +205,142 @@ export default async function DashboardPage() {
                             <div className="text-xs text-gray-500 mt-1">Skill Level</div>
                         </div>
                     </div>
+
+                    {/* Recommended for You Section */}
+                    {recommendations.length > 0 && (
+                        <div className="mb-12">
+                            <div className="flex items-center justify-between mb-6">
+                                <div>
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+                                            <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h2 className="text-2xl font-bold text-gray-900">Recommended for You</h2>
+                                            <p className="text-gray-600 text-sm mt-0.5">
+                                                {userSkills.length > 0 
+                                                    ? `Based on your ${userSkills.slice(0, 3).map(s => s.name).join(", ")} skills`
+                                                    : "Popular hackathons you might enjoy"
+                                                }
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <Link
+                                    href="/hackathons"
+                                    className="text-sm font-medium text-violet-600 hover:text-violet-500 flex items-center gap-1"
+                                >
+                                    View all
+                                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </Link>
+                            </div>
+                            
+                            {/* Add skills prompt if no skills */}
+                            {userSkills.length === 0 && (
+                                <div className="mb-6 p-4 bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl border border-violet-100">
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-10 w-10 rounded-lg bg-violet-100 flex items-center justify-center flex-shrink-0">
+                                            <svg className="h-5 w-5 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="text-sm font-medium text-violet-800">Add skills to get personalized recommendations</p>
+                                            <p className="text-xs text-violet-600 mt-0.5">Update your profile with your technical skills for better matches</p>
+                                        </div>
+                                        <Link
+                                            href="/dashboard/profile"
+                                            className="px-4 py-2 bg-violet-600 text-white text-sm font-medium rounded-lg hover:bg-violet-700 transition-colors"
+                                        >
+                                            Add Skills
+                                        </Link>
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {recommendations.map((hackathon) => (
+                                    <Link
+                                        key={hackathon.id}
+                                        href={`/hackathons/${hackathon.slug}`}
+                                        className="group bg-white rounded-2xl border border-gray-200 overflow-hidden hover:border-violet-300 hover:shadow-lg transition-all relative"
+                                    >
+                                        {/* Match Score Badge */}
+                                        {hackathon.matchScore > 0 && (
+                                            <div className="absolute top-3 left-3 z-10">
+                                                <span className="px-2.5 py-1 bg-violet-600 text-white text-xs font-semibold rounded-full flex items-center gap-1">
+                                                    <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
+                                                    </svg>
+                                                    {hackathon.matchScore}% match
+                                                </span>
+                                            </div>
+                                        )}
+                                        
+                                        <div className="h-32 bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center relative">
+                                            {hackathon.thumbnail ? (
+                                                <img src={hackathon.thumbnail} alt={hackathon.title} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <span className="text-5xl group-hover:scale-110 transition-transform">🚀</span>
+                                            )}
+                                            <span className={`absolute top-3 right-3 px-2.5 py-1 text-xs font-semibold rounded-full ${
+                                                hackathon.status === "REGISTRATION_OPEN" 
+                                                    ? "bg-green-100 text-green-700" 
+                                                    : "bg-amber-100 text-amber-700"
+                                            }`}>
+                                                {hackathon.status === "REGISTRATION_OPEN" ? "Registration Open" : hackathon.status.replace(/_/g, " ")}
+                                            </span>
+                                        </div>
+                                        <div className="p-5">
+                                            <div className="flex flex-wrap gap-1.5 mb-2">
+                                                {hackathon.matchedTags.slice(0, 2).map((tag) => (
+                                                    <span key={tag} className="px-2 py-0.5 bg-violet-100 text-violet-700 text-xs rounded-full font-medium">
+                                                        {tag}
+                                                    </span>
+                                                ))}
+                                                {hackathon.tags.filter(t => !hackathon.matchedTags.includes(t.toLowerCase())).slice(0, 1).map((tag) => (
+                                                    <span key={tag} className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full">
+                                                        {tag}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                            <h3 className="font-bold text-gray-900 mb-1 group-hover:text-violet-600 transition-colors line-clamp-1">
+                                                {hackathon.title}
+                                            </h3>
+                                            <p className="text-xs text-gray-500 mb-3">{hackathon.matchReason}</p>
+                                            <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
+                                                <span className="flex items-center gap-1">
+                                                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                    </svg>
+                                                    {new Date(hackathon.hackathonStart).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                                                </span>
+                                                <span className="flex items-center gap-1">
+                                                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                    </svg>
+                                                    {hackathon.mode}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                                                <span className="text-sm text-gray-600">
+                                                    <span className="font-semibold text-gray-900">{hackathon._count.registrations}</span> registered
+                                                </span>
+                                                {hackathon.prizePool && (
+                                                    <span className="text-sm font-bold text-green-600">${hackathon.prizePool.toLocaleString()}</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     {/* Featured Events */}
                     <div className="mb-12">

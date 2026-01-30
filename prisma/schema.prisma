@@ -16,6 +16,12 @@ model User {
     name          String?
     password      String?
     avatar        String?
+    bio           String?
+    location      String?
+    github        String?
+    linkedin      String?
+    twitter       String?
+    portfolio     String?
     role          UserRole  @default(PARTICIPANT)
     createdAt     DateTime  @default(now())
     updatedAt     DateTime  @updatedAt
