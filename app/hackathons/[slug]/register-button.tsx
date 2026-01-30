@@ -2,11 +2,13 @@
 
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { Loader2, ArrowRight, UserPlus, XCircle } from "lucide-react"
-import { registerForHackathon, cancelRegistration } from "@/lib/actions/hackathon"
+import { cancelRegistration } from "@/lib/actions/hackathon"
 
 interface RegisterButtonProps {
     hackathonId: string
+    hackathonSlug: string
     canRegister: boolean
     isRegistered: boolean
     isLoggedIn: boolean
@@ -14,6 +16,7 @@ interface RegisterButtonProps {
 
 export default function RegisterButton({
     hackathonId,
+    hackathonSlug,
     canRegister,
     isRegistered,
     isLoggedIn,
@@ -21,23 +24,6 @@ export default function RegisterButton({
     const router = useRouter()
     const [isPending, startTransition] = useTransition()
     const [error, setError] = useState<string | null>(null)
-
-    async function handleRegister() {
-        if (!isLoggedIn) {
-            router.push(`/sign-in?callbackUrl=${window.location.pathname}`)
-            return
-        }
-
-        setError(null)
-        startTransition(async () => {
-            const result = await registerForHackathon(hackathonId)
-            if (!result.success) {
-                setError(result.message || "Failed to register")
-            } else {
-                router.refresh()
-            }
-        })
-    }
 
     async function handleCancel() {
         setError(null)
@@ -87,32 +73,28 @@ export default function RegisterButton({
         )
     }
 
-    return (
-        <div>
-            <button
-                onClick={handleRegister}
-                disabled={isPending}
-                className="w-full py-3.5 px-4 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-500 transition-all duration-200 disabled:opacity-50 shadow-lg shadow-blue-600/25 flex items-center justify-center gap-2 group"
+    // If not logged in, redirect to sign-in page
+    if (!isLoggedIn) {
+        return (
+            <Link
+                href={`/sign-in?callbackUrl=/hackathons/${hackathonSlug}/register`}
+                className="w-full py-3.5 px-4 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-500 transition-all duration-200 shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2 group"
             >
-                {isPending ? (
-                    <>
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Processing...
-                    </>
-                ) : !isLoggedIn ? (
-                    <>
-                        Sign in to Register
-                        <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                    </>
-                ) : (
-                    <>
-                        <UserPlus className="h-4 w-4" />
-                        Register Now
-                        <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                    </>
-                )}
-            </button>
-            {error && <p className="text-red-500 text-sm mt-2 text-center">{error}</p>}
-        </div>
+                Sign in to Register
+                <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+        )
+    }
+
+    // Redirect to registration form page
+    return (
+        <Link
+            href={`/hackathons/${hackathonSlug}/register`}
+            className="w-full py-3.5 px-4 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-500 transition-all duration-200 shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2 group"
+        >
+            <UserPlus className="h-4 w-4" />
+            Apply Now
+            <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+        </Link>
     )
 }

@@ -1,7 +1,10 @@
 import { notFound } from "next/navigation"
+import Link from "next/link"
 import prisma from "@/lib/prisma"
 import { formatDateTime } from "@/lib/utils"
 import ParticipantActions from "./participant-actions"
+import { ExternalLink, ChevronDown, ChevronUp, Users } from "lucide-react"
+import ParticipantDetails from "./participant-details"
 
 interface ParticipantsPageProps {
     params: Promise<{ slug: string }>
@@ -115,6 +118,9 @@ export default async function ParticipantsPage({ params, searchParams }: Partici
                                     Participant
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Skills
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Registered At
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -128,53 +134,19 @@ export default async function ParticipantsPage({ params, searchParams }: Partici
                         <tbody className="divide-y divide-gray-200">
                             {hackathon.registrations.length === 0 ? (
                                 <tr>
-                                    <td colSpan={4} className="px-6 py-12 text-center text-gray-500">
-                                        No participants found
+                                    <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                                        <div className="flex flex-col items-center gap-2">
+                                            <Users className="h-8 w-8 text-gray-300" />
+                                            <p>No participants found</p>
+                                        </div>
                                     </td>
                                 </tr>
                             ) : (
                                 hackathon.registrations.map((registration) => (
-                                    <tr key={registration.id} className="hover:bg-gray-50">
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-medium">
-                                                    {registration.user.name?.[0]?.toUpperCase() || "?"}
-                                                </div>
-                                                <div>
-                                                    <p className="font-medium text-gray-900">
-                                                        {registration.user.name}
-                                                    </p>
-                                                    <p className="text-sm text-gray-500">
-                                                        {registration.user.email}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-gray-600">
-                                            {formatDateTime(registration.registeredAt)}
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span
-                                                className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                                                    registration.status === "APPROVED"
-                                                        ? "bg-green-100 text-green-700"
-                                                        : registration.status === "PENDING"
-                                                        ? "bg-yellow-100 text-yellow-700"
-                                                        : registration.status === "REJECTED"
-                                                        ? "bg-red-100 text-red-700"
-                                                        : "bg-gray-100 text-gray-700"
-                                                }`}
-                                            >
-                                                {registration.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <ParticipantActions
-                                                registrationId={registration.id}
-                                                currentStatus={registration.status}
-                                            />
-                                        </td>
-                                    </tr>
+                                    <ParticipantDetails
+                                        key={registration.id}
+                                        registration={registration}
+                                    />
                                 ))
                             )}
                         </tbody>
