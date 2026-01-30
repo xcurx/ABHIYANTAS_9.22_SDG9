@@ -1,6 +1,7 @@
 import { auth, signOut } from "@/auth"
 import { redirect } from "next/navigation"
 import Link from "next/link"
+import { getUserOrganizations } from "@/lib/actions/organization"
 
 export default async function DashboardPage() {
     const session = await auth()
@@ -8,6 +9,9 @@ export default async function DashboardPage() {
     if (!session) {
         redirect("/sign-in")
     }
+
+    const orgsResult = await getUserOrganizations()
+    const organizations = orgsResult.success ? orgsResult.organizations : []
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -128,7 +132,63 @@ export default async function DashboardPage() {
                             </div>
                         </div>
                     </Link>
+
+                    <Link
+                        href="/organizations"
+                        className="bg-white shadow rounded-lg p-6 hover:shadow-md transition-shadow"
+                    >
+                        <div className="flex items-center gap-4">
+                            <div className="h-12 w-12 rounded-lg bg-orange-100 flex items-center justify-center">
+                                <svg className="h-6 w-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 className="font-semibold text-gray-900">Organizations</h4>
+                                <p className="text-sm text-gray-600">Manage your organizations</p>
+                            </div>
+                        </div>
+                    </Link>
                 </div>
+
+                {/* My Organizations */}
+                {organizations && organizations.length > 0 && (
+                    <div className="mt-8">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-semibold text-gray-900">My Organizations</h3>
+                            <Link href="/organizations" className="text-sm text-indigo-600 hover:text-indigo-500">
+                                View all →
+                            </Link>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {organizations.slice(0, 3).map((org: any) => (
+                                <Link
+                                    key={org.id}
+                                    href={`/organizations/${org.slug}`}
+                                    className="bg-white shadow rounded-lg p-4 hover:shadow-md transition-shadow"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-10 w-10 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0">
+                                            {org.logo ? (
+                                                <img src={org.logo} alt={org.name} className="h-10 w-10 rounded-lg object-cover" />
+                                            ) : (
+                                                <span className="text-lg font-bold text-indigo-600">
+                                                    {org.name.charAt(0)}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="min-w-0">
+                                            <h4 className="font-medium text-gray-900 truncate">{org.name}</h4>
+                                            <p className="text-xs text-gray-500 capitalize">
+                                                {org.role.toLowerCase()} • {org._count?.members || 0} members
+                                            </p>
+                                        </div>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {/* Role-based sections */}
                 {(session.user.role === "SUPER_ADMIN" || session.user.role === "ORGANIZATION_ADMIN") && (
