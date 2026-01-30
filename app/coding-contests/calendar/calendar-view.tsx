@@ -142,18 +142,28 @@ export function CalendarView({ initialContests, initialYear, initialMonth }: Cal
         calendarDays.push(day)
     }
 
-    // Get contests for a specific day
-    const getContestsForDay = (day: number): Contest[] => {
-        const date = new Date(year, month - 1, day)
+    // Get contests for a specific day (only start and end dates)
+    const getContestsForDay = (day: number): { contest: Contest; eventKind: "start" | "end" }[] => {
         const dateStart = new Date(year, month - 1, day, 0, 0, 0)
         const dateEnd = new Date(year, month - 1, day, 23, 59, 59)
 
-        return initialContests.filter(contest => {
+        const events: { contest: Contest; eventKind: "start" | "end" }[] = []
+
+        initialContests.forEach(contest => {
             const contestStart = new Date(contest.startTime)
             const contestEnd = new Date(contest.endTime)
-            // Check if contest overlaps with this day
-            return contestStart <= dateEnd && contestEnd >= dateStart
+            
+            // Check if contest starts this day
+            if (contestStart >= dateStart && contestStart <= dateEnd) {
+                events.push({ contest, eventKind: "start" })
+            }
+            // Check if contest ends this day
+            else if (contestEnd >= dateStart && contestEnd <= dateEnd) {
+                events.push({ contest, eventKind: "end" })
+            }
         })
+
+        return events
     }
 
     const formatTime = (date: Date) => {
@@ -261,32 +271,34 @@ export function CalendarView({ initialContests, initialYear, initialMonth }: Cal
 
                                         {/* Contests */}
                                         <div className="space-y-1">
-                                            {dayContests.slice(0, 2).map((contest) => {
-                                                const style = statusStyles[contest.status]
-                                                const contestStartDay = new Date(contest.startTime).getDate()
-                                                const isStartDay = contestStartDay === day
+                                            {dayContests.slice(0, 3).map((event, eventIndex) => {
+                                                const style = statusStyles[event.contest.status]
+                                                const isStart = event.eventKind === "start"
+                                                
+                                                // Colors based on start/end
+                                                const eventColors = isStart
+                                                    ? { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200", dot: "bg-emerald-400" }
+                                                    : { bg: "bg-slate-50", text: "text-slate-600", border: "border-slate-200", dot: "bg-slate-400" }
                                                 
                                                 return (
                                                     <button
-                                                        key={contest.id}
-                                                        onClick={() => setSelectedContest(contest)}
-                                                        className={`w-full text-left px-2 py-1.5 rounded-lg text-xs font-medium truncate border transition-all ${style.bg} ${style.text} ${style.border} ${style.hover}`}
+                                                        key={`${event.contest.id}-${event.eventKind}`}
+                                                        onClick={() => setSelectedContest(event.contest)}
+                                                        className={`w-full text-left px-2 py-1.5 rounded-lg text-xs font-medium truncate border transition-all hover:opacity-80 ${eventColors.bg} ${eventColors.text} ${eventColors.border}`}
                                                     >
                                                         <div className="flex items-center gap-1.5">
-                                                            <div className={`w-2 h-2 rounded-full flex-shrink-0 ${style.dot}`}></div>
-                                                            <span className="truncate">{contest.title}</span>
+                                                            <div className={`w-2 h-2 rounded-full flex-shrink-0 ${eventColors.dot}`}></div>
+                                                            <span className="truncate">{event.contest.title}</span>
                                                         </div>
-                                                        {isStartDay && (
-                                                            <div className="text-[10px] opacity-75 ml-3.5 mt-0.5">
-                                                                {formatTime(contest.startTime)}
-                                                            </div>
-                                                        )}
+                                                        <div className="text-[10px] opacity-75 ml-3.5 mt-0.5">
+                                                            {isStart ? `🚀 Starts ${formatTime(event.contest.startTime)}` : "🏁 Ends"}
+                                                        </div>
                                                     </button>
                                                 )
                                             })}
-                                            {dayContests.length > 2 && (
+                                            {dayContests.length > 3 && (
                                                 <div className="text-xs text-slate-400 pl-2 font-medium">
-                                                    +{dayContests.length - 2} more
+                                                    +{dayContests.length - 3} more
                                                 </div>
                                             )}
                                         </div>

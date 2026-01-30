@@ -4,7 +4,7 @@ import Link from "next/link"
 import { getCodingContestBySlug, getContestLeaderboard } from "@/lib/actions/coding-contest"
 import prisma from "@/lib/prisma"
 import { Trophy, ArrowLeft, CheckCircle, Target, FileText, AlertTriangle } from "lucide-react"
-import { CertificateDownload } from "@/components/certificate/certificate-download"
+import { CodingCertificateDownload } from "@/components/certificate/coding-certificate-download"
 
 export default async function ResultsPage({
     params,
@@ -325,10 +325,9 @@ export default async function ResultsPage({
 
                 {/* Actions */}
                 <div className="flex items-center justify-center gap-4 flex-wrap">
-                    <CertificateDownload
+                    <CodingCertificateDownload
                         participantName={session.user.name || "Participant"}
                         eventName={contest.title}
-                        eventType="coding-contest"
                         rank={rank}
                         totalParticipants={totalParticipants}
                         score={Math.round(earnedScore)}

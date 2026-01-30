@@ -969,3 +969,65 @@ export async function updateRegistrationStatus(
         return { success: false, message: "Failed to update registration status" }
     }
 }
+
+// ==================== CALENDAR ====================
+
+export async function getHackathonsForCalendar(year: number, month: number) {
+    // Month is 1-indexed (1 = January)
+    const startDate = new Date(year, month - 1, 1)
+    const endDate = new Date(year, month, 0, 23, 59, 59)
+    
+    const hackathons = await prisma.hackathon.findMany({
+        where: {
+            status: { notIn: ["DRAFT", "CANCELLED"] },
+            isPublic: true,
+            OR: [
+                // Registration period overlaps with month
+                { registrationStart: { gte: startDate, lte: endDate } },
+                { registrationEnd: { gte: startDate, lte: endDate } },
+                // Hackathon period overlaps with month
+                { hackathonStart: { gte: startDate, lte: endDate } },
+                { hackathonEnd: { gte: startDate, lte: endDate } },
+                // Hackathon spans the entire month
+                { 
+                    AND: [
+                        { hackathonStart: { lte: startDate } },
+                        { hackathonEnd: { gte: endDate } }
+                    ]
+                }
+            ]
+        },
+        select: {
+            id: true,
+            title: true,
+            slug: true,
+            status: true,
+            registrationStart: true,
+            registrationEnd: true,
+            hackathonStart: true,
+            hackathonEnd: true,
+            mode: true,
+            organization: {
+                select: { name: true }
+            },
+            stages: {
+                select: {
+                    id: true,
+                    name: true,
+                    type: true,
+                    startDate: true,
+                    endDate: true,
+                    order: true,
+                    color: true,
+                },
+                orderBy: { order: "asc" }
+            },
+            _count: {
+                select: { registrations: true }
+            }
+        },
+        orderBy: { hackathonStart: "asc" }
+    })
+
+    return hackathons
+}

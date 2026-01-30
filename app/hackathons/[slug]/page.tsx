@@ -26,6 +26,7 @@ import {
 import { formatDate, formatDateTime, cn } from "@/lib/utils"
 import RegisterButton from "./register-button"
 import HackathonAnnouncements from "@/components/hackathon/hackathon-announcements"
+import { HackathonCertificateSection } from "./hackathon-certificate-section"
 
 interface HackathonPageProps {
     params: Promise<{ slug: string }>
@@ -587,6 +588,22 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
                                 View Leaderboard
                                 <ArrowRight className="h-4 w-4" />
                             </Link>
+                            
+                            {/* Certificate Download - Only show when hackathon is completed and user is registered */}
+                            {computedStatus === "COMPLETED" && userRegistration && session?.user?.name && (
+                                <div className="mt-3">
+                                    <HackathonCertificateSection
+                                        participantName={session.user.name}
+                                        teamName={null}
+                                        eventName={hackathon.title}
+                                        rank={null}
+                                        prize={null}
+                                        track={null}
+                                        date={formatDate(hackathon.hackathonEnd)}
+                                        organizationName={hackathon.organization?.name}
+                                    />
+                                </div>
+                            )}
                         </div>
 
                         {/* Key Dates */}
