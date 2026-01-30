@@ -53,7 +53,7 @@ export async function generateMetadata({ params }: HackathonPageProps) {
     }
 
     return {
-        title: `${hackathon.title} | CIH`,
+        title: `${hackathon.title} | ELEVATE`,
         description: hackathon.shortDescription || `Join ${hackathon.title} hackathon`,
     }
 }

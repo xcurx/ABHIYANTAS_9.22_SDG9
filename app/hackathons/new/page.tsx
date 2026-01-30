@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma"
 import HackathonWizard from "./hackathon-wizard"
 
 export const metadata = {
-    title: "Create Hackathon | CIH",
+    title: "Create Hackathon | ELEVATE",
     description: "Create a new hackathon event",
 }
 
