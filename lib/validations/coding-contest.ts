@@ -13,10 +13,13 @@ const codingContestBaseSchema = z.object({
         .min(3, "Slug must be at least 3 characters")
         .max(100, "Slug must be less than 100 characters")
         .regex(/^[a-z0-9-]+$/, "Slug can only contain lowercase letters, numbers, and hyphens"),
-    description: z.string().max(10000, "Description must be less than 10000 characters").optional(),
-    shortDescription: z.string().max(500, "Short description must be less than 500 characters").optional(),
-    bannerImage: z.string().url("Please enter a valid URL").optional().or(z.literal("")),
-    rules: z.string().max(20000, "Rules must be less than 20000 characters").optional(),
+    description: z.string().max(10000, "Description must be less than 10000 characters").optional().or(z.literal("")),
+    shortDescription: z.string().max(500, "Short description must be less than 500 characters").optional().or(z.literal("")),
+    bannerImage: z.preprocess(
+        (val) => (val === "" || val === null || val === undefined ? undefined : val),
+        z.string().url("Please enter a valid URL").optional()
+    ),
+    rules: z.string().max(20000, "Rules must be less than 20000 characters").optional().or(z.literal("")),
     organizationId: z.string().min(1, "Organization is required"),
     
     // Timing

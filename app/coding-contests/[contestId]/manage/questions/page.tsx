@@ -2,7 +2,8 @@ import { auth } from "@/auth"
 import { notFound, redirect } from "next/navigation"
 import Link from "next/link"
 import { getContestQuestions, deleteQuestion, reorderQuestions } from "@/lib/actions/coding-question"
-import { getCodingContestById } from "@/lib/actions/coding-contest"
+import { getCodingContestBySlug } from "@/lib/actions/coding-contest"
+import { DeleteButton } from "./delete-button"
 
 type Difficulty = "EASY" | "MEDIUM" | "HARD"
 type QuestionType = "MCQ" | "CODING"
@@ -35,7 +36,7 @@ export default async function ManageQuestionsPage({
         redirect("/sign-in")
     }
 
-    const contest = await getCodingContestById(contestId)
+    const contest = await getCodingContestBySlug(contestId)
 
     if (!contest) {
         notFound()
@@ -199,19 +200,7 @@ export default async function ManageQuestionsPage({
                                                 >
                                                     Edit
                                                 </Link>
-                                                <form action={handleDelete.bind(null, question.id)}>
-                                                    <button
-                                                        type="submit"
-                                                        className="px-3 py-2 rounded-lg text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
-                                                        onClick={(e) => {
-                                                            if (!confirm("Are you sure you want to delete this question?")) {
-                                                                e.preventDefault()
-                                                            }
-                                                        }}
-                                                    >
-                                                        Delete
-                                                    </button>
-                                                </form>
+                                                <DeleteButton questionId={question.id} onDelete={handleDelete} />
                                             </div>
                                         </div>
                                     </div>

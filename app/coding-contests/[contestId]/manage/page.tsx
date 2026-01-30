@@ -1,7 +1,7 @@
 import { auth } from "@/auth"
 import { notFound, redirect } from "next/navigation"
 import Link from "next/link"
-import { getCodingContestById, publishCodingContest } from "@/lib/actions/coding-contest"
+import { getCodingContestBySlug, publishCodingContest } from "@/lib/actions/coding-contest"
 
 type ContestStatus = "DRAFT" | "PUBLISHED" | "REGISTRATION_OPEN" | "LIVE" | "ENDED" | "CANCELLED"
 
@@ -34,7 +34,7 @@ export default async function ContestManagePage({
         redirect("/sign-in")
     }
 
-    const contest = await getCodingContestById(contestId)
+    const contest = await getCodingContestBySlug(contestId)
 
     if (!contest) {
         notFound()

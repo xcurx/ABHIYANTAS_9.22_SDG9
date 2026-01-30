@@ -1,6 +1,6 @@
 import { auth } from "@/auth"
 import { notFound, redirect } from "next/navigation"
-import { getCodingContestById } from "@/lib/actions/coding-contest"
+import { getCodingContestBySlug } from "@/lib/actions/coding-contest"
 import { getContestQuestions } from "@/lib/actions/coding-question"
 import prisma from "@/lib/prisma"
 import ParticipateClient from "./participate-client"
@@ -17,7 +17,7 @@ export default async function ParticipatePage({
         redirect(`/sign-in?callbackUrl=/coding-contests/${contestId}/participate`)
     }
 
-    const contest = await getCodingContestById(contestId)
+    const contest = await getCodingContestBySlug(contestId)
 
     if (!contest) {
         notFound()

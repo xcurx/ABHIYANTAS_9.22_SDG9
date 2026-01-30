@@ -1,7 +1,7 @@
 import { auth } from "@/auth"
 import { notFound, redirect } from "next/navigation"
 import Link from "next/link"
-import { getCodingContestById } from "@/lib/actions/coding-contest"
+import { getCodingContestBySlug } from "@/lib/actions/coding-contest"
 import NewQuestionForm from "./question-form"
 
 export default async function NewQuestionPage({
@@ -16,7 +16,7 @@ export default async function NewQuestionPage({
         redirect("/sign-in")
     }
 
-    const contest = await getCodingContestById(contestId)
+    const contest = await getCodingContestBySlug(contestId)
 
     if (!contest) {
         notFound()

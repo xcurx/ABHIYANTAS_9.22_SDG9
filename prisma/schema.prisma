@@ -21,12 +21,12 @@ model User {
     updatedAt     DateTime  @updatedAt
 
     // Relations
-    accounts              Account[]
-    sessions              Session[]
+    accounts                Account[]
+    sessions                Session[]
     organizationMemberships OrganizationMember[]
-    
     // Coding Contest Relations
     contestParticipations ContestParticipant[]
+    hackathonRegistrations  HackathonRegistration[]
 }
 
 model Account {
@@ -95,6 +95,7 @@ model Organization {
     
     // Coding Contest Relations
     codingContests CodingContest[]
+    hackathons Hackathon[]
 }
 
 model OrganizationMember {
@@ -336,6 +337,63 @@ enum ContestVisibility {
     INVITE_ONLY
     ORGANIZATION_ONLY
 }
+// ==================== HACKATHON ====================
+model Hackathon {
+    id               String          @id @default(cuid())
+    title            String
+    slug             String          @unique
+    description      String
+    shortDescription String?
+    bannerImage      String?
+    thumbnail        String?
+    organizationId   String
+    type             HackathonType   @default(OPEN)
+    mode             HackathonMode   @default(VIRTUAL)
+    status           HackathonStatus @default(DRAFT)
+
+    // Dates
+    registrationStart DateTime
+    registrationEnd   DateTime
+    hackathonStart    DateTime
+    hackathonEnd      DateTime
+    resultsDate       DateTime?
+
+    // Configuration
+    maxTeamSize     Int     @default(4)
+    minTeamSize     Int     @default(1)
+    maxParticipants Int?
+    registrationFee Float   @default(0)
+    currency        String  @default("USD")
+
+    // Content
+    rules       String?
+    eligibility String?
+    prizePool   Float?
+    themes      String[]
+    tags        String[]
+
+    // Settings
+    allowSoloParticipants Boolean @default(true)
+    requireApproval       Boolean @default(false)
+    isPublic              Boolean @default(true)
+    isFeatured            Boolean @default(false)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    // Relations
+    organization  Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+    tracks        Track[]
+    stages        HackathonStage[]
+    registrations HackathonRegistration[]
+    prizes        Prize[]
+}
+
+enum HackathonType {
+    OPEN
+    INVITE_ONLY
+    ORGANIZATION_ONLY
+}
 
 enum QuestionType {
     MCQ
@@ -383,4 +441,123 @@ enum TestCaseStatus {
     MEMORY_LIMIT_EXCEEDED
     RUNTIME_ERROR
     COMPILATION_ERROR
+}
+
+enum HackathonMode {
+    VIRTUAL
+    IN_PERSON
+    HYBRID
+}
+
+enum HackathonStatus {
+    DRAFT
+    PUBLISHED
+    REGISTRATION_OPEN
+    REGISTRATION_CLOSED
+    IN_PROGRESS
+    JUDGING
+    COMPLETED
+    CANCELLED
+}
+
+model Track {
+    id          String  @id @default(cuid())
+    hackathonId String
+    name        String
+    description String?
+    prizeAmount Float?
+    color       String? // Hex color for UI
+
+    hackathon Hackathon @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
+}
+
+model Prize {
+    id          String  @id @default(cuid())
+    hackathonId String
+    title       String
+    description String?
+    amount      Float?
+    position    Int // 1st, 2nd, 3rd, etc.
+    trackId     String? // Optional: track-specific prize
+
+    hackathon Hackathon @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
+}
+
+// ==================== HACKATHON STAGES ====================
+
+model HackathonStage {
+    id          String    @id @default(cuid())
+    hackathonId String
+    name        String
+    description String?
+    type        StageType
+    order       Int // Stage sequence order
+
+    // Timing
+    startDate DateTime
+    endDate   DateTime
+
+    // Elimination Settings
+    isElimination    Boolean          @default(false)
+    eliminationType  EliminationType?
+    eliminationValue Float? // Top N teams, percentage, or score threshold
+
+    // Stage Requirements
+    requiresSubmission     Boolean @default(false)
+    submissionInstructions String?
+
+    // Settings
+    isActive    Boolean   @default(true)
+    isCompleted Boolean   @default(false)
+    completedAt DateTime?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    hackathon Hackathon @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
+}
+
+enum StageType {
+    REGISTRATION
+    TEAM_FORMATION
+    IDEATION
+    MENTORING_SESSION
+    CHECKPOINT
+    DEVELOPMENT
+    EVALUATION
+    PRESENTATION
+    RESULTS
+    CUSTOM
+}
+
+enum EliminationType {
+    TOP_N // Top N teams advance
+    PERCENTAGE // Top X% advance
+    SCORE_THRESHOLD // Teams above score threshold advance
+}
+
+// ==================== HACKATHON REGISTRATION ====================
+
+model HackathonRegistration {
+    id           String             @id @default(cuid())
+    hackathonId  String
+    userId       String
+    status       RegistrationStatus @default(PENDING)
+    registeredAt DateTime           @default(now())
+    approvedAt   DateTime?
+    rejectedAt   DateTime?
+    rejectionReason String?
+
+    hackathon Hackathon @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
+    user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([hackathonId, userId])
+}
+
+enum RegistrationStatus {
+    PENDING
+    APPROVED
+    REJECTED
+    WAITLISTED
+    CANCELLED
 }

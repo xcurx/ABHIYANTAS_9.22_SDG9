@@ -1,7 +1,7 @@
 import { auth } from "@/auth"
 import { notFound, redirect } from "next/navigation"
 import Link from "next/link"
-import { getCodingContestById, getContestLeaderboard } from "@/lib/actions/coding-contest"
+import { getCodingContestBySlug, getContestLeaderboard } from "@/lib/actions/coding-contest"
 
 export default async function LeaderboardPage({
     params,
@@ -11,7 +11,7 @@ export default async function LeaderboardPage({
     const session = await auth()
     const { contestId } = await params
 
-    const contest = await getCodingContestById(contestId)
+    const contest = await getCodingContestBySlug(contestId)
 
     if (!contest) {
         notFound()

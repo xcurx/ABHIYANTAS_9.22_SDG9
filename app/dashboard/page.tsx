@@ -12,6 +12,9 @@ export default async function DashboardPage() {
 
     const orgsResult = await getUserOrganizations()
     const organizations = orgsResult.success ? orgsResult.organizations : []
+    
+    // Check if user can create hackathons (is admin/owner of any organization)
+    const canCreateHackathon = organizations?.some(org => ["OWNER", "ADMIN"].includes(org.role)) ?? false
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -98,6 +101,25 @@ export default async function DashboardPage() {
                             </div>
                         </div>
                     </Link>
+
+                    {canCreateHackathon && (
+                        <Link
+                            href="/hackathons/new"
+                            className="bg-white shadow rounded-lg p-6 hover:shadow-md transition-shadow border-2 border-dashed border-indigo-200 hover:border-indigo-400"
+                        >
+                            <div className="flex items-center gap-4">
+                                <div className="h-12 w-12 rounded-lg bg-indigo-100 flex items-center justify-center">
+                                    <svg className="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 className="font-semibold text-gray-900">Create Hackathon</h4>
+                                    <p className="text-sm text-gray-600">Host your own hackathon</p>
+                                </div>
+                            </div>
+                        </Link>
+                    )}
 
                     <Link
                         href="/dashboard/teams"

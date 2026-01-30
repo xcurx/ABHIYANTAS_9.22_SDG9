@@ -60,6 +60,8 @@ export async function createCodingContest(
     const validated = createCodingContestSchema.safeParse(input)
     
     if (!validated.success) {
+        console.error("Validation errors:", JSON.stringify(validated.error.flatten(), null, 2))
+        console.error("Input received:", JSON.stringify(input, null, 2))
         return {
             success: false,
             message: "Validation failed",
