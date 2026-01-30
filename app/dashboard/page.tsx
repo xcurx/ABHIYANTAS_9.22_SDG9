@@ -18,7 +18,7 @@ const featuredEvents = [
         date: "Feb 15 - 17, 2026",
         participants: 1250,
         prizePool: "$50,000",
-        image: "🤖",
+        image: "/images/hackathon-banners/hack2.png",
         tags: ["AI/ML", "Innovation"],
     },
     {
@@ -30,7 +30,7 @@ const featuredEvents = [
         date: "Feb 20 - 22, 2026",
         participants: 890,
         prizePool: "$30,000",
-        image: "🔗",
+        image: "/images/hackathon-banners/hack1.png",
         tags: ["Blockchain", "Web3"],
     },
     {
@@ -42,7 +42,7 @@ const featuredEvents = [
         date: "Every Saturday",
         participants: 2400,
         prizePool: "$5,000",
-        image: "💻",
+        image: "/images/hackathon-banners/hack3.png",
         tags: ["DSA", "Competitive"],
     },
 ]
@@ -407,9 +407,14 @@ export default async function DashboardPage() {
                                     href={event.type === "hackathon" ? "/hackathons" : "/coding-contests"}
                                     className="group bg-white rounded-2xl border border-gray-200 overflow-hidden hover:border-blue-300 hover:shadow-lg transition-all"
                                 >
-                                    <div className="h-32 bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center relative">
-                                        <span className="text-5xl group-hover:scale-110 transition-transform">{event.image}</span>
-                                        <span className={`absolute top-3 right-3 px-2.5 py-1 text-xs font-semibold rounded-full ${event.statusColor}`}>
+                                    <div className="h-32 bg-slate-900 relative overflow-hidden">
+                                        <img 
+                                            src={event.image} 
+                                            alt={event.title}
+                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                                        <span className={`absolute top-3 right-3 px-2.5 py-1 text-xs font-semibold rounded-full backdrop-blur-sm ${event.statusColor}`}>
                                             {event.status}
                                         </span>
                                     </div>

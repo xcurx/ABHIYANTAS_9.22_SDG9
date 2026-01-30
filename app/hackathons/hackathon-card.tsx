@@ -54,6 +54,25 @@ const typeConfig: Record<HackathonType, { label: string }> = {
     ORGANIZATION_ONLY: { label: "Members Only" },
 }
 
+// Default banner images for hackathons without custom banners
+const defaultBanners = [
+    "/images/hackathon-banners/hack1.png",
+    "/images/hackathon-banners/hack2.png",
+    "/images/hackathon-banners/hack3.png",
+    "/images/hackathon-banners/hack4.png",
+]
+
+// Get a consistent banner based on hackathon id (so same hackathon always gets same image)
+function getDefaultBanner(hackathonId: string): string {
+    // Use a simple hash of the id to pick a consistent image
+    let hash = 0
+    for (let i = 0; i < hackathonId.length; i++) {
+        hash = ((hash << 5) - hash) + hackathonId.charCodeAt(i)
+        hash = hash & hash // Convert to 32bit integer
+    }
+    return defaultBanners[Math.abs(hash) % defaultBanners.length]
+}
+
 export default function HackathonCard({ hackathon }: HackathonCardProps) {
     const status = statusConfig[hackathon.status]
     const mode = modeConfig[hackathon.mode]
@@ -66,35 +85,28 @@ export default function HackathonCard({ hackathon }: HackathonCardProps) {
         ? hackathon.maxParticipants - hackathon._count.registrations
         : null
 
+    // Get banner image - either custom or default
+    const bannerImage = hackathon.bannerImage || getDefaultBanner(hackathon.id)
+
     return (
         <Link href={`/hackathons/${hackathon.slug}`}>
             <article className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:border-blue-200 hover:shadow-lg transition-all duration-300 h-full flex flex-col">
                 {/* Banner Image */}
-                <div className="relative h-44 bg-blue-600">
-                    {hackathon.bannerImage ? (
-                        <Image
-                            src={hackathon.bannerImage}
-                            alt={hackathon.title}
-                            fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                    ) : (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="absolute inset-0 opacity-20">
-                                <div className="absolute top-0 right-0 w-32 h-32 bg-white rounded-full translate-x-1/2 -translate-y-1/2"></div>
-                                <div className="absolute bottom-0 left-0 w-24 h-24 bg-white rounded-full -translate-x-1/3 translate-y-1/3"></div>
-                            </div>
-                            <Trophy className="h-16 w-16 text-white/40" />
-                        </div>
-                    )}
+                <div className="relative h-44 bg-slate-900 overflow-hidden">
+                    <Image
+                        src={bannerImage}
+                        alt={hackathon.title}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
 
-                    {/* Gradient Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                    {/* Gradient Overlay for text readability */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
 
                     {/* Status Badge */}
                     <div className="absolute top-3 right-3">
                         <span className={cn(
-                            "px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm",
+                            "px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm backdrop-blur-sm",
                             status.className,
                             isLive && "animate-pulse"
                         )}>

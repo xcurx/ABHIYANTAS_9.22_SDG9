@@ -58,6 +58,24 @@ function formatDate(date: Date) {
     }).format(new Date(date))
 }
 
+// Default banner images for coding contests without custom banners
+const defaultContestBanners = [
+    "/images/contest-banners/cc1.png",
+    "/images/contest-banners/cc2.png",
+    "/images/contest-banners/cc3.png",
+    "/images/contest-banners/cc4.png",
+]
+
+// Get a consistent banner based on contest id
+function getDefaultBanner(contestId: string): string {
+    let hash = 0
+    for (let i = 0; i < contestId.length; i++) {
+        hash = ((hash << 5) - hash) + contestId.charCodeAt(i)
+        hash = hash & hash
+    }
+    return defaultContestBanners[Math.abs(hash) % defaultContestBanners.length]
+}
+
 function getContestTimeInfo(startTime: Date, endTime: Date) {
     const now = new Date()
     const start = new Date(startTime)
@@ -270,6 +288,7 @@ export default async function CodingContestsPage({
                             const status = contest.status as ContestStatus
                             const config = statusConfig[status]
                             const isLive = status === "LIVE"
+                            const bannerImage = getDefaultBanner(contest.id)
                             
                             return (
                                 <Link
@@ -278,34 +297,30 @@ export default async function CodingContestsPage({
                                     className={`group bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-xl hover:border-gray-300 transition-all duration-300 animate-fade-in-up`}
                                     style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'forwards', opacity: 0 }}
                                 >
-                                    {/* Modern Header */}
-                                    <div className={`h-28 bg-gradient-to-br ${config.headerGradient} relative overflow-hidden`}>
-                                        {/* Decorative circles */}
-                                        <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-white/30" />
-                                        <div className="absolute -bottom-4 -left-4 w-16 h-16 rounded-full bg-white/20" />
-                                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full bg-white/10" />
-                                        
-                                        {/* Icon */}
-                                        <div className="absolute top-4 left-4">
-                                            <div className={`w-10 h-10 rounded-xl ${config.iconBg} flex items-center justify-center shadow-sm`}>
-                                                <Code className="w-5 h-5 text-white" />
-                                            </div>
-                                        </div>
+                                    {/* Modern Header with Banner Image */}
+                                    <div className="h-32 bg-slate-900 relative overflow-hidden">
+                                        <img 
+                                            src={bannerImage}
+                                            alt={contest.title}
+                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                        />
+                                        {/* Gradient overlay for readability */}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
                                         
                                         {/* Status Badge */}
-                                        <div className="absolute top-4 right-4">
-                                            <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${config.className} ${isLive ? 'animate-pulse' : ''}`}>
+                                        <div className="absolute top-3 right-3">
+                                            <span className={`px-2.5 py-1 text-xs font-medium rounded-full backdrop-blur-sm ${config.className} ${isLive ? 'animate-pulse' : ''}`}>
                                                 {isLive && <span className="inline-block w-1.5 h-1.5 rounded-full bg-rose-500 mr-1.5 animate-pulse" />}
                                                 {config.label}
                                             </span>
                                         </div>
                                         
                                         {/* Bottom info */}
-                                        <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between">
-                                            <span className="text-xs font-medium text-gray-600 bg-white/60 backdrop-blur-sm px-2 py-1 rounded-md">
+                                        <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
+                                            <span className="text-xs font-medium text-white bg-black/40 backdrop-blur-sm px-2 py-1 rounded-md">
                                                 {contest._count.questions} problems · {contest.duration}min
                                             </span>
-                                            <span className="text-xs font-medium text-gray-600 bg-white/60 backdrop-blur-sm px-2 py-1 rounded-md">
+                                            <span className="text-xs font-medium text-white bg-black/40 backdrop-blur-sm px-2 py-1 rounded-md">
                                                 {contest._count.participants} joined
                                             </span>
                                         </div>
