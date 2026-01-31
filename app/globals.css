@@ -415,22 +415,27 @@ textarea::placeholder {
 
 .animate-fade-in-up {
   animation: fadeInUp 0.8s ease-out forwards;
+  opacity: 0;
 }
 
 .animate-fade-in {
   animation: fadeIn 0.6s ease-out forwards;
+  opacity: 0;
 }
 
 .animate-slide-in-left {
   animation: slideInLeft 0.7s ease-out forwards;
+  opacity: 0;
 }
 
 .animate-slide-in-right {
   animation: slideInRight 0.7s ease-out forwards;
+  opacity: 0;
 }
 
 .animate-scale-in {
   animation: scaleIn 0.6s ease-out forwards;
+  opacity: 0;
 }
 
 .animate-float {
@@ -438,6 +443,7 @@ textarea::placeholder {
 }
 
 /* Animation delays */
+.animation-delay-0 { animation-delay: 0ms; }
 .animation-delay-100 { animation-delay: 100ms; }
 .animation-delay-200 { animation-delay: 200ms; }
 .animation-delay-300 { animation-delay: 300ms; }
@@ -445,6 +451,7 @@ textarea::placeholder {
 .animation-delay-500 { animation-delay: 500ms; }
 .animation-delay-600 { animation-delay: 600ms; }
 .animation-delay-700 { animation-delay: 700ms; }
+.animation-delay-750 { animation-delay: 750ms; }
 .animation-delay-800 { animation-delay: 800ms; }
 
 /* Initial state for animated elements */
