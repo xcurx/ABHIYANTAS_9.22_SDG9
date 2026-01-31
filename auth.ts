@@ -4,37 +4,13 @@ import Google from "next-auth/providers/google"
 import GitHub from "next-auth/providers/github"
 import bcrypt from "bcryptjs"
 import prisma from "./lib/prisma"
+import { authConfig } from "./auth.config"
 
 // Define UserRole type locally to avoid import issues
 type UserRole = "SUPER_ADMIN" | "ORGANIZATION_ADMIN" | "MENTOR" | "JUDGE" | "PARTICIPANT" | "SPONSOR"
 
-declare module "next-auth" {
-    interface Session {
-        user: {
-            id: string
-            email: string
-            name: string
-            role: UserRole
-            avatar?: string | null
-        }
-    }
-
-    interface User {
-        id: string
-        role: UserRole
-        avatar?: string | null
-    }
-}
-
-declare module "@auth/core/jwt" {
-    interface JWT {
-        id: string
-        role: UserRole
-        avatar?: string | null
-    }
-}
-
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  ...authConfig,
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
@@ -91,7 +67,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     })
   ],
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account }) {
       // Handle OAuth sign-in - create user if doesn't exist
       if (account?.provider === "google" || account?.provider === "github") {
         const existingUser = await prisma.user.findUnique({
@@ -145,14 +121,4 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         return token
     },
   },
-  session: {
-    strategy: "jwt",
-    maxAge: 7 * 24 * 60 * 60, // 7 days
-  },
-  pages: {
-    signIn: '/sign-in',
-    error: '/auth/error',
-    verifyRequest: '/auth/verify-request',
-  },
-  secret: process.env.AUTH_SECRET,
 })

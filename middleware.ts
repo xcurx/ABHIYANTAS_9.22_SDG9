@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "./auth";
+import NextAuth from "next-auth";
+import { authConfig } from "./auth.config";
+
+const { auth } = NextAuth(authConfig);
 
 // Public routes that don't require authentication
 const publicRoutes = ["/sign-in", "/sign-up", "/forgot-password", "/reset-password", "/auth/error", "/auth/verify-request"];
+
+// Public pages that anyone can view (including unauthenticated users)
+const publicPages = ["/hackathons", "/organizations", "/coding-contests"];
 
 // Routes that require specific roles
 const roleBasedRoutes: Record<string, string[]> = {
@@ -12,15 +18,23 @@ const roleBasedRoutes: Record<string, string[]> = {
     "/judge-dashboard": ["SUPER_ADMIN", "JUDGE"],
 };
 
-export const middleware = async (req: NextRequest) => {
+export default auth(async (req) => {
     const { pathname } = req.nextUrl;
-    const session = await auth();
+    const session = req.auth;
 
-    // Check if the route is public
+    // Check if the route is public auth pages
     const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
+    
+    // Check if the route is a public viewing page
+    const isPublicPage = publicPages.some(page => pathname.startsWith(page));
     
     // Allow access to home page
     if (pathname === "/") {
+        return NextResponse.next();
+    }
+
+    // Allow access to public pages (hackathons listing, etc.)
+    if (isPublicPage) {
         return NextResponse.next();
     }
 
@@ -41,7 +55,7 @@ export const middleware = async (req: NextRequest) => {
     if (session) {
         for (const [routePrefix, allowedRoles] of Object.entries(roleBasedRoutes)) {
             if (pathname.startsWith(routePrefix)) {
-                const userRole = session.user?.role;
+                const userRole = session.user?.role as string;
                 if (!userRole || !allowedRoles.includes(userRole)) {
                     // Redirect to dashboard with access denied message
                     const dashboardUrl = new URL("/dashboard", req.nextUrl.origin);
@@ -53,9 +67,8 @@ export const middleware = async (req: NextRequest) => {
     }
 
     return NextResponse.next();
-}
+});
 
 export const config = {
     matcher: ["/((?!api|_next/static|_next/image|favicon.ico|.*\\.png$|.*\\.jpg$|.*\\.jpeg$|.*\\.gif$|.*\\.svg$|.*\\.ico$|.*\\.webp$).*)"],
-    runtime: "nodejs",
 };

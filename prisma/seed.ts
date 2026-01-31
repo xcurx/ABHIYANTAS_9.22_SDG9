@@ -1,5 +1,6 @@
 import { PrismaClient, Prisma } from "../generated/prisma/client";
 import { PrismaPg } from '@prisma/adapter-pg'
+import bcrypt from 'bcryptjs'
 import 'dotenv/config'
 
 const adapter = new PrismaPg({
@@ -10,11 +11,16 @@ const prisma = new PrismaClient({
   adapter,
 });
 
+// Hash password helper
+async function hashPassword(password: string): Promise<string> {
+  return bcrypt.hash(password, 12);
+}
+
 const userData: Prisma.UserCreateInput[] = [
   {
     name: "Sujal Sharma",
     email: "sujal@gmail.com",
-    password: "password123",
+    password: "1234",
     bio: "Full-stack developer passionate about building scalable web applications. Love hackathons and open source contributions.",
     location: "San Francisco, CA",
     github: "https://github.com/sujalsharma",
@@ -26,7 +32,7 @@ const userData: Prisma.UserCreateInput[] = [
   {
     name: "Shubh Patel",
     email: "shubh@gmail.com",
-    password: "password123",
+    password: "1234",
     bio: "Machine learning engineer with expertise in NLP and computer vision. Always looking for innovative AI challenges.",
     location: "New York, NY",
     github: "https://github.com/shubhpatel",
@@ -37,7 +43,7 @@ const userData: Prisma.UserCreateInput[] = [
   {
     name: "Emily Chen",
     email: "emily.chen@gmail.com",
-    password: "password123",
+    password: "1234",
     bio: "Frontend developer specializing in React and TypeScript. UX enthusiast who believes in creating delightful user experiences.",
     location: "Seattle, WA",
     github: "https://github.com/emilychen",
@@ -49,7 +55,7 @@ const userData: Prisma.UserCreateInput[] = [
   {
     name: "Marcus Johnson",
     email: "marcus.johnson@gmail.com",
-    password: "password123",
+    password: "1234",
     bio: "Backend engineer with 5+ years of experience in distributed systems. Rust and Go advocate. Love building high-performance APIs.",
     location: "Austin, TX",
     github: "https://github.com/marcusjohnson",
@@ -59,7 +65,7 @@ const userData: Prisma.UserCreateInput[] = [
   {
     name: "Priya Gupta",
     email: "priya.gupta@gmail.com",
-    password: "password123",
+    password: "1234",
     bio: "Data scientist turning complex data into actionable insights. Passionate about AI ethics and responsible machine learning.",
     location: "Boston, MA",
     github: "https://github.com/priyagupta",
@@ -71,7 +77,7 @@ const userData: Prisma.UserCreateInput[] = [
   {
     name: "Alex Rivera",
     email: "alex.rivera@gmail.com",
-    password: "password123",
+    password: "1234",
     bio: "Mobile developer crafting beautiful iOS and Android apps. Flutter enthusiast and open source contributor.",
     location: "Los Angeles, CA",
     github: "https://github.com/alexrivera",
@@ -82,7 +88,7 @@ const userData: Prisma.UserCreateInput[] = [
   {
     name: "Sarah Kim",
     email: "sarah.kim@gmail.com",
-    password: "password123",
+    password: "1234",
     bio: "DevOps engineer automating everything. Kubernetes certified. Building reliable infrastructure one pipeline at a time.",
     location: "Denver, CO",
     github: "https://github.com/sarahkim",
@@ -93,7 +99,7 @@ const userData: Prisma.UserCreateInput[] = [
   {
     name: "James Wilson",
     email: "james.wilson@gmail.com",
-    password: "password123",
+    password: "1234",
     bio: "Security researcher and ethical hacker. CTF player and bug bounty hunter. Making the internet a safer place.",
     location: "Washington, DC",
     github: "https://github.com/jameswilson",
@@ -104,7 +110,7 @@ const userData: Prisma.UserCreateInput[] = [
   {
     name: "Aisha Mohammed",
     email: "aisha.mohammed@gmail.com",
-    password: "password123",
+    password: "1234",
     bio: "Product designer with a background in software engineering. Bridging the gap between design and development.",
     location: "Chicago, IL",
     linkedin: "https://linkedin.com/in/aishamohammed",
@@ -114,7 +120,7 @@ const userData: Prisma.UserCreateInput[] = [
   {
     name: "David Lee",
     email: "david.lee@gmail.com",
-    password: "password123",
+    password: "1234",
     bio: "Blockchain developer and Web3 enthusiast. Building decentralized applications for a more open internet.",
     location: "Miami, FL",
     github: "https://github.com/davidlee",
@@ -125,7 +131,7 @@ const userData: Prisma.UserCreateInput[] = [
   {
     name: "Nina Petrova",
     email: "nina.petrova@gmail.com",
-    password: "password123",
+    password: "1234",
     bio: "Game developer and graphics programmer. Unity and Unreal expert. Creating immersive experiences through code.",
     location: "Portland, OR",
     github: "https://github.com/ninapetrova",
@@ -136,7 +142,7 @@ const userData: Prisma.UserCreateInput[] = [
   {
     name: "Carlos Mendez",
     email: "carlos.mendez@gmail.com",
-    password: "password123",
+    password: "1234",
     bio: "IoT engineer connecting the physical and digital worlds. Arduino and Raspberry Pi hacker. Smart home enthusiast.",
     location: "Phoenix, AZ",
     github: "https://github.com/carlosmendez",
@@ -146,7 +152,7 @@ const userData: Prisma.UserCreateInput[] = [
   {
     name: "Rachel Green",
     email: "rachel.green@gmail.com",
-    password: "password123",
+    password: "1234",
     bio: "Technical writer and developer advocate. Making complex technologies accessible to everyone through clear documentation.",
     location: "Atlanta, GA",
     github: "https://github.com/rachelgreen",
@@ -158,7 +164,7 @@ const userData: Prisma.UserCreateInput[] = [
   {
     name: "Kevin Zhang",
     email: "kevin.zhang@gmail.com",
-    password: "password123",
+    password: "1234",
     bio: "Cloud architect designing scalable solutions on AWS and GCP. Helping startups build reliable infrastructure from day one.",
     location: "San Jose, CA",
     github: "https://github.com/kevinzhang",
@@ -168,7 +174,7 @@ const userData: Prisma.UserCreateInput[] = [
   {
     name: "Olivia Taylor",
     email: "olivia.taylor@gmail.com",
-    password: "password123",
+    password: "1234",
     bio: "QA engineer and automation specialist. Breaking things so users don't have to. Cypress and Playwright expert.",
     location: "Minneapolis, MN",
     github: "https://github.com/oliviataylor",
@@ -260,14 +266,20 @@ export async function main() {
   console.log("👥 Creating users...");
   const createdUsers: { [email: string]: string } = {};
   for (const u of userData) {
-    // Use upsert to avoid duplicate email errors
+    // Hash the password before storing
+    const hashedPassword = await hashPassword(u.password as string);
+    
+    // Use upsert to create or update (including password hash fix)
     const user = await prisma.user.upsert({
       where: { email: u.email },
-      update: {}, // Don't update if exists
-      create: u,
+      update: { password: hashedPassword }, // Update password hash for existing users
+      create: {
+        ...u,
+        password: hashedPassword,
+      },
     });
     createdUsers[user.email] = user.id;
-    console.log(`  ✅ Created/Found user: ${user.name} (${user.email})`);
+    console.log(`  ✅ Created/Updated user: ${user.name} (${user.email})`);
   }
   
   console.log("\n🏢 Creating organizations...");
@@ -355,7 +367,7 @@ export async function main() {
       title: "AI Innovation Challenge 2026",
       slug: "ai-innovation-challenge-2026",
       description: "Join us for the biggest AI hackathon of the year! Build innovative AI solutions that solve real-world problems. Whether you're into machine learning, natural language processing, computer vision, or generative AI, this is your chance to showcase your skills and compete for amazing prizes.",
-      shortDescription: "Build innovative AI solutions and compete for $50,000 in prizes",
+      shortDescription: "Build innovative AI solutions and compete for ₹50,000 in prizes",
       orgSlug: "ai-research-collective",
       type: "OPEN" as const,
       mode: "VIRTUAL" as const,

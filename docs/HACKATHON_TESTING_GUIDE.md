@@ -90,10 +90,10 @@ Create **at least 4 accounts** with different emails:
 
 1. Click "Prizes" tab
 2. Add prizes:
-   - **Grand Prize**: $5,000
-   - **Runner Up**: $2,500
-   - **Best Design**: $1,000
-   - **People's Choice**: $500
+   - **Grand Prize**: ₹5,000
+   - **Runner Up**: ₹2,500
+   - **Best Design**: ₹1,000
+   - **People's Choice**: ₹500
 
 ### 2.4 Configure Stages/Timeline
 
@@ -370,7 +370,7 @@ Create **at least 4 accounts** with different emails:
 - Check that registration start/end dates are set correctly
 - Dates use local timezone for comparison
 
-### Prize pool shows $0
+### Prize pool shows ₹0
 
 - Ensure prizes are added in the Prizes tab
 - The displayed value is calculated from actual prizes
