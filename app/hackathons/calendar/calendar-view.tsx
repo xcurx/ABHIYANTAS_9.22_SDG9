@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { ChevronLeft, ChevronRight, Clock, Users, MapPin, ExternalLink, Layers } from "lucide-react"
 
-type HackathonStatus = "DRAFT" | "PUBLISHED" | "REGISTRATION_OPEN" | "ONGOING" | "JUDGING" | "COMPLETED" | "CANCELLED"
-type StageType = "REGISTRATION" | "IDEATION" | "SUBMISSION" | "EVALUATION" | "DEMO_DAY" | "MENTORING_SESSION" | "WORKSHOP" | "NETWORKING" | "FINALS" | "ANNOUNCEMENT" | "CUSTOM"
+type HackathonStatus = "DRAFT" | "PUBLISHED" | "REGISTRATION_OPEN" | "REGISTRATION_CLOSED" | "IN_PROGRESS" | "JUDGING" | "COMPLETED" | "CANCELLED"
+type StageType = "REGISTRATION" | "TEAM_FORMATION" | "IDEATION" | "MENTORING_SESSION" | "CHECKPOINT" | "DEVELOPMENT" | "EVALUATION" | "PRESENTATION" | "RESULTS" | "CUSTOM"
 
 interface HackathonStage {
     id: string
@@ -67,7 +67,14 @@ const statusStyles: Record<HackathonStatus, {
         border: "border-amber-200",
         hover: "hover:from-amber-100 hover:to-yellow-100",
     },
-    ONGOING: {
+    REGISTRATION_CLOSED: {
+        bg: "bg-gradient-to-r from-orange-50 to-amber-50",
+        text: "text-orange-700",
+        dot: "bg-gradient-to-r from-orange-400 to-amber-400",
+        border: "border-orange-200",
+        hover: "hover:from-orange-100 hover:to-amber-100",
+    },
+    IN_PROGRESS: {
         bg: "bg-gradient-to-r from-emerald-50 to-teal-50",
         text: "text-emerald-700",
         dot: "bg-gradient-to-r from-emerald-400 to-teal-400 animate-pulse",
@@ -99,29 +106,27 @@ const statusStyles: Record<HackathonStatus, {
 
 const stageTypeColors: Record<StageType, string> = {
     REGISTRATION: "bg-amber-400",
+    TEAM_FORMATION: "bg-indigo-400",
     IDEATION: "bg-blue-400",
-    SUBMISSION: "bg-purple-400",
-    EVALUATION: "bg-orange-400",
-    DEMO_DAY: "bg-pink-400",
     MENTORING_SESSION: "bg-cyan-400",
-    WORKSHOP: "bg-lime-400",
-    NETWORKING: "bg-teal-400",
-    FINALS: "bg-rose-400",
-    ANNOUNCEMENT: "bg-yellow-400",
+    CHECKPOINT: "bg-yellow-400",
+    DEVELOPMENT: "bg-lime-400",
+    EVALUATION: "bg-orange-400",
+    PRESENTATION: "bg-pink-400",
+    RESULTS: "bg-rose-400",
     CUSTOM: "bg-gray-400",
 }
 
 const stageTypeLabels: Record<StageType, string> = {
     REGISTRATION: "Registration",
+    TEAM_FORMATION: "Team Formation",
     IDEATION: "Ideation",
-    SUBMISSION: "Submission",
-    EVALUATION: "Evaluation",
-    DEMO_DAY: "Demo Day",
     MENTORING_SESSION: "Mentoring",
-    WORKSHOP: "Workshop",
-    NETWORKING: "Networking",
-    FINALS: "Finals",
-    ANNOUNCEMENT: "Announcement",
+    CHECKPOINT: "Checkpoint",
+    DEVELOPMENT: "Development",
+    EVALUATION: "Evaluation",
+    PRESENTATION: "Presentation",
+    RESULTS: "Results",
     CUSTOM: "Custom",
 }
 
@@ -264,7 +269,8 @@ export function HackathonCalendarView({ initialHackathons, initialYear, initialM
             DRAFT: "Draft",
             PUBLISHED: "Coming Soon",
             REGISTRATION_OPEN: "Registration Open",
-            ONGOING: "In Progress",
+            REGISTRATION_CLOSED: "Registration Closed",
+            IN_PROGRESS: "In Progress",
             JUDGING: "Judging",
             COMPLETED: "Completed",
             CANCELLED: "Cancelled",

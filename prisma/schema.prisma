@@ -45,6 +45,8 @@ model User {
     // Hackathon Role Relations
     hackathonRoles          HackathonRole[]
     roleInvitationsSent     HackathonRole[]  @relation("RoleInviter")
+    // Meeting Relations
+    hostedMeetings          MeetingSession[] @relation("MeetingHost")
 }
 
 // ==================== SKILLS ====================
@@ -688,11 +690,73 @@ model StageSubmission {
     stage       HackathonStage @relation(fields: [stageId], references: [id], onDelete: Cascade)
     user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
     team        Team?          @relation(fields: [teamId], references: [id], onDelete: SetNull)
+    meetings    MeetingSession[] // Meetings scheduled for this submission
     
     @@unique([stageId, userId])
     @@unique([stageId, teamId]) // Only one submission per team per stage
     @@index([stageId, status])
     @@index([teamId])
+}
+
+// ==================== MEETING SESSIONS ====================
+// For scheduling mentor/judge sessions with teams via Google Meet
+
+model MeetingSession {
+    id              String          @id @default(cuid())
+    hackathonId     String
+    submissionId    String?         // Links to the mentoring request or submission being reviewed
+    hostId          String          // Mentor or Judge hosting the meeting
+    teamId          String?         // Team the meeting is with
+    
+    // Meeting Details
+    title           String
+    description     String?
+    type            MeetingType     // MENTORING or EVALUATION
+    
+    // Scheduling
+    scheduledAt     DateTime        // When the meeting is scheduled
+    duration        Int             @default(30)  // Duration in minutes
+    endTime         DateTime        // Computed: scheduledAt + duration
+    timezone        String          @default("UTC")
+    
+    // Google Meet Integration
+    meetLink        String?         // Google Meet link
+    calendarEventId String?         // Google Calendar event ID
+    
+    // Status
+    status          MeetingStatus   @default(SCHEDULED)
+    
+    // Notes & Feedback
+    hostNotes       String?         // Notes from mentor/judge
+    teamNotes       String?         // Notes/questions from team
+    
+    createdAt       DateTime        @default(now())
+    updatedAt       DateTime        @updatedAt
+    
+    // Relations
+    host            User            @relation("MeetingHost", fields: [hostId], references: [id], onDelete: Cascade)
+    team            Team?           @relation(fields: [teamId], references: [id], onDelete: SetNull)
+    submission      StageSubmission? @relation(fields: [submissionId], references: [id], onDelete: SetNull)
+    
+    @@index([hostId, scheduledAt])
+    @@index([teamId])
+    @@index([hackathonId])
+    @@index([status])
+}
+
+enum MeetingType {
+    MENTORING       // Mentor session with team
+    EVALUATION      // Judge evaluation session
+    PRESENTATION    // Presentation to judges
+    OFFICE_HOURS    // Open office hours
+}
+
+enum MeetingStatus {
+    SCHEDULED       // Meeting is scheduled
+    IN_PROGRESS     // Meeting is currently happening
+    COMPLETED       // Meeting finished
+    CANCELLED       // Meeting was cancelled
+    NO_SHOW         // Team didn't show up
 }
 
 enum SubmissionStatus {
@@ -813,6 +877,7 @@ model Team {
     members     TeamMember[]
     invitations TeamInvitation[]
     submissions StageSubmission[]
+    meetings    MeetingSession[]
     
     @@unique([hackathonId, name]) // Team names must be unique per hackathon
     @@index([hackathonId])
@@ -970,4 +1035,5 @@ enum NotificationType {
     STAGE                  // Stage transition
     SYSTEM                 // System notification
     ROLE                   // Role invitation (mentor, judge, etc.)
+    MEETING                // Meeting scheduled/updated
 }

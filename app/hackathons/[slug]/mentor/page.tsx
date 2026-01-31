@@ -4,6 +4,7 @@ import { auth, signOut } from "@/auth"
 import prisma from "@/lib/prisma"
 import { Navbar } from "@/components/layout/navbar"
 import { revalidatePath } from "next/cache"
+import { MentoringRequestsClient } from "@/components/meetings/mentoring-requests-client"
 import {
     ArrowLeft,
     MessageSquare,
@@ -88,6 +89,21 @@ export default async function MentorDashboardPage({ params }: MentorPageProps) {
         orderBy: { submittedAt: "desc" },
     })
 
+    // Get upcoming meetings for this mentor
+    const upcomingMeetings = await prisma.meetingSession.findMany({
+        where: {
+            hackathonId: hackathon.id,
+            hostId: session.user.id,
+            status: { not: "CANCELLED" },
+            scheduledAt: { gte: new Date() },
+        },
+        include: {
+            team: { select: { name: true } },
+        },
+        orderBy: { scheduledAt: "asc" },
+        take: 5,
+    })
+
     // Get active mentoring sessions
     const now = new Date()
     const activeSessions = hackathon.stages.filter(
@@ -97,6 +113,7 @@ export default async function MentorDashboardPage({ params }: MentorPageProps) {
     // Stats
     const pendingRequests = mentoringRequests.filter(r => r.status === "PENDING").length
     const respondedRequests = mentoringRequests.filter(r => r.status === "APPROVED").length
+    const scheduledMeetings = upcomingMeetings.length
 
     async function respondToRequest(formData: FormData) {
         "use server"
@@ -169,7 +186,7 @@ export default async function MentorDashboardPage({ params }: MentorPageProps) {
                 </div>
 
                 {/* Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
                     <div className="bg-white rounded-xl shadow-sm border p-4">
                         <div className="text-2xl font-bold text-gray-900">{hackathon.teams.length}</div>
                         <div className="text-sm text-gray-600">Teams</div>
@@ -186,6 +203,10 @@ export default async function MentorDashboardPage({ params }: MentorPageProps) {
                         <div className="text-2xl font-bold text-blue-600">{respondedRequests}</div>
                         <div className="text-sm text-gray-600">Responded</div>
                     </div>
+                    <div className="bg-white rounded-xl shadow-sm border p-4">
+                        <div className="text-2xl font-bold text-purple-600">{scheduledMeetings}</div>
+                        <div className="text-sm text-gray-600">Scheduled Meets</div>
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -201,112 +222,13 @@ export default async function MentorDashboardPage({ params }: MentorPageProps) {
                             )}
                         </h2>
                         
-                        {mentoringRequests.length === 0 ? (
-                            <div className="bg-white rounded-2xl shadow-sm border p-12 text-center">
-                                <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                                <h3 className="text-lg font-semibold text-gray-900">No mentoring requests yet</h3>
-                                <p className="text-gray-600 mt-2">
-                                    When teams request mentoring help, their requests will appear here.
-                                </p>
-                            </div>
-                        ) : (
-                            <div className="space-y-4">
-                                {mentoringRequests.map((request) => {
-                                    let content: { topic?: string; description?: string; type?: string } = {}
-                                    try {
-                                        content = JSON.parse(request.content || "{}")
-                                    } catch {}
-
-                                    const isPending = request.status === "PENDING"
-
-                                    return (
-                                        <div 
-                                            key={request.id} 
-                                            className={cn(
-                                                "bg-white rounded-2xl shadow-sm border overflow-hidden",
-                                                isPending && "ring-2 ring-amber-200"
-                                            )}
-                                        >
-                                            <div className={cn(
-                                                "p-4 border-b",
-                                                isPending ? "bg-amber-50" : "bg-gray-50"
-                                            )}>
-                                                <div className="flex items-center justify-between">
-                                                    <div className="flex items-center gap-3">
-                                                        {isPending ? (
-                                                            <AlertCircle className="h-5 w-5 text-amber-600" />
-                                                        ) : (
-                                                            <CheckCircle className="h-5 w-5 text-green-600" />
-                                                        )}
-                                                        <div>
-                                                            <span className="font-semibold text-gray-900">
-                                                                {content.topic || "Mentoring Request"}
-                                                            </span>
-                                                            <span className="text-sm text-gray-500 ml-2">
-                                                                from {request.team?.name || request.user?.name}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                    <span className={cn(
-                                                        "px-2 py-0.5 text-xs rounded-full font-medium",
-                                                        isPending 
-                                                            ? "bg-amber-100 text-amber-700" 
-                                                            : "bg-green-100 text-green-700"
-                                                    )}>
-                                                        {isPending ? "Needs Response" : "Responded"}
-                                                    </span>
-                                                </div>
-                                            </div>
-
-                                            <div className="p-4">
-                                                <p className="text-gray-700 mb-3">{content.description}</p>
-                                                <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
-                                                    <span>{request.stage.name}</span>
-                                                    <span>•</span>
-                                                    <span>{formatDateTime(request.submittedAt)}</span>
-                                                    {request.team && (
-                                                        <>
-                                                            <span>•</span>
-                                                            <a 
-                                                                href={`mailto:${request.team.leader.email}`}
-                                                                className="text-blue-600 hover:underline"
-                                                            >
-                                                                Contact Team
-                                                            </a>
-                                                        </>
-                                                    )}
-                                                </div>
-
-                                                {request.feedback ? (
-                                                    <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                                                        <p className="text-sm font-medium text-green-800 mb-1">Your Response:</p>
-                                                        <p className="text-sm text-green-700">{request.feedback}</p>
-                                                    </div>
-                                                ) : (
-                                                    <form action={respondToRequest} className="space-y-3">
-                                                        <input type="hidden" name="requestId" value={request.id} />
-                                                        <textarea
-                                                            name="response"
-                                                            required
-                                                            rows={3}
-                                                            placeholder="Provide guidance, answer questions, or suggest a meeting time..."
-                                                            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                                                        />
-                                                        <button
-                                                            type="submit"
-                                                            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-                                                        >
-                                                            <Send className="h-4 w-4" />
-                                                            Send Response
-                                                        </button>
-                                                    </form>
-                                                )}
-                                            </div>
-                                        </div>
-                                    )
-                                })}
-                            </div>
-                        )}
+                        <MentoringRequestsClient
+                            requests={mentoringRequests}
+                            hackathonId={hackathon.id}
+                            hackathonSlug={hackathon.slug}
+                            respondAction={respondToRequest}
+                            upcomingMeetings={upcomingMeetings}
+                        />
                     </div>
 
                     {/* Right Sidebar */}

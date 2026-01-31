@@ -3,6 +3,7 @@ import Link from "next/link"
 import { auth, signOut } from "@/auth"
 import prisma from "@/lib/prisma"
 import { Navbar } from "@/components/layout/navbar"
+import { JudgeSubmissionsClient } from "@/components/meetings/judge-submissions-client"
 import {
     ArrowLeft,
     Star,
@@ -12,6 +13,7 @@ import {
     FileText,
     ExternalLink,
     ChevronRight,
+    Video,
 } from "lucide-react"
 import { formatDateTime, cn } from "@/lib/utils"
 
@@ -87,6 +89,22 @@ export default async function JudgeDashboardPage({ params }: JudgePageProps) {
         orderBy: { submittedAt: "desc" },
     })
 
+    // Get upcoming meetings for this judge
+    const upcomingMeetings = await prisma.meetingSession.findMany({
+        where: {
+            hackathonId: hackathon.id,
+            hostId: session.user.id,
+            type: "EVALUATION",
+            status: { not: "CANCELLED" },
+            scheduledAt: { gte: new Date() },
+        },
+        include: {
+            team: { select: { name: true } },
+        },
+        orderBy: { scheduledAt: "asc" },
+        take: 5,
+    })
+
     // Group submissions by stage
     const submissionsByStage = hackathon.stages.reduce((acc, stage) => {
         acc[stage.id] = submissions.filter(s => s.stageId === stage.id)
@@ -97,6 +115,7 @@ export default async function JudgeDashboardPage({ params }: JudgePageProps) {
     const totalSubmissions = submissions.length
     const scoredSubmissions = submissions.filter(s => s.score !== null).length
     const pendingSubmissions = totalSubmissions - scoredSubmissions
+    const scheduledMeetings = upcomingMeetings.length
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -124,7 +143,7 @@ export default async function JudgeDashboardPage({ params }: JudgePageProps) {
                 </div>
 
                 {/* Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
                     <div className="bg-white rounded-xl shadow-sm border p-4">
                         <div className="text-2xl font-bold text-gray-900">{hackathon.teams.length}</div>
                         <div className="text-sm text-gray-600">Teams</div>
@@ -141,10 +160,24 @@ export default async function JudgeDashboardPage({ params }: JudgePageProps) {
                         <div className="text-2xl font-bold text-orange-600">{pendingSubmissions}</div>
                         <div className="text-sm text-gray-600">Pending Review</div>
                     </div>
+                    <div className="bg-white rounded-xl shadow-sm border p-4">
+                        <div className="text-2xl font-bold text-purple-600">{scheduledMeetings}</div>
+                        <div className="text-sm text-gray-600">Scheduled Meets</div>
+                    </div>
                 </div>
 
                 {/* Evaluation Stages */}
                 <div className="space-y-6">
+                    {/* Show upcoming meetings at the top */}
+                    {upcomingMeetings.length > 0 && (
+                        <JudgeSubmissionsClient
+                            submissions={[]}
+                            hackathonId={hackathon.id}
+                            hackathonSlug={hackathon.slug}
+                            upcomingMeetings={upcomingMeetings}
+                        />
+                    )}
+
                     {hackathon.stages.length === 0 ? (
                         <div className="bg-white rounded-2xl shadow-sm border p-12 text-center">
                             <Star className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -155,7 +188,6 @@ export default async function JudgeDashboardPage({ params }: JudgePageProps) {
                         hackathon.stages.map((stage) => {
                             const stageSubmissions = submissionsByStage[stage.id] || []
                             const scored = stageSubmissions.filter(s => s.score !== null).length
-                            const pending = stageSubmissions.length - scored
                             const now = new Date()
                             const isActive = now >= stage.startDate && now <= stage.endDate
 
@@ -190,67 +222,11 @@ export default async function JudgeDashboardPage({ params }: JudgePageProps) {
                                     </div>
 
                                     {/* Submissions List */}
-                                    <div className="divide-y">
-                                        {stageSubmissions.length === 0 ? (
-                                            <div className="p-8 text-center text-gray-500">
-                                                No submissions yet for this stage
-                                            </div>
-                                        ) : (
-                                            stageSubmissions.map((submission) => {
-                                                let parsedContent: { title?: string } = {}
-                                                try {
-                                                    parsedContent = JSON.parse(submission.content || "{}")
-                                                } catch {
-                                                    parsedContent = {}
-                                                }
-
-                                                return (
-                                                    <Link
-                                                        key={submission.id}
-                                                        href={`/hackathons/${slug}/judge/submissions/${submission.id}`}
-                                                        className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors"
-                                                    >
-                                                        <div className={cn(
-                                                            "p-2 rounded-lg",
-                                                            submission.score !== null 
-                                                                ? "bg-green-100" 
-                                                                : "bg-orange-100"
-                                                        )}>
-                                                            {submission.score !== null ? (
-                                                                <CheckCircle className="h-5 w-5 text-green-600" />
-                                                            ) : (
-                                                                <Clock className="h-5 w-5 text-orange-600" />
-                                                            )}
-                                                        </div>
-                                                        <div className="flex-1">
-                                                            <div className="font-medium text-gray-900">
-                                                                {parsedContent.title || "Untitled Submission"}
-                                                            </div>
-                                                            <div className="text-sm text-gray-600 flex items-center gap-2">
-                                                                <Users className="h-3 w-3" />
-                                                                {submission.team?.name || submission.user.name}
-                                                            </div>
-                                                        </div>
-                                                        <div className="text-right">
-                                                            {submission.score !== null ? (
-                                                                <div className="flex items-center gap-2">
-                                                                    <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-                                                                    <span className="font-bold text-gray-900">
-                                                                        {submission.score}
-                                                                    </span>
-                                                                </div>
-                                                            ) : (
-                                                                <span className="text-sm text-orange-600 font-medium">
-                                                                    Needs Review
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                        <ChevronRight className="h-5 w-5 text-gray-400" />
-                                                    </Link>
-                                                )
-                                            })
-                                        )}
-                                    </div>
+                                    <JudgeSubmissionsClient
+                                        submissions={stageSubmissions}
+                                        hackathonId={hackathon.id}
+                                        hackathonSlug={hackathon.slug}
+                                    />
                                 </div>
                             )
                         })
