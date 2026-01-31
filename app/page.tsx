@@ -148,7 +148,7 @@ export default async function LandingPage() {
                             </div>
                             <div className="flex items-center justify-between text-sm mb-3">
                                 <span className="text-gray-500">1,250 participants</span>
-                                <span className="text-green-600 font-bold">$50,000 Prize</span>
+                                <span className="text-green-600 font-bold">₹50,000 Prize</span>
                             </div>
                             <div className="w-full bg-gray-100 rounded-full h-2">
                                 <div className="bg-gradient-to-r from-green-400 to-emerald-500 h-2 rounded-full w-2/3 animate-pulse"></div>

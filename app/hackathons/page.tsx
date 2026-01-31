@@ -128,7 +128,7 @@ export default async function HackathonsPage({ searchParams }: PageProps) {
                                     <Trophy className="h-6 w-6 text-white" />
                                 </div>
                             </div>
-                            <p className="text-3xl font-bold">$100K+</p>
+                            <p className="text-3xl font-bold">₹1Cr+</p>
                             <p className="text-sm text-blue-200">In Prizes</p>
                         </div>
                     </div>

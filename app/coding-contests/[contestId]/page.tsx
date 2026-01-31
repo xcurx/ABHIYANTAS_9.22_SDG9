@@ -6,6 +6,24 @@ import { registerForContest } from "@/lib/actions/coding-contest"
 import ContestActionCard from "./contest-action-card"
 import { Calendar, Clock, Users, FileText, Trophy, Shield, ArrowLeft } from "lucide-react"
 
+// Default banner images for contests
+const defaultBanners = [
+    "/images/contest-banners/cc1.png",
+    "/images/contest-banners/cc2.png",
+    "/images/contest-banners/cc3.png",
+    "/images/contest-banners/cc4.png",
+]
+
+// Get a consistent banner based on contest id
+function getContestBanner(contestId: string): string {
+    let hash = 0
+    for (let i = 0; i < contestId.length; i++) {
+        hash = ((hash << 5) - hash) + contestId.charCodeAt(i)
+        hash = hash & hash
+    }
+    return defaultBanners[Math.abs(hash) % defaultBanners.length]
+}
+
 export default async function ContestDetailPage({
     params,
 }: {
@@ -88,39 +106,47 @@ export default async function ContestDetailPage({
         CANCELLED: { label: "Cancelled", className: "bg-red-100 text-red-700" },
     }
 
+    // Get banner image for this contest
+    const bannerImage = getContestBanner(contest.id)
+
     return (
         <div className="min-h-screen bg-gray-50">
             {/* Hero Section */}
-            <div className="bg-blue-600 text-white relative overflow-hidden">
-                {/* Background Pattern */}
-                <div className="absolute inset-0 opacity-10">
-                    <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full translate-x-1/2 -translate-y-1/2"></div>
-                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-white rounded-full -translate-x-1/3 translate-y-1/3"></div>
+            <div className="text-white relative overflow-hidden">
+                {/* Background Image */}
+                <div className="absolute inset-0">
+                    <img 
+                        src={bannerImage} 
+                        alt="" 
+                        className="w-full h-full object-cover"
+                    />
+                    {/* Dark overlay for text readability */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-slate-900/80 to-slate-900/70" />
                 </div>
 
                 <div className="relative z-10 max-w-7xl mx-auto px-4 py-10 sm:px-6 lg:px-8">
                     {/* Breadcrumb */}
                     <div className="flex items-center gap-2 text-sm mb-6">
-                        <Link href="/dashboard" className="text-blue-200 hover:text-white transition-colors">
+                        <Link href="/dashboard" className="text-gray-300 hover:text-white transition-colors">
                             Dashboard
                         </Link>
-                        <span className="text-blue-300">/</span>
-                        <Link href="/coding-contests" className="text-blue-200 hover:text-white transition-colors">
+                        <span className="text-gray-400">/</span>
+                        <Link href="/coding-contests" className="text-gray-300 hover:text-white transition-colors">
                             Contests
                         </Link>
-                        <span className="text-blue-300">/</span>
+                        <span className="text-gray-400">/</span>
                         <span className="text-white">{contest.title}</span>
                     </div>
 
                     {/* Status Badge */}
                     <div className="flex items-center gap-3 mb-4">
-                        <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium ${statusConfig[contest.status]?.className || 'bg-gray-100 text-gray-700'}`}>
+                        <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium backdrop-blur-sm ${statusConfig[contest.status]?.className || 'bg-gray-100 text-gray-700'}`}>
                             {contest.status === 'LIVE' && (
                                 <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
                             )}
                             {statusConfig[contest.status]?.label || contest.status.replace('_', ' ')}
                         </span>
-                        <span className="text-blue-200 text-sm">
+                        <span className="text-gray-300 text-sm">
                             by {contest.organization.name}
                         </span>
                     </div>
@@ -132,7 +158,7 @@ export default async function ContestDetailPage({
 
                     {/* Description */}
                     {contest.shortDescription && (
-                        <p className="text-lg text-blue-100 mb-6 max-w-2xl leading-relaxed">
+                        <p className="text-lg text-gray-200 mb-6 max-w-2xl leading-relaxed">
                             {contest.shortDescription}
                         </p>
                     )}
@@ -140,24 +166,24 @@ export default async function ContestDetailPage({
                     {/* Quick Stats Row */}
                     <div className="flex flex-wrap gap-6 text-sm">
                         <div className="flex items-center gap-2">
-                            <FileText className="w-4 h-4 text-blue-200" />
+                            <FileText className="w-4 h-4 text-gray-300" />
                             <span className="text-white font-medium">{contest.questions.length}</span>
-                            <span className="text-blue-200">Questions</span>
+                            <span className="text-gray-300">Questions</span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <Trophy className="w-4 h-4 text-blue-200" />
+                            <Trophy className="w-4 h-4 text-gray-300" />
                             <span className="text-white font-medium">{totalPoints}</span>
-                            <span className="text-blue-200">Points</span>
+                            <span className="text-gray-300">Points</span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <Clock className="w-4 h-4 text-blue-200" />
+                            <Clock className="w-4 h-4 text-gray-300" />
                             <span className="text-white font-medium">{contest.duration}</span>
-                            <span className="text-blue-200">Minutes</span>
+                            <span className="text-gray-300">Minutes</span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <Users className="w-4 h-4 text-blue-200" />
+                            <Users className="w-4 h-4 text-gray-300" />
                             <span className="text-white font-medium">{contest._count.participants}</span>
-                            <span className="text-blue-200">Participants</span>
+                            <span className="text-gray-300">Participants</span>
                         </div>
                     </div>
                 </div>

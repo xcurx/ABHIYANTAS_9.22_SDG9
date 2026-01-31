@@ -28,6 +28,24 @@ import RegisterButton from "./register-button"
 import HackathonAnnouncements from "@/components/hackathon/hackathon-announcements"
 import { HackathonCertificateSection } from "./hackathon-certificate-section"
 
+// Default banner images for hackathons without custom banners
+const defaultBanners = [
+    "/images/hackathon-banners/hack1.png",
+    "/images/hackathon-banners/hack2.png",
+    "/images/hackathon-banners/hack3.png",
+    "/images/hackathon-banners/hack4.png",
+]
+
+// Get a consistent banner based on hackathon id (so same hackathon always gets same image)
+function getDefaultBanner(hackathonId: string): string {
+    let hash = 0
+    for (let i = 0; i < hackathonId.length; i++) {
+        hash = ((hash << 5) - hash) + hackathonId.charCodeAt(i)
+        hash = hash & hash
+    }
+    return defaultBanners[Math.abs(hash) % defaultBanners.length]
+}
+
 interface HackathonPageProps {
     params: Promise<{ slug: string }>
 }
@@ -174,15 +192,13 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-blue-400 rounded-full blur-3xl opacity-30"></div>
                 </div>
 
-                {hackathon.bannerImage && (
-                    <Image
-                        src={hackathon.bannerImage}
-                        alt={hackathon.title}
-                        fill
-                        className="object-cover"
-                        priority
-                    />
-                )}
+                <Image
+                    src={hackathon.bannerImage || getDefaultBanner(hackathon.id)}
+                    alt={hackathon.title}
+                    fill
+                    className="object-cover"
+                    priority
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent" />
 
                 {/* Back button */}
@@ -226,7 +242,7 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
                             {totalPrizePool > 0 && (
                                 <span className="px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-400 text-amber-900 flex items-center gap-1.5">
                                     <Trophy className="h-3.5 w-3.5" />
-                                    ${totalPrizePool.toLocaleString()} in prizes
+                                    ₹{totalPrizePool.toLocaleString()} in prizes
                                 </span>
                             )}
                         </div>
@@ -305,7 +321,7 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
                                         <Trophy className="h-5 w-5 text-white" />
                                     </div>
                                     <div className="text-2xl font-bold text-gray-900">
-                                        ${totalPrizePool.toLocaleString()}
+                                        ₹{totalPrizePool.toLocaleString()}
                                     </div>
                                     <div className="text-sm text-gray-600">Prize Pool</div>
                                 </div>
@@ -358,7 +374,7 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
                                             </div>
                                             {track.prizeAmount && (
                                                 <div className="text-sm text-green-600 font-semibold bg-green-50 px-3 py-1 rounded-lg">
-                                                    ${track.prizeAmount.toLocaleString()}
+                                                    ₹{track.prizeAmount.toLocaleString()}
                                                 </div>
                                             )}
                                         </div>
@@ -398,7 +414,7 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
                                                 <div className="flex items-center gap-3 mb-1">
                                                     <h3 className="font-semibold text-gray-900">{prize.title}</h3>
                                                     <span className="text-xl font-bold text-green-600">
-                                                        ${(prize.amount || 0).toLocaleString()}
+                                                        ₹{(prize.amount || 0).toLocaleString()}
                                                     </span>
                                                 </div>
                                                 {prize.description && (

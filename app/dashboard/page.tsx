@@ -17,7 +17,7 @@ const featuredEvents = [
         statusColor: "bg-green-100 text-green-700",
         date: "Feb 15 - 17, 2026",
         participants: 1250,
-        prizePool: "$50,000",
+        prizePool: "₹50,000",
         image: "/images/hackathon-banners/hack2.png",
         tags: ["AI/ML", "Innovation"],
     },
@@ -29,7 +29,7 @@ const featuredEvents = [
         statusColor: "bg-amber-100 text-amber-700",
         date: "Feb 20 - 22, 2026",
         participants: 890,
-        prizePool: "$30,000",
+        prizePool: "₹30,000",
         image: "/images/hackathon-banners/hack1.png",
         tags: ["Blockchain", "Web3"],
     },
@@ -41,7 +41,7 @@ const featuredEvents = [
         statusColor: "bg-red-100 text-red-700 animate-pulse",
         date: "Every Saturday",
         participants: 2400,
-        prizePool: "$5,000",
+        prizePool: "₹5,000",
         image: "/images/hackathon-banners/hack3.png",
         tags: ["DSA", "Competitive"],
     },
@@ -53,7 +53,7 @@ const userStats = {
     contestsCompleted: 12,
     projectsSubmitted: 5,
     ranking: 156,
-    totalPrizesWon: "$2,500",
+    totalPrizesWon: "₹2,500",
     skillLevel: "Intermediate",
 }
 
@@ -65,7 +65,7 @@ const participationHistory = [
         date: "Dec 2025",
         status: "Completed",
         position: "2nd Place 🥈",
-        prize: "$2,000",
+        prize: "₹2,000",
     },
     {
         id: "2",
@@ -73,7 +73,7 @@ const participationHistory = [
         date: "Jan 2026",
         status: "Completed",
         position: "Top 10%",
-        prize: "$500",
+        prize: "₹500",
     },
     {
         id: "3",
@@ -250,6 +250,43 @@ export default async function DashboardPage() {
                         </div>
                     </div>
 
+                    {/* Upgrade to Premium Card */}
+                    <div className="mb-12 max-w-4xl mx-auto">
+                        <Link
+                            href="/pricing"
+                            className="block bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 rounded-2xl p-6 hover:shadow-xl transition-all group relative overflow-hidden"
+                        >
+                            {/* Decorative elements */}
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+                            <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+                            
+                            <div className="relative flex items-center justify-between gap-6">
+                                <div className="flex items-center gap-4">
+                                    <div className="h-14 w-14 rounded-xl bg-white/10 backdrop-blur flex items-center justify-center flex-shrink-0">
+                                        <svg className="h-7 w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl font-bold text-white mb-1">Unlock Premium Features</h3>
+                                        <p className="text-blue-100 text-sm">Host unlimited hackathons, get advanced analytics, custom branding & more</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3 flex-shrink-0">
+                                    <div className="text-right hidden sm:block">
+                                        <p className="text-blue-200 text-xs">Starting at</p>
+                                        <p className="text-white font-bold text-lg">₹500/mo</p>
+                                    </div>
+                                    <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center group-hover:scale-110 transition-transform">
+                                        <svg className="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </Link>
+                    </div>
+
                     {/* Recommended for You Section */}
                     {recommendations.length > 0 && (
                         <div className="mb-12">
@@ -376,7 +413,7 @@ export default async function DashboardPage() {
                                                     <span className="font-semibold text-gray-900">{hackathon._count.registrations}</span> registered
                                                 </span>
                                                 {hackathon.prizePool && (
-                                                    <span className="text-sm font-bold text-green-600">${hackathon.prizePool.toLocaleString()}</span>
+                                                    <span className="text-sm font-bold text-green-600">₹{hackathon.prizePool.toLocaleString()}</span>
                                                 )}
                                             </div>
                                         </div>

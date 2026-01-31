@@ -165,7 +165,7 @@ export default async function ManageOverviewPage({ params }: ManageOverviewPageP
                         <div>
                             <p className="text-sm text-gray-600">Prize Pool</p>
                             <p className="text-3xl font-bold text-gray-900 mt-1">
-                                ${(hackathon.prizePool || 0).toLocaleString()}
+                                ₹{(hackathon.prizePool || 0).toLocaleString()}
                             </p>
                         </div>
                         <div className="p-3 bg-amber-100 rounded-lg">

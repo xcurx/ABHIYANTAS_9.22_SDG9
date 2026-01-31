@@ -174,7 +174,7 @@ export default function HackathonsTab({ organizationId, organizationSlug, isAdmi
                                         {hackathon.prizePool && hackathon.prizePool > 0 && (
                                             <span className="inline-flex items-center gap-1.5 bg-amber-50 rounded-lg px-2.5 py-1 text-amber-700">
                                                 <Trophy className="h-4 w-4" />
-                                                ${hackathon.prizePool.toLocaleString()}
+                                                ₹{hackathon.prizePool.toLocaleString()}
                                             </span>
                                         )}
                                         {hackathon._count.tracks > 0 && (

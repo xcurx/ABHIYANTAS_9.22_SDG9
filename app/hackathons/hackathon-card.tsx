@@ -127,7 +127,7 @@ export default function HackathonCard({ hackathon }: HackathonCardProps) {
                         <div className="absolute bottom-3 left-3">
                             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-amber-400 text-amber-900 shadow-sm">
                                 <Trophy className="h-3.5 w-3.5" />
-                                ${hackathon.prizePool.toLocaleString()}
+                                ₹{hackathon.prizePool.toLocaleString()}
                             </span>
                         </div>
                     )}

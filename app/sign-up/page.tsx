@@ -85,7 +85,7 @@ export default function SignUpPage() {
                             <p className="text-blue-200 text-sm">Hackathons</p>
                         </div>
                         <div>
-                            <p className="text-3xl font-bold text-white">$1M+</p>
+                            <p className="text-3xl font-bold text-white">₹1Cr+</p>
                             <p className="text-blue-200 text-sm">Prizes Won</p>
                         </div>
                     </div>

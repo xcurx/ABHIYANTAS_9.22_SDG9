@@ -830,7 +830,7 @@ export default function HackathonWizard({ organizations }: HackathonWizardProps)
                                             </div>
                                             <div className="flex justify-between gap-2 items-center bg-white rounded-lg p-2">
                                                 <dt className="text-gray-600 flex-shrink-0">Prize Pool:</dt>
-                                                <dd className="font-bold text-green-600">${watch("prizePool") || 0}</dd>
+                                                <dd className="font-bold text-green-600">₹{watch("prizePool") || 0}</dd>
                                             </div>
                                         </dl>
                                     </div>
