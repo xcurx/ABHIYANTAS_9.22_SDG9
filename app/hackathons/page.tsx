@@ -56,19 +56,19 @@ export default async function HackathonsPage({ searchParams }: PageProps) {
 
                 <div className="relative z-10 mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
                     <div className="text-center">
-                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full text-sm font-medium mb-6 animate-fade-in-up" style={{ animationDelay: '0.1s', animationFillMode: 'forwards', opacity: 0 }}>
+                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full text-sm font-medium mb-6 animate-fade-in-up animation-delay-100">
                             <Sparkles className="h-4 w-4" />
                             Discover Amazing Opportunities
                         </div>
-                        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl animate-fade-in-up" style={{ animationDelay: '0.2s', animationFillMode: 'forwards', opacity: 0 }}>
+                        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl animate-fade-in-up animation-delay-200">
                             Explore Hackathons
                         </h1>
-                        <p className="mt-4 text-xl text-blue-100 max-w-2xl mx-auto animate-fade-in-up" style={{ animationDelay: '0.3s', animationFillMode: 'forwards', opacity: 0 }}>
+                        <p className="mt-4 text-xl text-blue-100 max-w-2xl mx-auto animate-fade-in-up animation-delay-300">
                             Find your next challenge, build innovative solutions, and compete with the best minds
                         </p>
                         
                         {canCreateHackathon && (
-                            <div className="mt-8 flex items-center justify-center gap-4 animate-fade-in-up" style={{ animationDelay: '0.4s', animationFillMode: 'forwards', opacity: 0 }}>
+                            <div className="mt-8 flex items-center justify-center gap-4 animate-fade-in-up animation-delay-400">
                                 <Link
                                     href="/hackathons/new"
                                     className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold text-blue-600 hover:bg-blue-50 transition-all duration-200 hover:scale-105"
@@ -91,7 +91,7 @@ export default async function HackathonsPage({ searchParams }: PageProps) {
                         )}
 
                         {!canCreateHackathon && (
-                            <div className="mt-8 animate-fade-in-up" style={{ animationDelay: '0.4s', animationFillMode: 'forwards', opacity: 0 }}>
+                            <div className="mt-8 animate-fade-in-up animation-delay-400">
                                 <Link
                                     href="/hackathons/calendar"
                                     className="inline-flex items-center gap-2 rounded-xl bg-white/10 border border-white/20 px-6 py-3 text-sm font-semibold text-white hover:bg-white/20 transition-all duration-200"
@@ -103,7 +103,7 @@ export default async function HackathonsPage({ searchParams }: PageProps) {
                         )}
 
                     {/* Quick Stats */}
-                    <div className="mt-12 grid grid-cols-3 gap-4 sm:gap-8 max-w-3xl mx-auto animate-fade-in-up" style={{ animationDelay: '0.5s', animationFillMode: 'forwards', opacity: 0 }}>
+                    <div className="mt-12 grid grid-cols-3 gap-4 sm:gap-8 max-w-3xl mx-auto animate-fade-in-up animation-delay-500">
                         <div className="text-center p-4 bg-white/10 rounded-2xl backdrop-blur-sm">
                             <div className="flex justify-center mb-2">
                                 <div className="h-12 w-12 rounded-xl bg-white/20 flex items-center justify-center">
@@ -149,7 +149,7 @@ export default async function HackathonsPage({ searchParams }: PageProps) {
             <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 {/* Results */}
                 {hackathons.length === 0 ? (
-                    <div className="mt-8 text-center py-16 bg-white rounded-2xl shadow-sm animate-fade-in-up" style={{ animationDelay: '0.75s', animationFillMode: 'forwards', opacity: 0 }}>
+                    <div className="mt-8 text-center py-16 bg-white rounded-2xl shadow-sm animate-fade-in-up animation-delay-750">
                         <div className="mx-auto h-20 w-20 rounded-2xl bg-gray-100 flex items-center justify-center mb-6">
                             <Calendar className="h-10 w-10 text-gray-400" />
                         </div>
@@ -167,7 +167,7 @@ export default async function HackathonsPage({ searchParams }: PageProps) {
                 ) : (
                     <>
                         {/* Results Header */}
-                        <div className="mt-8 flex items-center justify-between animate-fade-in-up" style={{ animationDelay: '0.75s', animationFillMode: 'forwards', opacity: 0 }}>
+                        <div className="mt-8 flex items-center justify-between animate-fade-in-up animation-delay-750">
                             <div>
                                 <h3 className="text-lg font-bold text-gray-900">All Hackathons</h3>
                                 <p className="text-sm text-gray-600">
@@ -183,20 +183,22 @@ export default async function HackathonsPage({ searchParams }: PageProps) {
 
                         {/* Hackathon Grid */}
                         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {hackathons.map((hackathon, index) => (
-                                <div 
-                                    key={hackathon.id} 
-                                    className="animate-fade-in-up" 
-                                    style={{ animationDelay: `${0.1 * (index % 6)}s`, animationFillMode: 'forwards', opacity: 0 }}
-                                >
-                                    <HackathonCard hackathon={hackathon} />
-                                </div>
-                            ))}
+                            {hackathons.map((hackathon, index) => {
+                                const delayClasses = ['animation-delay-0', 'animation-delay-100', 'animation-delay-200', 'animation-delay-300', 'animation-delay-400', 'animation-delay-500'];
+                                return (
+                                    <div 
+                                        key={hackathon.id} 
+                                        className={`animate-fade-in-up ${delayClasses[index % 6]}`}
+                                    >
+                                        <HackathonCard hackathon={hackathon} />
+                                    </div>
+                                );
+                            })}
                         </div>
 
                         {/* Premium Pagination */}
                         {pagination.totalPages > 1 && (
-                            <div className="mt-12 flex justify-center items-center gap-3 animate-fade-in-up" style={{ animationDelay: '0.3s', animationFillMode: 'forwards', opacity: 0 }}>
+                            <div className="mt-12 flex justify-center items-center gap-3 animate-fade-in-up animation-delay-300">
                                 {page > 1 && (
                                     <Link
                                         href={`/hackathons?${new URLSearchParams({
@@ -255,7 +257,7 @@ export default async function HackathonsPage({ searchParams }: PageProps) {
                         )}
 
                         {/* CTA Section */}
-                        <div className="mt-16 bg-gradient-to-r from-blue-600 to-blue-700 rounded-3xl p-8 md:p-12 text-white text-center relative overflow-hidden animate-fade-in-up" style={{ animationDelay: '0.4s', animationFillMode: 'forwards', opacity: 0 }}>
+                        <div className="mt-16 bg-gradient-to-r from-blue-600 to-blue-700 rounded-3xl p-8 md:p-12 text-white text-center relative overflow-hidden animate-fade-in-up animation-delay-400">
                             <div className="absolute inset-0 opacity-10">
                                 <div className="absolute top-0 right-0 w-64 h-64 bg-white rounded-full translate-x-1/2 -translate-y-1/2"></div>
                                 <div className="absolute bottom-0 left-0 w-48 h-48 bg-white rounded-full -translate-x-1/3 translate-y-1/3"></div>
