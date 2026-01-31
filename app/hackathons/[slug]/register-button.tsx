@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Loader2, ArrowRight, UserPlus, XCircle } from "lucide-react"
+import { Loader2, ArrowRight, UserPlus, XCircle, Clock } from "lucide-react"
 import { cancelRegistration } from "@/lib/actions/hackathon"
 
 interface RegisterButtonProps {
@@ -12,6 +12,8 @@ interface RegisterButtonProps {
     canRegister: boolean
     isRegistered: boolean
     isLoggedIn: boolean
+    registrationStart?: Date
+    registrationEnd?: Date
 }
 
 export default function RegisterButton({
@@ -20,6 +22,8 @@ export default function RegisterButton({
     canRegister,
     isRegistered,
     isLoggedIn,
+    registrationStart,
+    registrationEnd,
 }: RegisterButtonProps) {
     const router = useRouter()
     const [isPending, startTransition] = useTransition()
@@ -66,6 +70,21 @@ export default function RegisterButton({
     }
 
     if (!canRegister) {
+        const now = new Date()
+        const notStartedYet = registrationStart && now < registrationStart
+        
+        if (notStartedYet) {
+            return (
+                <button
+                    disabled
+                    className="w-full py-3.5 px-4 bg-amber-50 text-amber-700 font-semibold rounded-xl cursor-not-allowed border border-amber-200 flex items-center justify-center gap-2"
+                >
+                    <Clock className="h-4 w-4" />
+                    Registration Opens {registrationStart.toLocaleDateString()}
+                </button>
+            )
+        }
+        
         return (
             <button
                 disabled

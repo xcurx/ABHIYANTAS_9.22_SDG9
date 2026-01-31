@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 import prisma from "@/lib/prisma"
 import { createGoogleMeet, hasTimeConflict } from "@/lib/utils/google-meet"
-import { sendEmail, meetingScheduledTemplate } from "@/lib/utils/email"
 
 /**
  * POST /api/hackathons/[hackathonId]/meetings
@@ -143,7 +142,6 @@ export async function POST(
 
         // Collect all attendee emails
         const attendeeEmails = teamMembers.map(m => m.user.email)
-        const attendeeNames = teamMembers.map(m => m.user.name || "Team Member")
 
         // Create the meeting record first
         const meeting = await prisma.meetingSession.create({
@@ -164,21 +162,31 @@ export async function POST(
             },
         })
 
-        // Create Google Meet link
+        // Create Google Meet link via Apps Script
+        // Apps Script handles: creating calendar event, sending emails with ICS attachments
         const meetResult = await createGoogleMeet({
             meetingId: meeting.id,
+            hackathonTitle: hackathon.title,
+            meetingType: type as "MENTORING" | "EVALUATION" | "PRESENTATION" | "OFFICE_HOURS",
             hostEmail: host.email,
             hostName: host.name || "Host",
             attendeeEmails,
-            attendeeNames,
-            title,
-            description: description || `${type === "MENTORING" ? "Mentoring" : "Evaluation"} session for ${hackathon.title}`,
-            startIso: startTime.toISOString(),
-            endIso: endTime.toISOString(),
-            durationMinutes: duration,
-            timezone,
-            hackathonTitle: hackathon.title,
+            teamName: team?.name || "Team",
+            startDate: startTime.toISOString(),
+            endDate: endTime.toISOString(),
+            duration,
+            notes,
         })
+
+        // Check if meet creation failed
+        if (meetResult.status === "error") {
+            // Delete the meeting record if we couldn't create the meet link
+            await prisma.meetingSession.delete({ where: { id: meeting.id } })
+            return NextResponse.json(
+                { error: meetResult.message || "Failed to create Google Meet link" },
+                { status: 500 }
+            )
+        }
 
         // Update meeting with meet link
         const updatedMeeting = await prisma.meetingSession.update({
@@ -212,7 +220,7 @@ export async function POST(
             minute: "2-digit",
         })
 
-        // Create notification for each team member
+        // Create notifications for all team members (emails are sent by Apps Script)
         const notificationPromises = teamMembers.map(member =>
             prisma.notification.create({
                 data: {
@@ -220,34 +228,12 @@ export async function POST(
                     type: "MEETING",
                     title: `${type === "MENTORING" ? "Mentoring" : "Evaluation"} Session Scheduled`,
                     message: `${host.name} has scheduled a ${type.toLowerCase()} session on ${dateStr} at ${timeStr}`,
-                    link: `/hackathons/${hackathon.slug}/meetings/${meeting.id}`,
+                    link: `/hackathons/${hackathon.slug}/meetings`,
                 },
             })
         )
 
         await Promise.all(notificationPromises)
-
-        // Send emails to all team members
-        const emailPromises = teamMembers.map(member =>
-            sendEmail({
-                to: [{ email: member.user.email, name: member.user.name || undefined }],
-                subject: `${type === "MENTORING" ? "Mentoring" : "Evaluation"} Session Scheduled - ${hackathon.title}`,
-                html: meetingScheduledTemplate({
-                    recipientName: member.user.name || "Team Member",
-                    meetingTitle: title,
-                    hackathonName: hackathon.title,
-                    hostName: host.name || "Host",
-                    date: dateStr,
-                    time: timeStr,
-                    duration,
-                    meetLink: meetResult.meetLink,
-                    meetingType: type,
-                    notes,
-                }),
-            })
-        )
-
-        await Promise.all(emailPromises)
 
         return NextResponse.json({
             success: true,

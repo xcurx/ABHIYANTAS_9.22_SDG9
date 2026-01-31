@@ -157,9 +157,15 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
     const calculatedPrizePool = hackathon.prizes.reduce((sum, prize) => sum + (prize.amount || 0), 0)
     const totalPrizePool = calculatedPrizePool > 0 ? calculatedPrizePool : (hackathon.prizePool || 0)
 
-    // Use computed status for registration check
+    // Check if registration is open based on dates (not computed status)
+    // This allows registration even when hackathon is IN_PROGRESS
+    const now = new Date()
+    const registrationOpen = 
+        now >= hackathon.registrationStart && 
+        now <= hackathon.registrationEnd
+
     const canRegister =
-        computedStatus === "REGISTRATION_OPEN" &&
+        registrationOpen &&
         !userRegistration &&
         (spotsLeft === null || spotsLeft > 0)
 
@@ -512,6 +518,8 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
                                 canRegister={canRegister}
                                 isRegistered={!!userRegistration}
                                 isLoggedIn={!!session?.user}
+                                registrationStart={hackathon.registrationStart}
+                                registrationEnd={hackathon.registrationEnd}
                             />
 
                             {/* Spots */}
