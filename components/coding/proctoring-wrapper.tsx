@@ -321,8 +321,8 @@ export default function ProctoringWrapper({
 
     return (
         <div className="relative">
-            {/* Warning notifications */}
-            <div className="fixed top-4 right-4 z-[9998] space-y-2">
+            {/* Warning notifications - bottom right */}
+            <div className="fixed bottom-4 right-4 z-[9998] space-y-2">
                 {warnings.slice(-3).map((warning, i) => (
                     <div
                         key={i}
@@ -339,7 +339,7 @@ export default function ProctoringWrapper({
                 ))}
             </div>
 
-            {/* Tab switch counter */}
+            {/* Tab switch counter - bottom left */}
             {enableTabSwitchDetection && tabSwitchCount > 0 && (
                 <div className="fixed bottom-4 left-4 z-[9998] px-4 py-2 rounded-lg bg-yellow-900/90 border border-yellow-500/50 text-yellow-200 text-sm">
                     Tab Switches: {tabSwitchCount}/{maxTabSwitches}

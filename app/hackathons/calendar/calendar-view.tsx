@@ -1,9 +1,10 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useState, useTransition, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { ChevronLeft, ChevronRight, Clock, Users, MapPin, ExternalLink, Layers } from "lucide-react"
+import { getComputedHackathonStatus, isRegistrationCurrentlyOpen } from "@/lib/utils/hackathon-status"
 
 type HackathonStatus = "DRAFT" | "PUBLISHED" | "REGISTRATION_OPEN" | "REGISTRATION_CLOSED" | "IN_PROGRESS" | "JUDGING" | "COMPLETED" | "CANCELLED"
 type StageType = "REGISTRATION" | "TEAM_FORMATION" | "IDEATION" | "MENTORING_SESSION" | "CHECKPOINT" | "DEVELOPMENT" | "EVALUATION" | "PRESENTATION" | "RESULTS" | "CUSTOM"
@@ -149,6 +150,11 @@ export function HackathonCalendarView({ initialHackathons, initialYear, initialM
     const [year, setYear] = useState(initialYear)
     const [month, setMonth] = useState(initialMonth)
     const [selectedHackathon, setSelectedHackathon] = useState<Hackathon | null>(null)
+
+    // Compute real-time status for a hackathon
+    const getComputedStatus = (hackathon: Hackathon): HackathonStatus => {
+        return getComputedHackathonStatus(hackathon) as HackathonStatus
+    }
 
     const navigateMonth = (direction: "prev" | "next") => {
         let newMonth = month
@@ -365,7 +371,8 @@ export function HackathonCalendarView({ initialHackathons, initialYear, initialM
                                         {/* Events */}
                                         <div className="space-y-1">
                                             {dayEvents.slice(0, 3).map((event, eventIndex) => {
-                                                const style = statusStyles[event.hackathon.status]
+                                                const computedStatus = getComputedStatus(event.hackathon)
+                                                const style = statusStyles[computedStatus]
                                                 
                                                 // Get label based on event kind
                                                 const getEventLabel = () => {
@@ -439,20 +446,22 @@ export function HackathonCalendarView({ initialHackathons, initialYear, initialM
             </div>
 
             {/* Hackathon Detail Modal */}
-            {selectedHackathon && (
+            {selectedHackathon && (() => {
+                const selectedStatus = getComputedStatus(selectedHackathon)
+                return (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setSelectedHackathon(null)}>
                     <div 
                         className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Modal Header */}
-                        <div className={`p-6 ${statusStyles[selectedHackathon.status].bg} border-b ${statusStyles[selectedHackathon.status].border}`}>
+                        <div className={`p-6 ${statusStyles[selectedStatus].bg} border-b ${statusStyles[selectedStatus].border}`}>
                             <div className="flex items-start justify-between">
                                 <div>
                                     <div className="flex items-center gap-2 mb-2">
-                                        <div className={`w-3 h-3 rounded-full ${statusStyles[selectedHackathon.status].dot}`}></div>
-                                        <span className={`text-sm font-medium ${statusStyles[selectedHackathon.status].text}`}>
-                                            {getStatusLabel(selectedHackathon.status)}
+                                        <div className={`w-3 h-3 rounded-full ${statusStyles[selectedStatus].dot}`}></div>
+                                        <span className={`text-sm font-medium ${statusStyles[selectedStatus].text}`}>
+                                            {getStatusLabel(selectedStatus)}
                                         </span>
                                         <span className="text-lg">{modeEmoji[selectedHackathon.mode]}</span>
                                     </div>
@@ -552,7 +561,7 @@ export function HackathonCalendarView({ initialHackathons, initialYear, initialM
                         </div>
                     </div>
                 </div>
-            )}
+            )})()}
         </div>
     )
 }

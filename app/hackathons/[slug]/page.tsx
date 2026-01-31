@@ -3,7 +3,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { auth } from "@/auth"
 import prisma from "@/lib/prisma"
-import { getComputedHackathonStatus } from "@/lib/utils/hackathon-status"
+import { getComputedHackathonStatus, isRegistrationCurrentlyOpen } from "@/lib/utils/hackathon-status"
 import {
     Calendar,
     Users,
@@ -175,9 +175,16 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
     const calculatedPrizePool = hackathon.prizes.reduce((sum, prize) => sum + (prize.amount || 0), 0)
     const totalPrizePool = calculatedPrizePool > 0 ? calculatedPrizePool : (hackathon.prizePool || 0)
 
-    // Use computed status for registration check
+    // Check if registration is currently open based on dates (independent of hackathon status)
+    // Registration can be open even when hackathon is IN_PROGRESS
+    const registrationOpen = isRegistrationCurrentlyOpen(
+        hackathon.registrationStart,
+        hackathon.registrationEnd
+    )
+
+    // User can register if: registration dates are valid, not already registered, and spots available
     const canRegister =
-        computedStatus === "REGISTRATION_OPEN" &&
+        registrationOpen &&
         !userRegistration &&
         (spotsLeft === null || spotsLeft > 0)
 
@@ -530,8 +537,8 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
                                 isLoggedIn={!!session?.user}
                             />
 
-                            {/* Spots */}
-                            {hackathon.maxParticipants && (
+                            {/* Spots - show when registration is open */}
+                            {registrationOpen && hackathon.maxParticipants && (
                                 <div className="mt-4 text-center">
                                     {spotsLeft !== null && spotsLeft > 0 ? (
                                         <div className="bg-blue-50 rounded-xl p-3">
@@ -546,6 +553,19 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
                                     ) : spotsLeft === 0 ? (
                                         <span className="text-sm text-red-600 font-medium">All spots filled</span>
                                     ) : null}
+                                </div>
+                            )}
+
+                            {/* Show when registration is not open */}
+                            {!registrationOpen && !userRegistration && (
+                                <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-xl">
+                                    <p className="text-sm text-gray-600 text-center">
+                                        {new Date() < hackathon.registrationStart ? (
+                                            <>Registration opens {formatDate(hackathon.registrationStart)}</>
+                                        ) : (
+                                            <>Registration closed on {formatDate(hackathon.registrationEnd)}</>
+                                        )}
+                                    </p>
                                 </div>
                             )}
                         </div>

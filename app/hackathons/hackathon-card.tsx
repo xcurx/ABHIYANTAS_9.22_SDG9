@@ -3,6 +3,7 @@ import Image from "next/image"
 import { Calendar, Users, MapPin, Trophy, Clock, Building2, ArrowRight } from "lucide-react"
 import { formatDate, getRelativeTime, cn } from "@/lib/utils"
 import { HackathonStatus, HackathonMode, HackathonType } from "@/generated/prisma/enums"
+import { getComputedHackathonStatus, isRegistrationCurrentlyOpen } from "@/lib/utils/hackathon-status"
 
 interface HackathonCardProps {
     hackathon: {
@@ -74,13 +75,19 @@ function getDefaultBanner(hackathonId: string): string {
 }
 
 export default function HackathonCard({ hackathon }: HackathonCardProps) {
-    const status = statusConfig[hackathon.status]
+    // Compute real-time status based on dates
+    const computedStatus = getComputedHackathonStatus(hackathon)
+    const status = statusConfig[computedStatus]
     const mode = modeConfig[hackathon.mode]
     const type = typeConfig[hackathon.type]
 
-    const isRegistrationOpen = hackathon.status === "REGISTRATION_OPEN"
-    const isPublished = hackathon.status === "PUBLISHED"
-    const isLive = hackathon.status === "IN_PROGRESS"
+    // Check if registration is currently open based on dates
+    const registrationOpen = isRegistrationCurrentlyOpen(
+        hackathon.registrationStart,
+        hackathon.registrationEnd
+    )
+    const isPublished = computedStatus === "PUBLISHED"
+    const isLive = computedStatus === "IN_PROGRESS"
     const spotsLeft = hackathon.maxParticipants
         ? hackathon.maxParticipants - hackathon._count.registrations
         : null
@@ -195,7 +202,7 @@ export default function HackathonCard({ hackathon }: HackathonCardProps) {
                             </div>
                         )}
 
-                        {isRegistrationOpen && hackathon.registrationEnd && (
+                        {registrationOpen && hackathon.registrationEnd && (
                             <div className="flex items-center gap-2.5 text-sm text-green-600">
                                 <div className="h-8 w-8 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
                                     <Clock className="h-4 w-4 text-green-600" />
@@ -211,10 +218,10 @@ export default function HackathonCard({ hackathon }: HackathonCardProps) {
                             </div>
                             <span>
                                 <span className="font-semibold text-gray-900">{hackathon._count.registrations}</span> registered
-                                {spotsLeft !== null && spotsLeft > 0 && (
+                                {registrationOpen && spotsLeft !== null && spotsLeft > 0 && (
                                     <span className="text-green-600 font-medium"> • {spotsLeft} spots left</span>
                                 )}
-                                {spotsLeft === 0 && (
+                                {registrationOpen && spotsLeft === 0 && (
                                     <span className="text-red-600 font-medium"> • Full</span>
                                 )}
                             </span>

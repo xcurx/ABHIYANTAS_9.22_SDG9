@@ -148,3 +148,15 @@ export function getComputedHackathonStatus(hackathon: {
         hackathon.resultsDate
     )
 }
+
+/**
+ * Check if registration is currently open based on dates only
+ * This is independent of hackathon status (e.g., hackathon can be IN_PROGRESS but registration still open)
+ */
+export function isRegistrationCurrentlyOpen(
+    registrationStart: Date,
+    registrationEnd: Date
+): boolean {
+    const now = new Date()
+    return isOnOrAfter(now, registrationStart) && isOnOrBefore(now, registrationEnd)
+}
